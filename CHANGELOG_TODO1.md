@@ -41,9 +41,13 @@ Mengganti data hardcoded pada halaman Dashboard dengan data aktual dari database
   - Mengganti dummy list "Jadwal Dokter Hari Ini" dengan loop `@forelse($jadwalDokter as $jdwl)` yang menampilkan nama dokter, poliklinik, serta jam kerja.
 - **Tujuan:** Menampilkan data nyata secara dinamis di antarmuka UI.
 
+### E. `.env`
+- **Perubahan:** Mengubah `CACHE_STORE=database` menjadi `CACHE_STORE=file`.
+- **Tujuan:** Menghindari error `Table 'db_test_rev.cache' doesn't exist` karena skema DB Khanza SIMRS tidak memiliki tabel `cache`.
+
 ---
 
 ## 3. Hasil Pengujian / Status
 - [x] Route `/dashboard` mengarah ke `DashboardController@index`.
 - [x] Query data berjalan tanpa error.
-- [x] Cache statistik aktif selama 5 menit untuk mengurangi beban tabel `pasien` (85k) dan `reg_periksa` (285k).
+- [x] Cache statistik aktif (menggunakan file driver) selama 5 menit untuk mengurangi beban tabel `pasien` (85k) dan `reg_periksa` (285k).
