@@ -33,13 +33,26 @@ class LaboratoriumController extends Controller
     public function getPemeriksaan(Request $request)
     {
         $search = $request->search;
+        $no_rawat = $request->no_rawat;
+
+        $kdPj = '-';
+        if ($no_rawat) {
+            $regPeriksa = DB::table('reg_periksa')->where('no_rawat', $no_rawat)->first();
+            if ($regPeriksa) {
+                $kdPj = $regPeriksa->kd_pj;
+            }
+        }
 
         $pemeriksaan = DB::table('jns_perawatan_lab')
-            ->where('status', '1') 
-            ->where(function($q) use ($search) {
-                $q->where('kd_jenis_prw', 'like', "%$search%")
-                ->orWhere('nm_perawatan', 'like', "%$search%");
+            ->where('status', '1')
+            ->where(function ($q) use ($kdPj) {
+                $q->where('kd_pj', $kdPj)->orWhere('kd_pj', '-');
             })
+            ->where(function ($q) use ($search) {
+                $q->where('kd_jenis_prw', 'like', "%$search%")
+                  ->orWhere('nm_perawatan', 'like', "%$search%");
+            })
+            ->orderByRaw("FIELD(kd_pj, ?, '-')", [$kdPj])
             ->limit(20)
             ->get();
 
@@ -70,6 +83,9 @@ class LaboratoriumController extends Controller
 
             $kd_dokter = Auth::user()->decrypted_id;
 
+            $regPeriksa = DB::table('reg_periksa')->where('no_rawat', $request->no_rawat)->first();
+            $statusLanjut = ($regPeriksa && strtolower($regPeriksa->status_lanjut) === 'ranap') ? 'ranap' : 'ralan';
+
             $permintaan = PermintaanLab::create([
                 'noorder'           => $no_order,
                 'no_rawat'         => $request->no_rawat,
@@ -80,7 +96,7 @@ class LaboratoriumController extends Controller
                 'tgl_hasil'   => null,
                 'jam_hasil'   => null,
                 'dokter_perujuk'   => $kd_dokter,
-                'status'           => 'ralan',
+                'status'           => $statusLanjut,
                 'informasi_tambahan' => $request->informasi_tambahan ?? '-',
                 'diagnosa_klinis'  => $request->diagnosa_klinis ?? '-',
             ]);

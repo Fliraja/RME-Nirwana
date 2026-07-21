@@ -686,7 +686,10 @@
                     dataType: 'json',
                     delay: 250,
                     data: function(params) {
-                        return { search: params.term };
+                        return { 
+                            search: params.term,
+                            no_rawat: currentNoRawat
+                        };
                     },
                     processResults: function(data) {
                         return { results: data };
@@ -715,7 +718,10 @@
                     dataType: 'json',
                     delay: 250,
                     data: function(params) {
-                        return { search: params.term };
+                        return { 
+                            search: params.term,
+                            no_rawat: currentNoRawat
+                        };
                     },
                     processResults: function(data) {
                         return { results: data };
