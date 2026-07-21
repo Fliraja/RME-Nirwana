@@ -24,23 +24,23 @@
     </div>
     <div class="col-12 col-sm-6 col-xl-3">
         <div class="stat-card">
-            <div class="stat-icon bg-success-soft">
-                <i class="fas fa-calendar-check text-success"></i>
-            </div>
-            <div class="stat-content">
-                <h3>{{ number_format($stats['kunjunganHariIni'] ?? 0) }}</h3>
-                <p>Pasien Poli Hari Ini</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-12 col-sm-6 col-xl-3">
-        <div class="stat-card">
             <div class="stat-icon bg-warning-soft">
                 <i class="fas fa-calendar-alt text-warning"></i>
             </div>
             <div class="stat-content">
                 <h3>{{ number_format($stats['pasienPoliBulanIni'] ?? 0) }}</h3>
                 <p>Pasien Poli Bulan Ini</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-success-soft">
+                <i class="fas fa-calendar-check text-success"></i>
+            </div>
+            <div class="stat-content">
+                <h3>{{ number_format($stats['kunjunganHariIni'] ?? 0) }}</h3>
+                <p>Pasien Poli Hari Ini</p>
             </div>
         </div>
     </div>
