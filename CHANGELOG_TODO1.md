@@ -24,22 +24,19 @@ Mengganti data hardcoded pada halaman Dashboard dengan data aktual dari database
 - **Tujuan:** Menghubungkan endpoint `/dashboard` ke controller agar logika pengambilan data dijalankan.
 
 ### C. `app/Http/Controllers/DashboardController.php`
-- **Perubahan:** Mengimplementasikan method `index()` untuk mengambil data berikut:
-  1. **Statistik (Cache 5 Menit):**
-     - `totalPasien`: Jumlah total baris di tabel `pasien`.
-     - `kunjunganHariIni`: Jumlah registrasi hari ini (`reg_periksa.tgl_registrasi` = hari ini) dengan status `stts != 'Batal'`.
-     - `dokterAktif`: Jumlah dokter aktif (`dokter.status = '1'`).
-     - `dalamAntrian`: Pasien terdaftar hari ini dengan `stts = 'Belum'`.
-  2. **Pasien Terbaru:** 5 transaksi `reg_periksa` terbaru beserta data `pasien`.
-  3. **Jadwal Dokter Hari Ini:** Data dari tabel `jadwal` berdasarkan hari kerja aktif (hari ini dalam Bahasa Indonesia, misal `SENIN`, `SELASA`), di-join dengan `poliklinik` dan `dokter`.
-- **Tujuan:** Menyediakan data riil dan ter-cache untuk tampilan dashboard.
+- **Perubahan:**
+  1. Filter data berdasarkan dokter yang sedang login (`Auth::user()->decrypted_id`) untuk role non-admin (hanya tampilkan data pasien & jadwal dokter bersangkutan). Role admin tetap melihat data global.
+  2. Mengganti metric stat card:
+     - `kunjunganHariIni`: Total registrasi pasien dokter hari ini.
+     - `sudahDiperiksa`: Jumlah pasien hari ini dengan `stts = 'Sudah'` / `'Bayar'` (menggantikan "Dokter Aktif").
+     - `belumDiperiksa`: Jumlah pasien hari ini dengan `stts = 'Belum'` (menggantikan "Dalam Antrian").
+  3. Filter daftar "Pasien Terbaru" dan "Jadwal Praktik" khusus untuk dokter yang sedang login.
 
 ### D. `resources/views/dashboard.blade.php`
 - **Perubahan:**
-  - Mengganti angka hardcoded (1.234, 56, 12, 8) dengan variabel `$stats['...']`.
-  - Mengganti dummy tabel "Pasien Terbaru" dengan loop `@forelse($pasienTerbaru as $item)` dan tombol link aksi ke modul Ralan.
-  - Mengganti dummy list "Jadwal Dokter Hari Ini" dengan loop `@forelse($jadwalDokter as $jdwl)` yang menampilkan nama dokter, poliklinik, serta jam kerja.
-- **Tujuan:** Menampilkan data nyata secara dinamis di antarmuka UI.
+  - Mengganti label card "Dokter Aktif" menjadi **"Sudah Diperiksa"** (`fa-user-check`).
+  - Mengganti label card "Dalam Antrian" menjadi **"Belum Diperiksa"** (`fa-clock`) agar dokter tidak keliru berasumsi soal antrian farmasi/kasir.
+  - Mengubah judul widget jadwal menjadi **"Jadwal Praktik Saya Hari Ini"** jika user adalah dokter.
 
 ### E. `.env`
 - **Perubahan:** Mengubah `CACHE_STORE=database` menjadi `CACHE_STORE=file`.
@@ -48,6 +45,6 @@ Mengganti data hardcoded pada halaman Dashboard dengan data aktual dari database
 ---
 
 ## 3. Hasil Pengujian / Status
-- [x] Route `/dashboard` mengarah ke `DashboardController@index`.
-- [x] Query data berjalan tanpa error.
-- [x] Cache statistik aktif (menggunakan file driver) selama 5 menit untuk mengurangi beban tabel `pasien` (85k) dan `reg_periksa` (285k).
+- [x] Data dashboard terisolasi per dokter (role non-admin hanya melihat data miliknya).
+- [x] Judul & parameter stat card disesuaikan kebutuhan dokter (Sudah Diperiksa vs Belum Diperiksa).
+- [x] Cache statistik aktif (file driver) terpisah per id dokter (`dashboard_stats_{kd_dokter}`).

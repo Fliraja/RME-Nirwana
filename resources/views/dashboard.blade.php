@@ -36,22 +36,22 @@
     <div class="col-12 col-sm-6 col-xl-3">
         <div class="stat-card">
             <div class="stat-icon bg-warning-soft">
-                <i class="fas fa-user-md text-warning"></i>
+                <i class="fas fa-user-check text-warning"></i>
             </div>
             <div class="stat-content">
-                <h3>{{ number_format($stats['dokterAktif'] ?? 0) }}</h3>
-                <p>Dokter Aktif</p>
+                <h3>{{ number_format($stats['sudahDiperiksa'] ?? 0) }}</h3>
+                <p>Sudah Diperiksa</p>
             </div>
         </div>
     </div>
     <div class="col-12 col-sm-6 col-xl-3">
         <div class="stat-card">
             <div class="stat-icon bg-info-soft">
-                <i class="fas fa-clipboard-list text-info"></i>
+                <i class="fas fa-clock text-info"></i>
             </div>
             <div class="stat-content">
-                <h3>{{ number_format($stats['dalamAntrian'] ?? 0) }}</h3>
-                <p>Dalam Antrian</p>
+                <h3>{{ number_format($stats['belumDiperiksa'] ?? 0) }}</h3>
+                <p>Belum Diperiksa</p>
             </div>
         </div>
     </div>
@@ -115,7 +115,7 @@
     <div class="col-12 col-lg-4">
         <div class="card">
             <div class="card-header">
-                <h5 class="card-title">Jadwal Dokter Hari Ini</h5>
+                <h5 class="card-title">{{ $isAdmin ? 'Jadwal Dokter Hari Ini' : 'Jadwal Praktik Saya Hari Ini' }}</h5>
             </div>
             <div class="card-body">
                 @forelse($jadwalDokter as $jdwl)
