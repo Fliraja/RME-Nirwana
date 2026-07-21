@@ -22,20 +22,25 @@ class DashboardController extends Controller
         $cacheKey = 'dashboard_stats_' . ($isAdmin ? 'admin' : ($kd_dokter ?? 'guest'));
 
         $stats = Cache::remember($cacheKey, now()->addMinutes(5), function () use ($isAdmin, $kd_dokter, $today) {
+            $currentMonth = Carbon::now()->month;
+            $currentYear = Carbon::now()->year;
+
             $queryTotalKunjungan = RegPeriksa::whereDate('tgl_registrasi', $today)->where('stts', '!=', 'Batal');
-            $querySudahDiperiksa = RegPeriksa::whereDate('tgl_registrasi', $today)->whereIn('stts', ['Sudah', 'Bayar']);
+            $queryPasienPoliBulanIni = RegPeriksa::whereMonth('tgl_registrasi', $currentMonth)
+                ->whereYear('tgl_registrasi', $currentYear)
+                ->where('stts', '!=', 'Batal');
             $queryBelumDiperiksa = RegPeriksa::whereDate('tgl_registrasi', $today)->where('stts', 'Belum');
 
             if (!$isAdmin && $kd_dokter) {
                 $queryTotalKunjungan->where('kd_dokter', $kd_dokter);
-                $querySudahDiperiksa->where('kd_dokter', $kd_dokter);
+                $queryPasienPoliBulanIni->where('kd_dokter', $kd_dokter);
                 $queryBelumDiperiksa->where('kd_dokter', $kd_dokter);
             }
 
             return [
                 'totalPasien' => Pasien::count(),
                 'kunjunganHariIni' => $queryTotalKunjungan->count(),
-                'sudahDiperiksa' => $querySudahDiperiksa->count(),
+                'pasienPoliBulanIni' => $queryPasienPoliBulanIni->count(),
                 'belumDiperiksa' => $queryBelumDiperiksa->count(),
             ];
         });
