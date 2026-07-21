@@ -17,7 +17,7 @@
                 <i class="fas fa-users text-primary"></i>
             </div>
             <div class="stat-content">
-                <h3>1,234</h3>
+                <h3>{{ number_format($stats['totalPasien'] ?? 0) }}</h3>
                 <p>Total Pasien</p>
             </div>
         </div>
@@ -28,7 +28,7 @@
                 <i class="fas fa-calendar-check text-success"></i>
             </div>
             <div class="stat-content">
-                <h3>56</h3>
+                <h3>{{ number_format($stats['kunjunganHariIni'] ?? 0) }}</h3>
                 <p>Kunjungan Hari Ini</p>
             </div>
         </div>
@@ -39,7 +39,7 @@
                 <i class="fas fa-user-md text-warning"></i>
             </div>
             <div class="stat-content">
-                <h3>12</h3>
+                <h3>{{ number_format($stats['dokterAktif'] ?? 0) }}</h3>
                 <p>Dokter Aktif</p>
             </div>
         </div>
@@ -50,7 +50,7 @@
                 <i class="fas fa-clipboard-list text-info"></i>
             </div>
             <div class="stat-content">
-                <h3>8</h3>
+                <h3>{{ number_format($stats['dalamAntrian'] ?? 0) }}</h3>
                 <p>Dalam Antrian</p>
             </div>
         </div>
@@ -64,7 +64,7 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="card-title">Pasien Terbaru</h5>
-                <a href="#" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
+                <a href="{{ route('ralan.index') }}" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -79,51 +79,31 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @forelse($pasienTerbaru as $item)
                             <tr>
-                                <td><strong>RM-2024-0001</strong></td>
-                                <td>Ahmad Fadillah</td>
-                                <td>15 Aug 2025</td>
-                                <td><span class="badge badge-success">Aktif</span></td>
+                                <td><strong>{{ $item->no_rkm_medis }}</strong></td>
+                                <td>{{ $item->pasien->nm_pasien ?? '-' }}</td>
+                                <td>{{ \Carbon\Carbon::parse($item->tgl_registrasi)->format('d M Y') }}</td>
                                 <td>
-                                    <button class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></button>
+                                    @if($item->stts === 'Sudah' || $item->stts === 'Bayar')
+                                        <span class="badge badge-success">{{ $item->stts }}</span>
+                                    @elseif($item->stts === 'Belum')
+                                        <span class="badge badge-warning">{{ $item->stts }}</span>
+                                    @elseif($item->stts === 'Batal')
+                                        <span class="badge badge-danger">{{ $item->stts }}</span>
+                                    @else
+                                        <span class="badge badge-info">{{ $item->stts }}</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <a href="{{ route('ralan.index', ['no_rawat' => $item->no_rawat]) }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></a>
                                 </td>
                             </tr>
+                            @empty
                             <tr>
-                                <td><strong>RM-2024-0002</strong></td>
-                                <td>Siti Rahmawati</td>
-                                <td>15 Aug 2025</td>
-                                <td><span class="badge badge-success">Aktif</span></td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></button>
-                                </td>
+                                <td colspan="5" class="text-center py-3 text-muted">Belum ada data pasien</td>
                             </tr>
-                            <tr>
-                                <td><strong>RM-2024-0003</strong></td>
-                                <td>Muhammad Rizky</td>
-                                <td>14 Aug 2025</td>
-                                <td><span class="badge badge-warning">Pending</span></td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>RM-2024-0004</strong></td>
-                                <td>Nur Hidayah</td>
-                                <td>14 Aug 2025</td>
-                                <td><span class="badge badge-success">Aktif</span></td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>RM-2024-0005</strong></td>
-                                <td>Bambang Susanto</td>
-                                <td>13 Aug 2025</td>
-                                <td><span class="badge badge-success">Aktif</span></td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></button>
-                                </td>
-                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -138,46 +118,22 @@
                 <h5 class="card-title">Jadwal Dokter Hari Ini</h5>
             </div>
             <div class="card-body">
+                @forelse($jadwalDokter as $jdwl)
                 <div class="schedule-item d-flex align-items-center gap-3 mb-3 pb-3 border-bottom">
                     <div class="schedule-avatar bg-primary-soft rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
                         <i class="fas fa-user-md text-primary"></i>
                     </div>
                     <div class="schedule-info grow">
-                        <h6 class="mb-0">dr. Hendra Wijaya, Sp.PD</h6>
-                        <small class="text-muted">Poli Penyakit Dalam</small>
+                        <h6 class="mb-0">{{ $jdwl->dokter->nm_dokter ?? $jdwl->kd_dokter }}</h6>
+                        <small class="text-muted">{{ $jdwl->poliklinik->nm_poli ?? $jdwl->kd_poli }}</small>
                     </div>
-                    <span class="badge badge-success">08:00 - 12:00</span>
+                    <span class="badge badge-success">{{ substr($jdwl->jam_mulai, 0, 5) }} - {{ substr($jdwl->jam_selesai, 0, 5) }}</span>
                 </div>
-                <div class="schedule-item d-flex align-items-center gap-3 mb-3 pb-3 border-bottom">
-                    <div class="schedule-avatar bg-success-soft rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-                        <i class="fas fa-user-md text-success"></i>
-                    </div>
-                    <div class="schedule-info grow">
-                        <h6 class="mb-0">dr. Sari Melati, Sp.A</h6>
-                        <small class="text-muted">Poli Anak</small>
-                    </div>
-                    <span class="badge badge-success">09:00 - 14:00</span>
+                @empty
+                <div class="text-center py-3 text-muted">
+                    Tidak ada jadwal dokter hari ini
                 </div>
-                <div class="schedule-item d-flex align-items-center gap-3 mb-3 pb-3 border-bottom">
-                    <div class="schedule-avatar bg-warning-soft rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-                        <i class="fas fa-user-md text-warning"></i>
-                    </div>
-                    <div class="schedule-info grow">
-                        <h6 class="mb-0">dr. Budi Santoso, Sp.B</h6>
-                        <small class="text-muted">Poli Bedah</small>
-                    </div>
-                    <span class="badge badge-warning">13:00 - 17:00</span>
-                </div>
-                <div class="schedule-item d-flex align-items-center gap-3">
-                    <div class="schedule-avatar bg-info-soft rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-                        <i class="fas fa-user-md text-info"></i>
-                    </div>
-                    <div class="schedule-info grow">
-                        <h6 class="mb-0">dr. Dewi Kusuma, Sp.OG</h6>
-                        <small class="text-muted">Poli Kandungan</small>
-                    </div>
-                    <span class="badge badge-info">14:00 - 18:00</span>
-                </div>
+                @endforelse
             </div>
         </div>
     </div>

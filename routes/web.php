@@ -6,6 +6,7 @@ use App\Http\Controllers\ResepController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RadiologiController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LaboratoriumController;
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -13,9 +14,7 @@ Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::middleware(['multi.auth'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     //Ralan Routes
     Route::match(['GET', 'POST'], '/ralan', [RalanController::class, 'index'])->name('ralan.index');
