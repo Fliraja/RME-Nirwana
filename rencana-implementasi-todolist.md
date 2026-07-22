@@ -32,7 +32,7 @@ Temuan penting sebelum masuk ke rencana per item:
 
 **Status Todo #1: ✅ Selesai** (dikerjain Rafli langsung, di luar sesi ini).
 
-**Todo aktif sekarang:** #4, #5. **Backlog (di-park):** #3, #6. **Selesai:** #1, #2.
+**Todo aktif sekarang:** #5. **Backlog (di-park):** #3, #6. **Selesai:** #1, #2, #4.
 
 ---
 
@@ -159,6 +159,8 @@ Belum bisa diestimasi akurat sampai Q2 terjawab. Opsi B: rendah (~0.5 hari, pure
 ---
 
 ## 5. Todo #4 — Tab Input Diagnosa & Prosedur
+
+> ✅ **STATUS: SELESAI** — dikerjakan & ditest di branch `feature/todo-4-tab-diagnosa-prosedur`.
 
 ### Temuan (infrastruktur DB sudah siap 100%)
 

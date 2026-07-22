@@ -8,6 +8,7 @@ use App\Http\Controllers\RadiologiController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LaboratoriumController;
+use App\Http\Controllers\DiagnosaProsedurController;
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
@@ -48,6 +49,15 @@ Route::middleware(['multi.auth'])->group(function () {
     Route::get('/ralan/search-pemeriksaan-radiologi', [RadiologiController::class, 'getPemeriksaanRadiologi'])->name('ralan.search-radiologi');
     Route::post('/ralan/store-permintaan-radiologi', [RadiologiController::class, 'storePermintaanRadiologi'])->name('ralan.store-radiologi');
     Route::delete('/ralan/delete-radiologi/{noorder}/{kd_jenis_prw?}', [RadiologiController::class, 'destroyRadiologi'])->name('ralan.delete-radiologi');
+
+    //Diagnosa & Prosedur
+    Route::get('/ralan/get-diagnosa-prosedur/{no_rawat}', [DiagnosaProsedurController::class, 'index'])->name('ralan.get-diagnosa-prosedur');
+    Route::get('/ralan/search-icd10', [DiagnosaProsedurController::class, 'searchIcd10'])->name('ralan.search-icd10');
+    Route::get('/ralan/search-icd9', [DiagnosaProsedurController::class, 'searchIcd9'])->name('ralan.search-icd9');
+    Route::post('/ralan/store-diagnosa', [DiagnosaProsedurController::class, 'storeDiagnosa'])->name('ralan.store-diagnosa');
+    Route::post('/ralan/store-prosedur', [DiagnosaProsedurController::class, 'storeProsedur'])->name('ralan.store-prosedur');
+    Route::delete('/ralan/delete-diagnosa/{no_rawat}/{kd_penyakit}', [DiagnosaProsedurController::class, 'destroyDiagnosa'])->name('ralan.delete-diagnosa');
+    Route::delete('/ralan/delete-prosedur/{no_rawat}/{kode}', [DiagnosaProsedurController::class, 'destroyProsedur'])->name('ralan.delete-prosedur');
 
     //Report Routes
     Route::get('/report/soap', [ReportController::class, 'indexSoap'])->name('report.soap-index');
