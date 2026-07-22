@@ -32,7 +32,7 @@ Temuan penting sebelum masuk ke rencana per item:
 
 **Status Todo #1: ✅ Selesai** (dikerjain Rafli langsung, di luar sesi ini).
 
-**Todo aktif sekarang:** #2, #4, #5. **Backlog (di-park):** #3, #6.
+**Todo aktif sekarang:** #4, #5. **Backlog (di-park):** #3, #6. **Selesai:** #1, #2.
 
 ---
 
@@ -68,6 +68,8 @@ Rendah. Semua data read-only, gak ada resiko ke data existing. ~0.5–1 hari ker
 ---
 
 ## 3. Todo #2 — Filter Otomatis Pemeriksaan Lab/Radiologi
+
+> ✅ **STATUS: SELESAI** — dikerjakan & ditest di branch `feature/todo-2-filter-pemeriksaan`.
 
 ### Bukti bug (bukan asumsi — hasil query langsung ke DB)
 
