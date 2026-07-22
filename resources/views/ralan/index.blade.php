@@ -75,6 +75,11 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
+                                    <a class="nav-link" id="diagnosa-prosedur-tab" data-bs-toggle="tab" href="#diagnosa-prosedur">
+                                        <i class="fas fa-stethoscope me-1"></i> DIAGNOSA & PROSEDUR
+                                    </a>
+                                </li>
+                                <li class="nav-item">
                                     <a class="nav-link" id="vital-sign-tab" data-bs-toggle="tab" href="#pemeriksaan-vital-sign">
                                         <i class="fas fa-heartbeat me-1"></i> VITAL-SIGN
                                     </a>
@@ -110,6 +115,15 @@
                                         <div class="text-center p-5">
                                             <div class="spinner-border text-primary"></div>
                                             <p>Memuat Form SOAP...</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane fade" id="diagnosa-prosedur">
+                                    <div id="content-diagnosa-prosedur">
+                                        <div class="text-center p-5">
+                                            <div class="spinner-border text-primary"></div>
+                                            <p>Memuat Form Diagnosa & Prosedur...</p>
                                         </div>
                                     </div>
                                 </div>
@@ -617,6 +631,75 @@
         });
     }
 
+    function loadDiagnosaProsedur() {
+        console.log('Loading diagnosa prosedur for:', currentNoRawat);
+        if (currentNoRawat === "") return;
+        
+        $('#content-diagnosa-prosedur').html(
+            '<div class="text-center p-5">' +
+            '<div class="spinner-border text-primary"></div>' +
+            '<p>Memuat Form Diagnosa & Prosedur...</p>' +
+            '</div>'
+        );
+        
+        $.ajax({
+            url: '/ralan/get-diagnosa-prosedur/' + currentSafeNoRawat,
+            method: 'GET',
+            success: function(data) {
+                console.log('Diagnosa Prosedur loaded successfully');
+                $('#content-diagnosa-prosedur').html(data);
+                setTimeout(function() {
+                    initSelect2DiagnosaProsedur();
+                }, 150);
+            },
+            error: function(xhr) {
+                console.error('Error loading diagnosa prosedur:', xhr);
+                $('#content-diagnosa-prosedur').html(
+                    '<div class="alert alert-danger">Gagal memuat form Diagnosa & Prosedur.</div>'
+                );
+            }
+        });
+    }
+
+    function initSelect2DiagnosaProsedur() {
+        console.log('Initializing select2 diagnosa & prosedur...');
+        if ($('#select-icd10').length > 0) {
+            if ($('#select-icd10').hasClass('select2-hidden-accessible')) {
+                $('#select-icd10').select2('destroy');
+            }
+            $('#select-icd10').select2({
+                placeholder: 'Ketik Kode / Nama Penyakit (ICD-10)...',
+                minimumInputLength: 2,
+                ajax: {
+                    url: "{{ route('ralan.search-icd10') }}",
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) { return { search: params.term }; },
+                    processResults: function(data) { return { results: data }; },
+                    cache: true
+                }
+            });
+        }
+
+        if ($('#select-icd9').length > 0) {
+            if ($('#select-icd9').hasClass('select2-hidden-accessible')) {
+                $('#select-icd9').select2('destroy');
+            }
+            $('#select-icd9').select2({
+                placeholder: 'Ketik Kode / Deskripsi Prosedur (ICD-9)...',
+                minimumInputLength: 2,
+                ajax: {
+                    url: "{{ route('ralan.search-icd9') }}",
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) { return { search: params.term }; },
+                    processResults: function(data) { return { results: data }; },
+                    cache: true
+                }
+            });
+        }
+    }
+
     function initSelect2() {
         console.log('Initializing select2...');
         
@@ -1091,6 +1174,11 @@
                 $('#content-soap').html(data);
             });
         }
+    });
+
+    $('a[href="#diagnosa-prosedur"]').on('shown.bs.tab', function (e) {
+        console.log('Diagnosa Prosedur tab shown');
+        loadDiagnosaProsedur();
     });
 
     $('a[href="#pemeriksaan-vital-sign"]').on('shown.bs.tab', function (e) {
@@ -1591,7 +1679,100 @@
                     btn.prop('disabled', false).html(originalText);
                     tampilkanError(xhr.responseJSON?.message || "Gagal menyimpan permintaan radiologi.");
                 }
+        $(document).on('click', '#btn-simpan-diagnosa', function(e) {
+            e.preventDefault();
+            let btn = $(this);
+            let form = $('#form-diagnosa');
+            let kd_penyakit = $('#select-icd10').val();
+
+            if (!kd_penyakit || kd_penyakit.length === 0) {
+                tampilkanError("Pilih minimal satu diagnosa ICD-10.");
+                return;
+            }
+
+            let originalText = btn.html();
+            btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Menyimpan...');
+
+            $.ajax({
+                url: "{{ route('ralan.store-diagnosa') }}",
+                method: "POST",
+                data: form.serialize(),
+                success: function(res) {
+                    btn.prop('disabled', false).html(originalText);
+                    tampilkanSukses(res.message);
+                    loadDiagnosaProsedur();
+                },
+                error: function(xhr) {
+                    btn.prop('disabled', false).html(originalText);
+                    tampilkanError(xhr.responseJSON?.message || "Gagal menyimpan diagnosa.");
+                }
             });
+        });
+
+        $(document).on('click', '#btn-simpan-prosedur', function(e) {
+            e.preventDefault();
+            let btn = $(this);
+            let form = $('#form-prosedur');
+            let kode = $('#select-icd9').val();
+
+            if (!kode || kode.length === 0) {
+                tampilkanError("Pilih minimal satu prosedur ICD-9.");
+                return;
+            }
+
+            let originalText = btn.html();
+            btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Menyimpan...');
+
+            $.ajax({
+                url: "{{ route('ralan.store-prosedur') }}",
+                method: "POST",
+                data: form.serialize(),
+                success: function(res) {
+                    btn.prop('disabled', false).html(originalText);
+                    tampilkanSukses(res.message);
+                    loadDiagnosaProsedur();
+                },
+                error: function(xhr) {
+                    btn.prop('disabled', false).html(originalText);
+                    tampilkanError(xhr.responseJSON?.message || "Gagal menyimpan prosedur.");
+                }
+            });
+        });
+
+        $(document).on('click', '.btn-hapus-diagnosa', function() {
+            let kd = $(this).data('kd');
+            if (confirm('Hapus diagnosa ini?')) {
+                $.ajax({
+                    url: '/ralan/delete-diagnosa/' + currentSafeNoRawat + '/' + kd,
+                    method: 'DELETE',
+                    data: { _token: "{{ csrf_token() }}" },
+                    success: function(res) {
+                        tampilkanSukses(res.message);
+                        loadDiagnosaProsedur();
+                    },
+                    error: function(xhr) {
+                        tampilkanError(xhr.responseJSON?.message || "Gagal menghapus diagnosa.");
+                    }
+                });
+            }
+        });
+
+        $(document).on('click', '.btn-hapus-prosedur', function() {
+            let kode = $(this).data('kode');
+            if (confirm('Hapus prosedur ini?')) {
+                $.ajax({
+                    url: '/ralan/delete-prosedur/' + currentSafeNoRawat + '/' + kode,
+                    method: 'DELETE',
+                    data: { _token: "{{ csrf_token() }}" },
+                    success: function(res) {
+                        tampilkanSukses(res.message);
+                        loadDiagnosaProsedur();
+                    },
+                    error: function(xhr) {
+                        tampilkanError(xhr.responseJSON?.message || "Gagal menghapus prosedur.");
+                    }
+                });
+            }
         });
 
         console.log('=== ALL EVENT HANDLERS REGISTERED ===');

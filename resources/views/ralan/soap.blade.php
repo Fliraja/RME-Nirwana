@@ -16,15 +16,11 @@
     </div>
 
     <div class="row">
-        <div class="col-md-4 mb-3">
-            <label class="fw-bold mb-2">Assesmen (Diagnosa)</label>
-            <textarea name="penilaian" class="form-control" rows="4">{{ $pasien->pemeriksaanRalan->penilaian ?? '' }}</textarea>
-        </div>
-        <div class="col-md-4 mb-3">
+        <div class="col-md-6 mb-3">
             <label class="fw-bold mb-2">Plan (Terapi/Tindakan)</label>
             <textarea name="plan" class="form-control" rows="4">{{ $pasien->pemeriksaanRalan->rtl ?? '' }}</textarea>
         </div>
-        <div class="col-md-4 mb-3">
+        <div class="col-md-6 mb-3">
             <label class="fw-bold mb-2">Instruksi / RTL</label>
             <textarea name="instruksi" class="form-control" rows="4">{{ $pasien->pemeriksaanRalan->instruksi ?? '' }}</textarea>
         </div>
