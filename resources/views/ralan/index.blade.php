@@ -1688,6 +1688,9 @@
                     btn.prop('disabled', false).html(originalText);
                     tampilkanError(xhr.responseJSON?.message || "Gagal menyimpan permintaan radiologi.");
                 }
+            });
+        });
+
         $(document).on('click', '#btn-simpan-diagnosa', function(e) {
             e.preventDefault();
             let btn = $(this);
