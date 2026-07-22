@@ -13,11 +13,6 @@ class DiagnosaProsedurController extends Controller
     {
         $no_rawat = str_replace('-', '/', $no_rawat);
 
-        $pasien = DB::table('reg_periksa')
-            ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
-            ->where('no_rawat', $no_rawat)
-            ->first();
-
         $diagnosa = DiagnosaPasien::with('penyakit')
             ->where('no_rawat', $no_rawat)
             ->orderBy('prioritas', 'asc')
@@ -28,7 +23,7 @@ class DiagnosaProsedurController extends Controller
             ->orderBy('prioritas', 'asc')
             ->get();
 
-        return view('ralan.diagnosa-prosedur', compact('pasien', 'diagnosa', 'prosedur', 'no_rawat'));
+        return view('ralan.diagnosa-prosedur', compact('diagnosa', 'prosedur', 'no_rawat'));
     }
 
     public function searchIcd10(Request $request)

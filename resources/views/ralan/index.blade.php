@@ -631,16 +631,25 @@
         });
     }
 
-    function loadDiagnosaProsedur() {
+    let diagnosaProsedurLoaded = false;
+
+    function loadDiagnosaProsedur(forceReload = false) {
         console.log('Loading diagnosa prosedur for:', currentNoRawat);
         if (currentNoRawat === "") return;
         
-        $('#content-diagnosa-prosedur').html(
-            '<div class="text-center p-5">' +
-            '<div class="spinner-border text-primary"></div>' +
-            '<p>Memuat Form Diagnosa & Prosedur...</p>' +
-            '</div>'
-        );
+        if (diagnosaProsedurLoaded && !forceReload) {
+            console.log('Diagnosa Prosedur already cached, skipping reload');
+            return;
+        }
+
+        if (!diagnosaProsedurLoaded) {
+            $('#content-diagnosa-prosedur').html(
+                '<div class="text-center p-5">' +
+                '<div class="spinner-border text-primary"></div>' +
+                '<p>Memuat Form Diagnosa & Prosedur...</p>' +
+                '</div>'
+            );
+        }
         
         $.ajax({
             url: '/ralan/get-diagnosa-prosedur/' + currentSafeNoRawat,
@@ -648,15 +657,18 @@
             success: function(data) {
                 console.log('Diagnosa Prosedur loaded successfully');
                 $('#content-diagnosa-prosedur').html(data);
+                diagnosaProsedurLoaded = true;
                 setTimeout(function() {
                     initSelect2DiagnosaProsedur();
-                }, 150);
+                }, 100);
             },
             error: function(xhr) {
                 console.error('Error loading diagnosa prosedur:', xhr);
-                $('#content-diagnosa-prosedur').html(
-                    '<div class="alert alert-danger">Gagal memuat form Diagnosa & Prosedur.</div>'
-                );
+                if (!diagnosaProsedurLoaded) {
+                    $('#content-diagnosa-prosedur').html(
+                        '<div class="alert alert-danger">Gagal memuat form Diagnosa & Prosedur.</div>'
+                    );
+                }
             }
         });
     }
@@ -1700,7 +1712,7 @@
                 success: function(res) {
                     btn.prop('disabled', false).html(originalText);
                     tampilkanSukses(res.message);
-                    loadDiagnosaProsedur();
+                    loadDiagnosaProsedur(true);
                 },
                 error: function(xhr) {
                     btn.prop('disabled', false).html(originalText);
@@ -1730,7 +1742,7 @@
                 success: function(res) {
                     btn.prop('disabled', false).html(originalText);
                     tampilkanSukses(res.message);
-                    loadDiagnosaProsedur();
+                    loadDiagnosaProsedur(true);
                 },
                 error: function(xhr) {
                     btn.prop('disabled', false).html(originalText);
@@ -1748,7 +1760,7 @@
                     data: { _token: "{{ csrf_token() }}" },
                     success: function(res) {
                         tampilkanSukses(res.message);
-                        loadDiagnosaProsedur();
+                        loadDiagnosaProsedur(true);
                     },
                     error: function(xhr) {
                         tampilkanError(xhr.responseJSON?.message || "Gagal menghapus diagnosa.");
@@ -1766,7 +1778,7 @@
                     data: { _token: "{{ csrf_token() }}" },
                     success: function(res) {
                         tampilkanSukses(res.message);
-                        loadDiagnosaProsedur();
+                        loadDiagnosaProsedur(true);
                     },
                     error: function(xhr) {
                         tampilkanError(xhr.responseJSON?.message || "Gagal menghapus prosedur.");
@@ -1774,6 +1786,13 @@
                 });
             }
         });
+
+        // Preload Diagnosa & Prosedur in background right after page load
+        if (currentNoRawat !== "") {
+            setTimeout(function() {
+                loadDiagnosaProsedur();
+            }, 300);
+        }
 
         console.log('=== ALL EVENT HANDLERS REGISTERED ===');
     });
