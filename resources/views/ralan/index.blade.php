@@ -529,18 +529,31 @@
         resep: false
     };
 
+    var loadingTabs = {
+        soap: false,
+        diagnosa: false,
+        vital: false,
+        lab: false,
+        radiologi: false,
+        resep: false
+    };
+
     function loadSoap(forceReload = false) {
         if (currentNoRawat === "") return;
         if (loadedTabs.soap && !forceReload) return;
+        if (loadingTabs.soap) return;
 
         if (!loadedTabs.soap) {
             $('#content-soap').html('<div class="text-center p-5"><div class="spinner-border text-primary"></div><p>Memuat Form SOAP...</p></div>');
         }
 
+        loadingTabs.soap = true;
         $.get('/ralan/soap/' + currentSafeNoRawat, function(data) {
             $('#content-soap').html(data);
             loadedTabs.soap = true;
+            loadingTabs.soap = false;
         }).fail(function() {
+            loadingTabs.soap = false;
             if (!loadedTabs.soap) $('#content-soap').html('<div class="alert alert-danger">Gagal memuat form SOAP.</div>');
         });
     }
@@ -548,15 +561,19 @@
     function loadVital(forceReload = false) {
         if (currentNoRawat === "") return;
         if (loadedTabs.vital && !forceReload) return;
+        if (loadingTabs.vital) return;
 
         if (!loadedTabs.vital) {
             $('#content-vital-sign').html('<div class="text-center p-5"><div class="spinner-border text-primary"></div><p>Memuat Form Vital Sign...</p></div>');
         }
 
+        loadingTabs.vital = true;
         $.get('/ralan/get-vital-pasien/' + currentSafeNoRawat, function(data) {
             $('#content-vital-sign').html(data);
             loadedTabs.vital = true;
+            loadingTabs.vital = false;
         }).fail(function() {
+            loadingTabs.vital = false;
             if (!loadedTabs.vital) $('#content-vital-sign').html('<div class="alert alert-danger">Gagal memuat form Vital Sign.</div>');
         });
     }
@@ -564,20 +581,24 @@
     function loadResep(forceReload = false) {
         if (currentNoRawat === "") return;
         if (loadedTabs.resep && !forceReload) return;
+        if (loadingTabs.resep) return;
 
         if (!loadedTabs.resep) {
             $('#content-resep').html('<div class="text-center p-5"><div class="spinner-border text-primary"></div><p>Memuat data resep...</p></div>');
         }
 
+        loadingTabs.resep = true;
         $.ajax({
             url: '/ralan/get-resep-pasien/' + currentSafeNoRawat,
             method: 'GET',
             success: function(data) {
                 $('#content-resep').html(data);
                 loadedTabs.resep = true;
+                loadingTabs.resep = false;
                 setTimeout(function() { initSelect2(); }, 100);
             },
             error: function() {
+                loadingTabs.resep = false;
                 if (!loadedTabs.resep) $('#content-resep').html('<div class="alert alert-danger">Gagal memuat data resep.</div>');
             }
         });
@@ -586,20 +607,24 @@
     function loadFormLab(forceReload = false) {
         if (currentNoRawat === "") return;
         if (loadedTabs.lab && !forceReload) return;
+        if (loadingTabs.lab) return;
 
         if (!loadedTabs.lab) {
             $('#content-lab').html('<div class="text-center p-5"><div class="spinner-border text-primary"></div><p>Memuat Form Permintaan Lab...</p></div>');
         }
 
+        loadingTabs.lab = true;
         $.ajax({
             url: '/ralan/get-lab-pasien/' + currentSafeNoRawat,
             method: 'GET',
             success: function(data) {
                 $('#content-lab').html(data);
                 loadedTabs.lab = true;
+                loadingTabs.lab = false;
                 setTimeout(function() { initSelect2Lab(); }, 100);
             },
             error: function() {
+                loadingTabs.lab = false;
                 if (!loadedTabs.lab) $('#content-lab').html('<div class="alert alert-danger">Gagal memuat form permintaan lab.</div>');
             }
         });
@@ -608,20 +633,24 @@
     function loadFormRadiologi(forceReload = false) {
         if (currentNoRawat === "") return;
         if (loadedTabs.radiologi && !forceReload) return;
+        if (loadingTabs.radiologi) return;
 
         if (!loadedTabs.radiologi) {
             $('#content-radiologi').html('<div class="text-center p-5"><div class="spinner-border text-info"></div><p>Memuat Form Permintaan Radiologi...</p></div>');
         }
 
+        loadingTabs.radiologi = true;
         $.ajax({
             url: '/ralan/get-radiologi-pasien/' + currentSafeNoRawat,
             method: 'GET',
             success: function(data) {
                 $('#content-radiologi').html(data);
                 loadedTabs.radiologi = true;
+                loadingTabs.radiologi = false;
                 setTimeout(function() { initSelect2Radiologi(); }, 100);
             },
             error: function() {
+                loadingTabs.radiologi = false;
                 if (!loadedTabs.radiologi) $('#content-radiologi').html('<div class="alert alert-danger">Gagal memuat form permintaan radiologi.</div>');
             }
         });
@@ -630,20 +659,24 @@
     function loadDiagnosaProsedur(forceReload = false) {
         if (currentNoRawat === "") return;
         if (loadedTabs.diagnosa && !forceReload) return;
+        if (loadingTabs.diagnosa) return;
 
         if (!loadedTabs.diagnosa) {
             $('#content-diagnosa-prosedur').html('<div class="text-center p-5"><div class="spinner-border text-primary"></div><p>Memuat Form Diagnosa & Prosedur...</p></div>');
         }
 
+        loadingTabs.diagnosa = true;
         $.ajax({
             url: '/ralan/get-diagnosa-prosedur/' + currentSafeNoRawat,
             method: 'GET',
             success: function(data) {
                 $('#content-diagnosa-prosedur').html(data);
                 loadedTabs.diagnosa = true;
+                loadingTabs.diagnosa = false;
                 setTimeout(function() { initSelect2DiagnosaProsedur(); }, 100);
             },
             error: function() {
+                loadingTabs.diagnosa = false;
                 if (!loadedTabs.diagnosa) $('#content-diagnosa-prosedur').html('<div class="alert alert-danger">Gagal memuat form Diagnosa & Prosedur.</div>');
             }
         });
@@ -1751,15 +1784,8 @@
             }
         });
 
-        // Staggered background preloading for ALL 6 tabs right after patient page load
-        if (currentNoRawat !== "") {
-            setTimeout(function() { loadSoap(); }, 50);
-            setTimeout(function() { loadDiagnosaProsedur(); }, 200);
-            setTimeout(function() { loadVital(); }, 400);
-            setTimeout(function() { loadResep(); }, 600);
-            setTimeout(function() { loadFormLab(); }, 800);
-            setTimeout(function() { loadFormRadiologi(); }, 1000);
-        }
+        // Background preloading removed to prevent server bottleneck.
+        // Tabs will load instantly via lazy loading when clicked.
 
         console.log('=== ALL EVENT HANDLERS REGISTERED ===');
     });
