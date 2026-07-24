@@ -5,6 +5,7 @@ namespace App\Services\Ralan;
 use App\Models\DiagnosaPasien;
 use App\Models\ProsedurPasien;
 use App\Support\KodeSearch;
+use App\Support\PrioritasResolver;
 use Illuminate\Support\Facades\DB;
 
 class DiagnosaProsedurService
@@ -72,41 +73,46 @@ class DiagnosaProsedurService
         return ($reg && strtolower($reg->status_lanjut) === 'ranap') ? 'Ranap' : 'Ralan';
     }
 
-    public function simpanDiagnosa(string $noRawat, array $kdList, ?string $prioritas, ?string $statusPenyakit): array
+    public function simpanDiagnosa(string $noRawat, array $kdList): array
     {
         $status = $this->statusFor($noRawat);
 
-        DB::transaction(function () use ($noRawat, $kdList, $prioritas, $statusPenyakit, $status) {
-            foreach ($kdList as $index => $kd) {
-                $hasPrimary = DB::table('diagnosa_pasien')
-                    ->where('no_rawat', $noRawat)->where('prioritas', '1')->exists();
+        DB::transaction(function () use ($noRawat, $kdList, $status) {
+            $max = (int) DB::table('diagnosa_pasien')
+                ->where('no_rawat', $noRawat)->where('status', $status)->max('prioritas');
 
-                $prio = ($prioritas && $index === 0) ? $prioritas : ($hasPrimary ? '2' : '1');
-
+            foreach (array_values($kdList) as $i => $kd) {
                 DB::table('diagnosa_pasien')->updateOrInsert(
                     ['no_rawat' => $noRawat, 'kd_penyakit' => $kd, 'status' => $status],
-                    ['prioritas' => $prio, 'status_penyakit' => $statusPenyakit ?? 'Lama']
+                    ['prioritas' => $max + $i + 1] // status_penyakit dibiarkan null (diisi manual bila perlu)
                 );
             }
+
+            $this->recomputeDiagnosa($noRawat, $status);
         });
 
         return ['status' => 'success-diagnosa', 'message' => 'Diagnosa ICD-10 berhasil disimpan'];
     }
 
-    public function simpanProsedur(string $noRawat, array $kodeList, ?string $jumlah): array
+    public function simpanProsedur(string $noRawat, array $kodeList, array $jumlahList): array
     {
         $status = $this->statusFor($noRawat);
 
-        DB::transaction(function () use ($noRawat, $kodeList, $jumlah, $status) {
-            foreach ($kodeList as $kd) {
-                $hasPrimary = DB::table('prosedur_pasien')
-                    ->where('no_rawat', $noRawat)->where('prioritas', '1')->exists();
+        DB::transaction(function () use ($noRawat, $kodeList, $jumlahList, $status) {
+            $max = (int) DB::table('prosedur_pasien')
+                ->where('no_rawat', $noRawat)->where('status', $status)->max('prioritas');
+
+            foreach (array_values($kodeList) as $i => $kd) {
+                $jumlah = $jumlahList[$i] ?? null;
+                $jumlah = ($jumlah === '' || $jumlah === null) ? '1' : $jumlah; // kolom NOT NULL, default qty 1
 
                 DB::table('prosedur_pasien')->updateOrInsert(
                     ['no_rawat' => $noRawat, 'kode' => $kd, 'status' => $status],
-                    ['prioritas' => $hasPrimary ? '2' : '1', 'jumlah' => $jumlah ?? 1]
+                    ['prioritas' => $max + $i + 1, 'jumlah' => $jumlah]
                 );
             }
+
+            $this->recomputeProsedur($noRawat, $status);
         });
 
         return ['status' => 'success-prosedur', 'message' => 'Prosedur ICD-9 berhasil disimpan'];
@@ -114,17 +120,64 @@ class DiagnosaProsedurService
 
     public function hapusDiagnosa(string $noRawat, string $kdPenyakit): array
     {
-        DB::table('diagnosa_pasien')
-            ->where('no_rawat', $noRawat)->where('kd_penyakit', $kdPenyakit)->delete();
+        $status = $this->statusFor($noRawat);
+
+        DB::transaction(function () use ($noRawat, $kdPenyakit, $status) {
+            DB::table('diagnosa_pasien')
+                ->where('no_rawat', $noRawat)->where('kd_penyakit', $kdPenyakit)->where('status', $status)->delete();
+            $this->recomputeDiagnosa($noRawat, $status);
+        });
 
         return ['status' => 'success-hapus-diagnosa', 'message' => 'Diagnosa berhasil dihapus'];
     }
 
     public function hapusProsedur(string $noRawat, string $kode): array
     {
-        DB::table('prosedur_pasien')
-            ->where('no_rawat', $noRawat)->where('kode', $kode)->delete();
+        $status = $this->statusFor($noRawat);
+
+        DB::transaction(function () use ($noRawat, $kode, $status) {
+            DB::table('prosedur_pasien')
+                ->where('no_rawat', $noRawat)->where('kode', $kode)->where('status', $status)->delete();
+            $this->recomputeProsedur($noRawat, $status);
+        });
 
         return ['status' => 'success-hapus-prosedur', 'message' => 'Prosedur berhasil dihapus'];
+    }
+
+    /** Primer = kode ber-validcode '1' pertama; sisanya urut. */
+    private function recomputeDiagnosa(string $noRawat, string $status): void
+    {
+        $items = DB::table('diagnosa_pasien as dp')
+            ->leftJoin('penyakit as p', 'p.kd_penyakit', '=', 'dp.kd_penyakit')
+            ->where('dp.no_rawat', $noRawat)->where('dp.status', $status)
+            ->orderBy('dp.prioritas')
+            ->selectRaw("dp.kd_penyakit as kode, COALESCE(p.validcode, '0') as validcode")
+            ->get()
+            ->map(fn ($r) => ['kode' => $r->kode, 'validcode' => $r->validcode])
+            ->all();
+
+        foreach (PrioritasResolver::hitung($items) as $kode => $prio) {
+            DB::table('diagnosa_pasien')
+                ->where(['no_rawat' => $noRawat, 'kd_penyakit' => $kode, 'status' => $status])
+                ->update(['prioritas' => $prio]);
+        }
+    }
+
+    private function recomputeProsedur(string $noRawat, string $status): void
+    {
+        $items = DB::table('prosedur_pasien as pp')
+            ->leftJoin('icd9 as i', 'i.kode', '=', 'pp.kode')
+            ->where('pp.no_rawat', $noRawat)->where('pp.status', $status)
+            ->orderBy('pp.prioritas')
+            ->selectRaw("pp.kode as kode, COALESCE(i.validcode, '0') as validcode")
+            ->get()
+            ->map(fn ($r) => ['kode' => $r->kode, 'validcode' => $r->validcode])
+            ->all();
+
+        foreach (PrioritasResolver::hitung($items) as $kode => $prio) {
+            DB::table('prosedur_pasien')
+                ->where(['no_rawat' => $noRawat, 'kode' => $kode, 'status' => $status])
+                ->update(['prioritas' => $prio]);
+        }
     }
 }

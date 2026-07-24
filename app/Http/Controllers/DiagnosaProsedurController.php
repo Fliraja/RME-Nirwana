@@ -33,9 +33,7 @@ class DiagnosaProsedurController extends Controller
     {
         return response()->json($this->service->simpanDiagnosa(
             $request->no_rawat,
-            $request->kd_penyakit,
-            $request->prioritas,
-            $request->status_penyakit
+            $request->kd_penyakit
         ));
     }
 
@@ -44,7 +42,7 @@ class DiagnosaProsedurController extends Controller
         return response()->json($this->service->simpanProsedur(
             $request->no_rawat,
             $request->kode,
-            $request->jumlah
+            $request->jumlah ?? []
         ));
     }
 
