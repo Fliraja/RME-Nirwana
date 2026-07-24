@@ -1149,6 +1149,21 @@ a:hover {
 
 .ralan-panel { border: 1px solid #e5e7eb; border-radius: 0.5rem; background: #fff; }
 
+/* Reusable flat card for ralan forms */
+.ralan-card { border: 1px solid #e5e7eb; border-radius: 0.5rem; background: #fff; }
+.ralan-card-head {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid #eef0f2;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.ralan-card-body { padding: 1rem; }
+.staging-jumlah { width: 62px; }
+
 /* Lab template checkbox groups — flat */
 .checkbox-controls {
     display: flex;

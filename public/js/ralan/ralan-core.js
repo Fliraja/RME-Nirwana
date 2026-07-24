@@ -58,7 +58,13 @@ function initRemoteSelect(selector, opts) {
                 .catch(function() { callback(); });
         },
         shouldLoad: function(q) { return q.length >= minLen; },
-        onChange: function() { $(el).trigger('change'); }
+        onChange: function() { $(el).trigger('change'); },
+        onItemAdd: function(value, $item) {
+            if (typeof opts.onItemAdd === 'function') {
+                var data = this.options[value] || { id: value, text: value };
+                opts.onItemAdd(data, this);
+            }
+        }
     });
 }
 
@@ -229,16 +235,48 @@ function loadDiagnosaProsedur(forceReload = false) {
     });
 }
 
+function stagingKode(tbodySel) {
+    return $(tbodySel + ' tr[data-kode]').map(function() { return $(this).data('kode'); }).get();
+}
+
+function addStagingRow(tbodySel, data, withJumlah) {
+    var kode = String(data.id);
+    if ($(tbodySel + ' tr[data-kode="' + kode.replace(/"/g, '') + '"]').length) return;
+    $(tbodySel + ' .staging-empty').remove();
+    var nama = String(data.text).replace(kode + ' - ', '');
+    var jumlahCell = withJumlah
+        ? '<td><input type="number" class="form-control form-control-sm staging-jumlah" min="1" value="1"></td>'
+        : '';
+    $(tbodySel).append(
+        '<tr data-kode="' + kode + '">' +
+        '<td><span class="badge bg-light text-dark border">' + kode + '</span></td>' +
+        '<td class="small">' + nama + '</td>' +
+        jumlahCell +
+        '<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger border-0 staging-remove"><i class="fas fa-times"></i></button></td>' +
+        '</tr>'
+    );
+}
+
 function initSelect2DiagnosaProsedur() {
     initRemoteSelect('#select-icd10', {
         url: window.RALAN.routes.searchIcd10,
-        multiple: true,
-        placeholder: 'Ketik Kode / Nama Penyakit (ICD-10)...'
+        multiple: false,
+        placeholder: 'Ketik kode / nama penyakit...',
+        onItemAdd: function(data, ts) {
+            addStagingRow('#staging-diagnosa', data, false);
+            ts.clear(true);
+            ts.clearOptions();
+        }
     });
     initRemoteSelect('#select-icd9', {
         url: window.RALAN.routes.searchIcd9,
-        multiple: true,
-        placeholder: 'Ketik Kode / Deskripsi Prosedur (ICD-9)...'
+        multiple: false,
+        placeholder: 'Ketik kode / deskripsi prosedur...',
+        onItemAdd: function(data, ts) {
+            addStagingRow('#staging-prosedur', data, true);
+            ts.clear(true);
+            ts.clearOptions();
+        }
     });
 }
 
@@ -1167,62 +1205,67 @@ $(document).ready(function() {
         });
     });
 
-    $(document).on('click', '#btn-simpan-diagnosa', function(e) {
-        e.preventDefault();
-        let btn = $(this);
-        let form = $('#form-diagnosa');
-        let kd_penyakit = $('#select-icd10').val();
-
-        if (!kd_penyakit || kd_penyakit.length === 0) {
-            tampilkanError("Pilih minimal satu diagnosa ICD-10.");
-            return;
+    $(document).on('click', '.staging-remove', function() {
+        var tbody = $(this).closest('tbody');
+        $(this).closest('tr').remove();
+        if (tbody.find('tr[data-kode]').length === 0) {
+            var isProsedur = tbody.attr('id') === 'staging-prosedur';
+            var cols = isProsedur ? 4 : 3;
+            var label = isProsedur ? 'prosedur' : 'diagnosa';
+            tbody.append('<tr class="staging-empty"><td colspan="' + cols + '" class="text-center text-muted small py-2">Belum ada ' + label + ' dipilih</td></tr>');
         }
+    });
 
-        let originalText = btn.html();
+    $(document).on('click', '#btn-simpan-diagnosa', function() {
+        var kd = stagingKode('#staging-diagnosa');
+        if (!kd.length) { tampilkanError('Belum ada diagnosa dipilih.'); return; }
+
+        var btn = $(this);
+        var original = btn.html();
         btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Menyimpan...');
 
         $.ajax({
             url: window.RALAN.routes.storeDiagnosa,
-            method: "POST",
-            data: form.serialize(),
+            method: 'POST',
+            data: { _token: window.RALAN.csrf, no_rawat: currentNoRawat, kd_penyakit: kd },
             success: function(res) {
-                btn.prop('disabled', false).html(originalText);
+                btn.prop('disabled', false).html(original);
                 tampilkanSukses(res.message);
                 loadDiagnosaProsedur(true);
             },
             error: function(xhr) {
-                btn.prop('disabled', false).html(originalText);
-                tampilkanError(xhr.responseJSON?.message || "Gagal menyimpan diagnosa.");
+                btn.prop('disabled', false).html(original);
+                tampilkanError(xhr.responseJSON?.message || 'Gagal menyimpan diagnosa.');
             }
         });
     });
 
-    $(document).on('click', '#btn-simpan-prosedur', function(e) {
-        e.preventDefault();
-        let btn = $(this);
-        let form = $('#form-prosedur');
-        let kode = $('#select-icd9').val();
+    $(document).on('click', '#btn-simpan-prosedur', function() {
+        var rows = $('#staging-prosedur tr[data-kode]');
+        if (!rows.length) { tampilkanError('Belum ada prosedur dipilih.'); return; }
 
-        if (!kode || kode.length === 0) {
-            tampilkanError("Pilih minimal satu prosedur ICD-9.");
-            return;
-        }
+        var kode = [], jumlah = [];
+        rows.each(function() {
+            kode.push($(this).data('kode'));
+            jumlah.push($(this).find('.staging-jumlah').val() || '');
+        });
 
-        let originalText = btn.html();
+        var btn = $(this);
+        var original = btn.html();
         btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Menyimpan...');
 
         $.ajax({
             url: window.RALAN.routes.storeProsedur,
-            method: "POST",
-            data: form.serialize(),
+            method: 'POST',
+            data: { _token: window.RALAN.csrf, no_rawat: currentNoRawat, kode: kode, jumlah: jumlah },
             success: function(res) {
-                btn.prop('disabled', false).html(originalText);
+                btn.prop('disabled', false).html(original);
                 tampilkanSukses(res.message);
                 loadDiagnosaProsedur(true);
             },
             error: function(xhr) {
-                btn.prop('disabled', false).html(originalText);
-                tampilkanError(xhr.responseJSON?.message || "Gagal menyimpan prosedur.");
+                btn.prop('disabled', false).html(original);
+                tampilkanError(xhr.responseJSON?.message || 'Gagal menyimpan prosedur.');
             }
         });
     });
