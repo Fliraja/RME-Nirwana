@@ -4,6 +4,7 @@ namespace App\Services\Ralan;
 
 use App\Models\DiagnosaPasien;
 use App\Models\ProsedurPasien;
+use App\Support\KodeSearch;
 use Illuminate\Support\Facades\DB;
 
 class DiagnosaProsedurService
@@ -26,10 +27,13 @@ class DiagnosaProsedurService
     /** @return array<int, array{id:string, text:string}> */
     public function searchIcd10(string $search): array
     {
+        $normalized = KodeSearch::normalize($search);
+
         $rows = DB::table('penyakit')
-            ->where(function ($q) use ($search) {
+            ->where(function ($q) use ($search, $normalized) {
                 $q->where('kd_penyakit', 'like', "%$search%")
-                  ->orWhere('nm_penyakit', 'like', "%$search%");
+                  ->orWhere('nm_penyakit', 'like', "%$search%")
+                  ->orWhereRaw("REPLACE(kd_penyakit, '.', '') LIKE ?", ["%$normalized%"]);
             })
             ->limit(20)
             ->get();
@@ -43,11 +47,14 @@ class DiagnosaProsedurService
     /** @return array<int, array{id:string, text:string}> */
     public function searchIcd9(string $search): array
     {
+        $normalized = KodeSearch::normalize($search);
+
         $rows = DB::table('icd9')
-            ->where(function ($q) use ($search) {
+            ->where(function ($q) use ($search, $normalized) {
                 $q->where('kode', 'like', "%$search%")
                   ->orWhere('deskripsi_panjang', 'like', "%$search%")
-                  ->orWhere('deskripsi_pendek', 'like', "%$search%");
+                  ->orWhere('deskripsi_pendek', 'like', "%$search%")
+                  ->orWhereRaw("REPLACE(kode, '.', '') LIKE ?", ["%$normalized%"]);
             })
             ->limit(20)
             ->get();
