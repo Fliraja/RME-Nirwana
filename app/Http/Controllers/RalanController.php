@@ -7,6 +7,10 @@ use App\Models\RegPeriksa;
 use Illuminate\Http\Request;
 use App\Models\PemeriksaanRalan;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\Ralan\StoreSoapRequest;
+use App\Http\Requests\Ralan\StoreVitalSignRequest;
+use App\Services\Ralan\SoapService;
+use App\Services\Ralan\VitalSignService;
 
 class RalanController extends Controller
 {
@@ -109,36 +113,14 @@ class RalanController extends Controller
         return "<div class='alert alert-danger'>Data pendaftaran tidak ditemukan.</div>";
     }
 
-    public function storeSOAP(Request $request)
+    public function storeSOAP(StoreSoapRequest $request, SoapService $service)
     {
-        $request->validate([
-            'no_rawat' => 'required',
-        ]);
-
-        $nip = Auth::user()->decrypted_id;
-
         try {
-            PemeriksaanRalan::updateOrCreate(
-                ['no_rawat' => $request->no_rawat], 
-                [
-                    'tgl_perawatan' => date('Y-m-d'),
-                    'jam_rawat'     => date('H:i:s'),
-                    'keluhan'       => $request->keluhan ?? '',
-                    'pemeriksaan'   => $request->objek ?? '',
-                    'penilaian'     => $request->penilaian ?? '',
-                    'rtl'           => $request->plan ?? '',
-                    'instruksi'     => $request->instruksi ?? '',
-                    'nip'           => $nip,
-                    'kesadaran'     => 'Compos Mentis',
-                    'spo2'          => '-',
-                    'lingkar_perut' => '-',
-                    'evaluasi'      => '-',
-                ]
-            );
+            $service->simpan($request->all());
 
-            return redirect()->back()->with('success-soap', 'Data SOAP berhasil disimpan');
+            return response()->json(['status' => 'success-soap', 'message' => 'Data SOAP berhasil disimpan']);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error-soap', 'Terjadi kesalahan saat menyimpan data SOAP: ' . $e->getMessage());
+            return response()->json(['status' => 'error', 'message' => 'Gagal menyimpan SOAP: ' . $e->getMessage()], 500);
         }
     }
 
@@ -157,36 +139,14 @@ class RalanController extends Controller
         return "<div class='alert alert-danger'>Data vital sign tidak ditemukan.</div>";
     }
 
-    public function storeVital(Request $request)
+    public function storeVital(StoreVitalSignRequest $request, VitalSignService $service)
     {
-        $request->validate([
-            'no_rawat' => 'required',
-        ]);
-
-        $nip = Auth::user()->decrypted_id;
-
         try {
-            PemeriksaanRalan::updateOrCreate(
-                ['no_rawat' => $request->no_rawat], 
-                [
-                    'tgl_perawatan' => date('Y-m-d'),
-                    'jam_rawat'     => date('H:i:s'),
-                    'suhu_tubuh'    => $request->suhu_tubuh ?? '-',
-                    'tensi'         => $request->tensi ?? '-',
-                    'nadi'          => $request->nadi ?? '-',
-                    'respirasi'     => $request->respirasi ?? '-',
-                    'tinggi'        => $request->tinggi ?? '-',
-                    'berat'         => $request->berat ?? '-',
-                    'gcs'           => $request->gcs ?? '-',
-                    'kesadaran'     => $request->kesadaran ?? 'Compos Mentis',
-                    'alergi'        => $request->alergi ?? '-',
-                    'nip'           => $nip
-                ]
-            );
+            $service->simpan($request->all());
 
-            return redirect()->back()->with('success-vital', 'Data Vital Sign berhasil disimpan');
+            return response()->json(['status' => 'success-vital', 'message' => 'Data Vital Sign berhasil disimpan']);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error-vital', 'Gagal menyimpan Vital Sign: ' . $e->getMessage());
+            return response()->json(['status' => 'error', 'message' => 'Gagal menyimpan Vital Sign: ' . $e->getMessage()], 500);
         }
     }
 }
