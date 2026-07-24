@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Ralan\StorePermintaanRadiologiRequest;
 use App\Models\PermintaanRadiologi;
 use App\Services\Ralan\RadiologiService;
 use Illuminate\Http\Request;
@@ -35,13 +36,8 @@ class RadiologiController extends Controller
         );
     }
 
-    public function storePermintaanRadiologi(Request $request)
+    public function storePermintaanRadiologi(StorePermintaanRadiologiRequest $request)
     {
-        $request->validate([
-            'no_rawat'         => 'required',
-            'kd_jenis_prw_rad' => 'required|array|min:1',
-        ]);
-
         return response()->json($this->service->simpanPermintaan($request->all()));
     }
 

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Ralan\StoreDiagnosaRequest;
+use App\Http\Requests\Ralan\StoreProsedurRequest;
 use App\Services\Ralan\DiagnosaProsedurService;
 use Illuminate\Http\Request;
 
@@ -27,13 +29,8 @@ class DiagnosaProsedurController extends Controller
         return response()->json($this->service->searchIcd9($request->search ?? ''));
     }
 
-    public function storeDiagnosa(Request $request)
+    public function storeDiagnosa(StoreDiagnosaRequest $request)
     {
-        $request->validate([
-            'no_rawat'    => 'required',
-            'kd_penyakit' => 'required|array|min:1',
-        ]);
-
         return response()->json($this->service->simpanDiagnosa(
             $request->no_rawat,
             $request->kd_penyakit,
@@ -42,13 +39,8 @@ class DiagnosaProsedurController extends Controller
         ));
     }
 
-    public function storeProsedur(Request $request)
+    public function storeProsedur(StoreProsedurRequest $request)
     {
-        $request->validate([
-            'no_rawat' => 'required',
-            'kode'     => 'required|array|min:1',
-        ]);
-
         return response()->json($this->service->simpanProsedur(
             $request->no_rawat,
             $request->kode,

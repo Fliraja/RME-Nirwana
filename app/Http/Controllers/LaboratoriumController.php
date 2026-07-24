@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Ralan\StorePermintaanLabRequest;
 use App\Models\PermintaanLab;
 use App\Services\Ralan\LaboratoriumService;
 use Illuminate\Http\Request;
@@ -35,13 +36,8 @@ class LaboratoriumController extends Controller
         );
     }
 
-    public function storePermintaanLab(Request $request)
+    public function storePermintaanLab(StorePermintaanLabRequest $request)
     {
-        $request->validate([
-            'no_rawat'     => 'required',
-            'kd_jenis_prw' => 'required|array|min:1',
-        ]);
-
         return response()->json($this->service->simpanPermintaan($request->all()));
     }
 
