@@ -34,6 +34,39 @@ function tampilkanSukses(message) {
     }
 }
 
+/* ===== Tom Select helpers (pengganti Select2) ===== */
+function initRemoteSelect(selector, opts) {
+    var el = document.querySelector(selector);
+    if (!el) return null;
+    if (el.tomselect) el.tomselect.destroy();
+    var minLen = opts.minLen || 2;
+    return new TomSelect(el, {
+        valueField: 'id',
+        labelField: 'text',
+        searchField: 'text',
+        maxItems: opts.multiple ? null : 1,
+        maxOptions: 50,
+        placeholder: opts.placeholder || 'Ketik untuk mencari...',
+        plugins: opts.multiple ? ['remove_button'] : [],
+        load: function(query, callback) {
+            if (query.length < minLen) return callback();
+            var params = new URLSearchParams({ search: query });
+            if (opts.withNoRawat) params.append('no_rawat', currentNoRawat);
+            fetch(opts.url + '?' + params.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function(r) { return r.json(); })
+                .then(function(json) { callback(json); })
+                .catch(function() { callback(); });
+        },
+        shouldLoad: function(q) { return q.length >= minLen; },
+        onChange: function() { $(el).trigger('change'); }
+    });
+}
+
+function clearRemoteSelect(selector) {
+    var el = document.querySelector(selector);
+    if (el && el.tomselect) el.tomselect.clear();
+}
+
 var loadedTabs = {
     soap: false,
     diagnosa: false,
@@ -197,159 +230,60 @@ function loadDiagnosaProsedur(forceReload = false) {
 }
 
 function initSelect2DiagnosaProsedur() {
-    console.log('Initializing select2 diagnosa & prosedur...');
-    if ($('#select-icd10').length > 0) {
-        if ($('#select-icd10').hasClass('select2-hidden-accessible')) {
-            $('#select-icd10').select2('destroy');
-        }
-        $('#select-icd10').select2({
-            placeholder: 'Ketik Kode / Nama Penyakit (ICD-10)...',
-            minimumInputLength: 2,
-            ajax: {
-                url: window.RALAN.routes.searchIcd10,
-                dataType: 'json',
-                delay: 250,
-                data: function(params) { return { search: params.term }; },
-                processResults: function(data) { return { results: data }; },
-                cache: true
-            }
-        });
-    }
-
-    if ($('#select-icd9').length > 0) {
-        if ($('#select-icd9').hasClass('select2-hidden-accessible')) {
-            $('#select-icd9').select2('destroy');
-        }
-        $('#select-icd9').select2({
-            placeholder: 'Ketik Kode / Deskripsi Prosedur (ICD-9)...',
-            minimumInputLength: 2,
-            ajax: {
-                url: window.RALAN.routes.searchIcd9,
-                dataType: 'json',
-                delay: 250,
-                data: function(params) { return { search: params.term }; },
-                processResults: function(data) { return { results: data }; },
-                cache: true
-            }
-        });
-    }
+    initRemoteSelect('#select-icd10', {
+        url: window.RALAN.routes.searchIcd10,
+        multiple: true,
+        placeholder: 'Ketik Kode / Nama Penyakit (ICD-10)...'
+    });
+    initRemoteSelect('#select-icd9', {
+        url: window.RALAN.routes.searchIcd9,
+        multiple: true,
+        placeholder: 'Ketik Kode / Deskripsi Prosedur (ICD-9)...'
+    });
 }
 
 function initSelect2() {
-    console.log('Initializing select2...');
+    initRemoteSelect('.kd_obat_ajax', {
+        url: window.RALAN.routes.searchObat,
+        multiple: false,
+        minLen: 3,
+        placeholder: 'Ketik Nama Obat / Kode Obat...'
+    });
+    initAturanSelect('.select2-aturan');
+    initAturanSelect('.select2-aturan-racik');
+}
 
-    if ($('.kd_obat_ajax').length > 0 && $('.kd_obat_ajax').hasClass('select2-hidden-accessible')) {
-        $('.kd_obat_ajax').select2('destroy');
-    }
-
-    if ($('.select2-aturan').length > 0 && $('.select2-aturan').hasClass('select2-hidden-accessible')) {
-        $('.select2-aturan').select2('destroy');
-    }
-
-    if ($('.select2-aturan-racik').length > 0 && $('.select2-aturan-racik').hasClass('select2-hidden-accessible')) {
-        $('.select2-aturan-racik').select2('destroy');
-    }
-
-    if ($('.kd_obat_ajax').length > 0) {
-        $('.kd_obat_ajax').select2({
-            placeholder: 'Ketik Nama Obat / Kode Obat...',
-            minimumInputLength: 3,
-            ajax: {
-                url: window.RALAN.routes.searchObat,
-                dataType: 'json',
-                delay: 250,
-                data: function(params) {
-                    return { search: params.term };
-                },
-                processResults: function(data) {
-                    return { results: data };
-                },
-                cache: true
-            }
-        });
-    }
-
-    if ($('.select2-aturan').length > 0) {
-        $('.select2-aturan').select2({
-            width: '100%',
-            placeholder: 'Pilih Aturan Pakai...',
-            allowClear: true
-        });
-    }
-
-    if ($('.select2-aturan-racik').length > 0) {
-        $('.select2-aturan-racik').select2({
-            width: '100%',
-            placeholder: 'Pilih Aturan Pakai...',
-            allowClear: true
-        });
-    }
-
-    console.log('Select2 initialized');
+/* Aturan pakai: pilih dari master, atau ketik baru (create). */
+function initAturanSelect(selector) {
+    var el = document.querySelector(selector);
+    if (!el) return null;
+    if (el.tomselect) el.tomselect.destroy();
+    return new TomSelect(el, {
+        create: true,
+        createOnBlur: true,
+        maxItems: 1,
+        placeholder: 'Pilih / ketik Aturan Pakai...',
+        persist: false,
+        onChange: function() { $(el).trigger('change'); }
+    });
 }
 
 function initSelect2Lab() {
-    console.log('Initializing select2 lab...');
-
-    if ($('#select-lab').length > 0) {
-        if ($('#select-lab').hasClass('select2-hidden-accessible')) {
-            $('#select-lab').select2('destroy');
-        }
-
-        $('#select-lab').select2({
-            placeholder: 'Cari Pemeriksaan Lab...',
-            minimumInputLength: 2,
-            ajax: {
-                url: window.RALAN.routes.searchLab,
-                dataType: 'json',
-                delay: 250,
-                data: function(params) {
-                    return {
-                        search: params.term,
-                        no_rawat: currentNoRawat
-                    };
-                },
-                processResults: function(data) {
-                    return { results: data };
-                },
-                cache: true
-            }
-        });
-
-        console.log('Select2 lab initialized');
-    }
+    initRemoteSelect('#select-lab', {
+        url: window.RALAN.routes.searchLab,
+        multiple: true,
+        withNoRawat: true,
+        placeholder: 'Cari Pemeriksaan Lab...'
+    });
 }
 
 function initSelect2Radiologi() {
-    console.log('Initializing select2 radiologi...');
-
-    if ($('#select-rad').length > 0) {
-        if ($('#select-rad').hasClass('select2-hidden-accessible')) {
-            $('#select-rad').select2('destroy');
-        }
-
-        $('#select-rad').select2({
-            placeholder: 'Cari Pemeriksaan Radiologi...',
-            minimumInputLength: 2,
-            ajax: {
-                url: window.RALAN.routes.searchRadiologi,
-                dataType: 'json',
-                delay: 250,
-                data: function(params) {
-                    return {
-                        search: params.term,
-                        no_rawat: currentNoRawat
-                    };
-                },
-                processResults: function(data) {
-                    return { results: data };
-                },
-                cache: true
-            }
-        });
-
-        console.log('Select2 radiologi initialized');
-    }
+    initRemoteSelect('#select-rad', {
+        url: window.RALAN.routes.searchRadiologi,
+        multiple: true,
+        withNoRawat: true,
+        placeholder: 'Cari Pemeriksaan Radiologi...'
+    });
 }
 
 function updateCheckboxCounter(groupElement) {
@@ -651,9 +585,9 @@ function hapusRadiologi(noorder, kd_jenis_prw = null) {
 
 function resetFormUmum() {
     var form = $('#formResepObat');
-    form.find('select[name="kode_obat"]').val(null).trigger('change');
+    clearRemoteSelect('.kd_obat_ajax');
     form.find('input[name="jumlah"]').val('10');
-    form.find('select[name="aturan_pakai"]').val(null).trigger('change');
+    clearRemoteSelect('.select2-aturan');
     $('#aturanManualUmum').addClass('d-none');
     form.find('input[name="aturan_pakai_lainnya"]').val('');
 }
@@ -663,7 +597,7 @@ function resetFormRacikan() {
     form.find('input[name="nama_racik"]').val('');
     form.find('select[name="kd_racik"]').prop('selectedIndex', 0);
     form.find('input[name="jml_dr"]').val('10');
-    form.find('select[name="aturan_racik"]').val(null).trigger('change');
+    clearRemoteSelect('.select2-aturan-racik');
     $('#aturanManualRacik').addClass('d-none');
     form.find('input[name="aturan_racik_lainnya"]').val('');
 
@@ -913,26 +847,15 @@ $(document).ready(function() {
 
         $('#tableKomposisi tbody').append(row);
 
-        setTimeout(function() {
-            $('.kd_obat_racik_' + rowCount).select2({
-                placeholder: 'Ketik Nama Obat...',
-                minimumInputLength: 3,
-                ajax: {
-                    url: window.RALAN.routes.searchObat,
-                    dataType: 'json',
-                    delay: 250,
-                    data: function(params) {
-                        return { search: params.term };
-                    },
-                    processResults: function(data) {
-                        return { results: data };
-                    },
-                    cache: true
-                }
+        (function(rc) {
+            initRemoteSelect('.kd_obat_racik_' + rc, {
+                url: window.RALAN.routes.searchObat,
+                multiple: false,
+                minLen: 3,
+                placeholder: 'Ketik Nama Obat...'
             });
-
-            hitungJmlBaris($('#row_' + rowCount));
-        }, 100);
+            hitungJmlBaris($('#row_' + rc));
+        })(rowCount);
     });
 
     $(document).on('input', '.p1, .p2, #jml_dr', function() {
@@ -1168,12 +1091,13 @@ $(document).ready(function() {
                 btn.prop('disabled', false).html(originalText);
 
                 tampilkanSukses(res.message || 'Permintaan lab berhasil disimpan');
-                loadFormLab();
 
-                $('#select-lab').val(null).trigger('change');
+                clearRemoteSelect('#select-lab');
                 formContainer.find('textarea').val('');
                 $('#list-template-checkbox').empty();
                 $('#detail-pemeriksaan-placeholder').show();
+
+                loadFormLab();
             },
             error: function(xhr) {
                 console.error('=== LAB SAVE ERROR ===');
@@ -1229,10 +1153,11 @@ $(document).ready(function() {
                 btn.prop('disabled', false).html(originalText);
 
                 tampilkanSukses(res.message || 'Permintaan radiologi berhasil disimpan');
-                loadFormRadiologi();
 
-                $('#select-rad').val(null).trigger('change');
+                clearRemoteSelect('#select-rad');
                 formContainer.find('textarea').val('');
+
+                loadFormRadiologi();
             },
             error: function(xhr) {
                 console.error('=== RADIOLOGI SAVE ERROR ===');
