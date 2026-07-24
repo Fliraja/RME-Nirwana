@@ -2,47 +2,47 @@
     @if(session('success-vital'))
         <div class="alert alert-success alert-dismissible fade show">
             {{ session('success-vital') }}
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
 
-    <form action="{{ route('ralan.store-vital') }}" method="POST">
+    <form action="{{ route('ralan.store-vital') }}" method="POST" id="formVital">
         @csrf
         <input type="hidden" name="no_rawat" value="{{ $pasien->no_rawat }}">
-        
+
         <div class="row">
             <div class="col-md-3">
-                <div class="form-group">
-                    <label class="small font-weight-bold">Tensi (mmHg)</label>
-                    <input type="text" name="tensi" class="form-control form-control-sm" 
+                <div class="mb-3">
+                    <label class="small fw-bold">Tensi (mmHg)</label>
+                    <input type="text" name="tensi" class="form-control form-control-sm"
                            value="{{ $pasien->pemeriksaanRalan->tensi ?? '' }}" placeholder="120/80">
                 </div>
             </div>
             <div class="col-md-2">
-                <div class="form-group">
-                    <label class="small font-weight-bold">Suhu (°C)</label>
-                    <input type="text" name="suhu_tubuh" class="form-control form-control-sm" 
+                <div class="mb-3">
+                    <label class="small fw-bold">Suhu (°C)</label>
+                    <input type="text" name="suhu_tubuh" class="form-control form-control-sm"
                            value="{{ $pasien->pemeriksaanRalan->suhu_tubuh ?? '' }}" placeholder="36.5">
                 </div>
             </div>
             <div class="col-md-2">
-                <div class="form-group">
-                    <label class="small font-weight-bold">Nadi (/mnt)</label>
-                    <input type="text" name="nadi" class="form-control form-control-sm" 
+                <div class="mb-3">
+                    <label class="small fw-bold">Nadi (/mnt)</label>
+                    <input type="text" name="nadi" class="form-control form-control-sm"
                            value="{{ $pasien->pemeriksaanRalan->nadi ?? '' }}">
                 </div>
             </div>
             <div class="col-md-2">
-                <div class="form-group">
-                    <label class="small font-weight-bold">Respirasi</label>
-                    <input type="text" name="respirasi" class="form-control form-control-sm" 
+                <div class="mb-3">
+                    <label class="small fw-bold">Respirasi</label>
+                    <input type="text" name="respirasi" class="form-control form-control-sm"
                            value="{{ $pasien->pemeriksaanRalan->respirasi ?? '' }}">
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="form-group">
-                    <label class="small font-weight-bold">Kesadaran</label>
-                    <select name="kesadaran" class="form-control form-control-sm">
+                <div class="mb-3">
+                    <label class="small fw-bold">Kesadaran</label>
+                    <select name="kesadaran" class="form-select form-select-sm">
                         <option value="Compos Mentis" {{ ($pasien->pemeriksaanRalan->kesadaran ?? '') == 'Compos Mentis' ? 'selected' : '' }}>Compos Mentis</option>
                         <option value="Somnolence" {{ ($pasien->pemeriksaanRalan->kesadaran ?? '') == 'Somnolence' ? 'selected' : '' }}>Somnolence</option>
                         <option value="Sopor" {{ ($pasien->pemeriksaanRalan->kesadaran ?? '') == 'Sopor' ? 'selected' : '' }}>Sopor</option>
@@ -54,39 +54,39 @@
 
         <div class="row">
             <div class="col-md-2">
-                <div class="form-group">
-                    <label class="small font-weight-bold">Tinggi (cm)</label>
+                <div class="mb-3">
+                    <label class="small fw-bold">Tinggi (cm)</label>
                     <input type="text" name="tinggi" class="form-control form-control-sm" value="{{ $pasien->pemeriksaanRalan->tinggi ?? '' }}">
                 </div>
             </div>
             <div class="col-md-2">
-                <div class="form-group">
-                    <label class="small font-weight-bold">Berat (Kg)</label>
+                <div class="mb-3">
+                    <label class="small fw-bold">Berat (Kg)</label>
                     <input type="text" name="berat" class="form-control form-control-sm" value="{{ $pasien->pemeriksaanRalan->berat ?? '' }}">
                 </div>
             </div>
             <div class="col-md-2">
-                <div class="form-group">
-                    <label class="small font-weight-bold">GCS (E,V,M)</label>
+                <div class="mb-3">
+                    <label class="small fw-bold">GCS (E,V,M)</label>
                     <input type="text" name="gcs" class="form-control form-control-sm" value="{{ $pasien->pemeriksaanRalan->gcs ?? '' }}">
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="form-group">
-                    <label class="small font-weight-bold">Alergi</label>
+                <div class="mb-3">
+                    <label class="small fw-bold">Alergi</label>
                     <input type="text" name="alergi" class="form-control form-control-sm" value="{{ $pasien->pemeriksaanRalan->alergi ?? '' }}">
                 </div>
             </div>
         </div>
 
         <button type="submit" class="btn btn-primary btn-sm shadow-sm">
-            <i class="fas fa-save mr-1"></i> Simpan Vital Sign
+            <i class="fas fa-save me-1"></i> Simpan Vital Sign
         </button>
     </form>
 
     <hr>
 
-    <h6 class="font-weight-bold"><i class="fas fa-history mr-1"></i> Data Terakhir Pasien</h6>
+    <h6 class="fw-bold"><i class="fas fa-history me-1"></i> Data Terakhir Pasien</h6>
     <div class="table-responsive">
         <table class="table table-bordered table-sm table-hover">
             <thead class="bg-light text-center small">
@@ -111,7 +111,7 @@
                     <td>{{ $pasien->pemeriksaanRalan->respirasi }}</td>
                     <td>{{ $pasien->pemeriksaanRalan->tinggi }} / {{ $pasien->pemeriksaanRalan->berat }}</td>
                     <td>{{ $pasien->pemeriksaanRalan->gcs }} ({{ $pasien->pemeriksaanRalan->kesadaran }})</td>
-                    <td class="text-left text-danger font-weight-bold">{{ $pasien->pemeriksaanRalan->alergi }}</td>
+                    <td class="text-start text-danger fw-bold">{{ $pasien->pemeriksaanRalan->alergi }}</td>
                 </tr>
                 @else
                 <tr>
