@@ -4,6 +4,7 @@ namespace App\Services\Ralan;
 
 use App\Models\PermintaanRadiologi;
 use App\Models\PermintaanPemeriksaanRadiologi;
+use App\Support\PenjaminResolver;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -13,25 +14,36 @@ class RadiologiService
     /** @return array<int, array{id:string, text:string}> */
     public function cariPemeriksaan(string $search, ?string $noRawat): array
     {
-        $kdPj = '-';
+        $kdPj = null;
+        $statusLanjut = null;
         if ($noRawat) {
             $reg = DB::table('reg_periksa')->where('no_rawat', $noRawat)->first();
             if ($reg) {
                 $kdPj = $reg->kd_pj;
+                $statusLanjut = $reg->status_lanjut;
             }
         }
 
+        $target = PenjaminResolver::radiologiPrefix($statusLanjut, $kdPj);
+
         $rows = DB::table('jns_perawatan_radiologi')
             ->where('status', '1')
-            ->where(function ($q) use ($kdPj) {
-                $q->where('kd_pj', $kdPj)->orWhere('kd_pj', '-');
+            ->where(function ($q) use ($target) {
+                $q->where('kd_jenis_prw', 'like', $target . '%')
+                  ->orWhere(function ($q2) {
+                      $q2->where('kd_jenis_prw', 'not like', 'RAD.RJ%')
+                         ->where('kd_jenis_prw', 'not like', 'RAD.RI%')
+                         ->where('kd_jenis_prw', 'not like', 'RAD.B%')
+                         ->where('kd_jenis_prw', 'not like', 'RAD.P%'); // legacy tetap muncul
+                  });
             })
             ->where(function ($q) use ($search) {
                 $q->where('kd_jenis_prw', 'like', "%$search%")
                   ->orWhere('nm_perawatan', 'like', "%$search%");
             })
-            ->orderByRaw("FIELD(kd_pj, ?, '-')", [$kdPj])
-            ->limit(20)
+            ->orderByRaw('CASE WHEN kd_jenis_prw LIKE ? THEN 0 ELSE 1 END', [$target . '%'])
+            ->orderBy('kd_jenis_prw')
+            ->limit(30)
             ->get();
 
         return $rows->map(fn ($p) => [
