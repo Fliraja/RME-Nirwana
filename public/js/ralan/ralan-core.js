@@ -829,9 +829,7 @@ $(document).ready(function() {
                 if(response.status === 'success' || response.status === 'success-obat') {
                     tampilkanSukses(response.message);
                     resetFormUmum();
-                    setTimeout(function() {
-                        loadResep();
-                    }, 1000);
+                    loadResep();
                 } else {
                     tampilkanError(response.message || "Gagal menyimpan resep");
                 }
@@ -999,10 +997,8 @@ $(document).ready(function() {
 
                 if(response.status === 'success' || response.status === 'success-racik') {
                     tampilkanSukses(response.message || 'Resep racikan berhasil disimpan');
-                    setTimeout(function() {
-                        resetFormRacikan();
-                        loadResep();
-                    }, 2000);
+                    resetFormRacikan();
+                    loadResep();
                 } else {
                     tampilkanError(response.message || "Gagal menyimpan resep racikan");
                 }
@@ -1172,9 +1168,7 @@ $(document).ready(function() {
                 btn.prop('disabled', false).html(originalText);
 
                 tampilkanSukses(res.message || 'Permintaan lab berhasil disimpan');
-                setTimeout(function() {
-                        loadFormLab();
-                    }, 2000);
+                loadFormLab();
 
                 $('#select-lab').val(null).trigger('change');
                 formContainer.find('textarea').val('');
@@ -1235,10 +1229,7 @@ $(document).ready(function() {
                 btn.prop('disabled', false).html(originalText);
 
                 tampilkanSukses(res.message || 'Permintaan radiologi berhasil disimpan');
-
-                setTimeout(function() {
-                    loadFormRadiologi();
-                }, 1500);
+                loadFormRadiologi();
 
                 $('#select-rad').val(null).trigger('change');
                 formContainer.find('textarea').val('');
