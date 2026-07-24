@@ -74,6 +74,8 @@ class ResepController extends Controller
             }
 
             foreach ($request->obat as $item) {
+                $this->ensureAturan($item['aturan_pakai']);
+
                 ResepDokter::updateOrCreate(
                     [
                         'no_resep'  => $resep->no_resep,
@@ -139,6 +141,11 @@ class ResepController extends Controller
                 ]);
             }
 
+            $aturanRacik = $request->aturan_racik === 'lainnya'
+                ? ($request->aturan_racik_lainnya ?? '')
+                : $request->aturan_racik;
+            $this->ensureAturan($aturanRacik);
+
             $no_racik = DB::table('resep_dokter_racikan')
                 ->where('no_resep', $resep->no_resep)
                 ->max('no_racik') ?? 0;
@@ -150,7 +157,7 @@ class ResepController extends Controller
                 'nama_racik'   => $request->nama_racik,
                 'kd_racik'     => $request->kd_racik,
                 'jml_dr'       => $request->jml_dr,
-                'aturan_pakai' => $request->aturan_racik,
+                'aturan_pakai' => $aturanRacik,
                 'keterangan'   => $request->keterangan ?? '-',
             ]);
 
@@ -236,6 +243,18 @@ class ResepController extends Controller
                 ], 500);
             }
         });
+    }
+
+    /** Simpan aturan pakai baru ke master bila belum ada. */
+    private function ensureAturan(?string $aturan): void
+    {
+        $aturan = trim((string) $aturan);
+        if ($aturan === '' || $aturan === '-' || mb_strlen($aturan) > 40) {
+            return;
+        }
+        if (! DB::table('master_aturan_pakai')->where('aturan', $aturan)->exists()) {
+            DB::table('master_aturan_pakai')->insert(['aturan' => $aturan]);
+        }
     }
 
     public function getObat(Request $request)
