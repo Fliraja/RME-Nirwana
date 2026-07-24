@@ -1120,7 +1120,92 @@ a:hover {
 .ts-control {
     min-height: calc(2.25rem + 2px);
     border-radius: 0.375rem;
+    border-color: #dee2e6;
 }
+.ts-control:focus-within {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+.ts-dropdown { border-color: #dee2e6; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08); }
+
+/* ===== Ralan — flat & clean UI ===== */
+.ralan-tabs.nav-tabs { border-bottom: 1px solid #e5e7eb; gap: 0.25rem; }
+.ralan-tabs.nav-tabs .nav-link {
+    border: none;
+    background: transparent;
+    color: #6b7280;
+    font-weight: 500;
+    font-size: 0.85rem;
+    letter-spacing: 0.01em;
+    padding: 0.6rem 1rem;
+    border-bottom: 2px solid transparent;
+}
+.ralan-tabs.nav-tabs .nav-link:hover { color: #0d6efd; }
+.ralan-tabs.nav-tabs .nav-link.active {
+    color: #0d6efd;
+    background: transparent;
+    border-bottom: 2px solid #0d6efd;
+}
+
+.ralan-panel { border: 1px solid #e5e7eb; border-radius: 0.5rem; background: #fff; }
+
+/* Lab template checkbox groups — flat */
+.checkbox-controls {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #eef0f2;
+}
+.checkbox-controls .btn-check-control {
+    font-size: 0.78rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 0.35rem;
+    border: 1px solid #d7dbe0;
+    background: #fff;
+    color: #495057;
+    transition: background-color 0.15s;
+}
+.checkbox-controls .btn-check-all:hover { background: #e8f5ee; color: #198754; border-color: #a9d9be; }
+.checkbox-controls .btn-uncheck-all:hover { background: #fbeaec; color: #dc3545; border-color: #efb6bd; }
+.checkbox-controls .badge-count {
+    background: #f1f3f5;
+    color: #6b7280;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.35rem;
+    font-size: 0.72rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+.group-template {
+    border: 1px solid #e9ecef;
+    border-radius: 0.5rem;
+    padding: 0.85rem;
+    margin-bottom: 0.85rem;
+}
+.group-template .group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.6rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid #eef0f2;
+}
+.group-template .group-title { font-weight: 600; color: #374151; font-size: 0.85rem; }
+.form-check { padding: 0.35rem 0.5rem; border-radius: 0.35rem; transition: background-color 0.15s; }
+.form-check:hover { background: #f8f9fa; }
+.form-check-label { cursor: pointer; user-select: none; }
+
+/* Resep sub-tabs — flat pills */
+#pills-tab-resep .nav-link {
+    color: #495057;
+    background: #f1f3f5;
+    border: 1px solid transparent;
+    margin-right: 5px;
+    font-size: 0.85rem;
+}
+#pills-tab-resep .nav-link.active { color: #fff; background: #0d6efd; }
 
 /* ===== dipindah dari resep.blade.php ===== */
 .nav-pills .nav-link { border-radius: 0.25rem; transition: all 0.3s ease; }
