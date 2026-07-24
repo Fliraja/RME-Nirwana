@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row ralan-resep">
     <div class="col-md-12">
         <ul class="nav nav-tabs nav-pills mb-3 bg-light p-2 rounded" id="pills-tab-resep" role="tablist">
             <li class="nav-item" role="presentation">
@@ -172,53 +172,3 @@
         </div>
     </div>
 </div>
-
-<style>
-/* Styling tambahan untuk konsistensi */
-.nav-pills .nav-link {
-    border-radius: 0.25rem;
-    transition: all 0.3s ease;
-}
-
-.nav-pills .nav-link:hover {
-    background-color: #e9ecef;
-}
-
-.nav-pills .nav-link.active {
-    background-color: #0d6efd;
-    color: white !important;
-}
-
-.card {
-    box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
-}
-
-.card-header {
-    font-weight: 600;
-}
-
-.table th {
-    font-weight: 600;
-    background-color: #f8f9fa;
-}
-
-.btn-sm {
-    padding: 0.25rem 0.75rem;
-    font-size: 0.875rem;
-}
-
-/* Responsiveness */
-@media (max-width: 768px) {
-    .row > [class*='col-'] {
-        margin-bottom: 0.5rem;
-    }
-    
-    .d-flex.gap-2 {
-        flex-direction: column;
-    }
-    
-    .d-flex.gap-2 > .btn {
-        width: 100%;
-    }
-}
-</style>

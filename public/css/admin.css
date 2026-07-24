@@ -1109,8 +1109,49 @@ a:hover {
     .navbar-search {
         display: none;
     }
-    
+
     .page-title {
         font-size: 20px;
     }
+}
+
+/* ===== Select2 x Bootstrap 5 alignment ===== */
+.select2-container .select2-selection--single {
+    height: calc(2.25rem + 2px);
+    display: flex;
+    align-items: center;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+}
+.select2-container .select2-selection--single .select2-selection__rendered {
+    line-height: 1.5;
+    padding-left: 0.75rem;
+}
+.select2-container .select2-selection--single .select2-selection__arrow {
+    height: calc(2.25rem);
+}
+.select2-container--default .select2-selection--multiple {
+    min-height: calc(2.25rem + 2px);
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+}
+.select2-container--open .select2-dropdown {
+    border-color: #86b7fe;
+}
+.select2-search--dropdown .select2-search__field {
+    padding: 0.375rem 0.5rem;
+}
+.select2-container { width: 100% !important; }
+
+/* ===== dipindah dari resep.blade.php ===== */
+.nav-pills .nav-link { border-radius: 0.25rem; transition: all 0.3s ease; }
+.nav-pills .nav-link:hover { background-color: #e9ecef; }
+.nav-pills .nav-link.active { background-color: #0d6efd; color: #fff !important; }
+.ralan-resep .card { box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); }
+.ralan-resep .card-header { font-weight: 600; }
+.ralan-resep .table th { font-weight: 600; background-color: #f8f9fa; }
+
+@media (max-width: 768px) {
+    .ralan-resep .d-flex.gap-2 { flex-direction: column; }
+    .ralan-resep .d-flex.gap-2 > .btn { width: 100%; }
 }
