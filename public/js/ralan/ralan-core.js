@@ -624,10 +624,8 @@ function hapusRadiologi(noorder, kd_jenis_prw = null) {
 function resetFormUmum() {
     var form = $('#formResepObat');
     clearRemoteSelect('.kd_obat_ajax');
-    form.find('input[name="jumlah"]').val('10');
+    form.find('input[name="jumlah"]').val('1');
     clearRemoteSelect('.select2-aturan');
-    $('#aturanManualUmum').addClass('d-none');
-    form.find('input[name="aturan_pakai_lainnya"]').val('');
 }
 
 function resetFormRacikan() {
@@ -751,75 +749,71 @@ $(document).ready(function() {
         });
     });
 
-    $(document).on('click', '#btnTambahObat', function(e) {
-        e.preventDefault();
-        console.log('=== TAMBAH OBAT UMUM ===');
-
+    // Tambah obat ke daftar staging (belum simpan)
+    $(document).on('click', '#btnTambahObat', function() {
         var form = $('#formResepObat');
-        var kodeObat = form.find('select[name="kode_obat"]').val();
+        var obatEl = document.querySelector('.kd_obat_ajax');
+        var obatTs = obatEl ? obatEl.tomselect : null;
+        var kode = obatTs ? obatTs.getValue() : '';
         var jumlah = form.find('input[name="jumlah"]').val();
-        var aturanPakaiSelect = form.find('select[name="aturan_pakai"]').val();
-        var aturanPakaiManual = form.find('input[name="aturan_pakai_lainnya"]').val();
+        var aturanEl = document.querySelector('.select2-aturan');
+        var aturan = (aturanEl && aturanEl.tomselect) ? aturanEl.tomselect.getValue() : form.find('select[name="aturan_pakai"]').val();
 
-        if (!kodeObat) {
-            tampilkanError("Silakan pilih obat terlebih dahulu");
-            return false;
-        }
+        if (!kode) { tampilkanError('Silakan pilih obat terlebih dahulu.'); return; }
+        if (!jumlah || jumlah <= 0) { tampilkanError('Jumlah obat harus lebih dari 0.'); return; }
+        if (!aturan) { tampilkanError('Silakan isi aturan pakai.'); return; }
+        if ($('#staging-obat tr[data-kode="' + kode + '"]').length) { tampilkanError('Obat sudah ada di daftar.'); return; }
 
-        if (!jumlah || jumlah <= 0) {
-            tampilkanError("Jumlah obat harus lebih dari 0");
-            return false;
-        }
+        var nama = (obatTs.options[kode] ? obatTs.options[kode].text : kode);
+        var esc = function(s) { return $('<div>').text(s).html(); };
 
-        var aturanPakai = aturanPakaiSelect === 'lainnya' ? aturanPakaiManual : aturanPakaiSelect;
+        $('#staging-obat .staging-empty').remove();
+        $('#staging-obat').append(
+            '<tr data-kode="' + esc(kode) + '" data-jumlah="' + esc(jumlah) + '" data-aturan="' + esc(aturan) + '">' +
+            '<td class="small">' + esc(nama) + '</td>' +
+            '<td class="small">' + esc(jumlah) + '</td>' +
+            '<td class="small">' + esc(aturan) + '</td>' +
+            '<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger border-0 staging-remove"><i class="fas fa-times"></i></button></td>' +
+            '</tr>'
+        );
 
-        if (!aturanPakai) {
-            tampilkanError("Silakan isi aturan pakai");
-            return false;
-        }
+        resetFormUmum();
+    });
 
-        var formData = {
-            _token: $('meta[name="csrf-token"]').attr('content') || form.find('input[name="_token"]').val() || window.RALAN.csrf,
-            no_rawat: form.find('input[name="no_rawat"]').val(),
-            kode_obat: kodeObat,
-            jumlah: jumlah,
-            aturan_pakai: aturanPakai
-        };
+    // Simpan semua obat non-racikan sekaligus
+    $(document).on('click', '#btnSimpanResepObat', function() {
+        var rows = $('#staging-obat tr[data-kode]');
+        if (!rows.length) { tampilkanError('Belum ada obat di daftar.'); return; }
+
+        var obat = [];
+        rows.each(function() {
+            obat.push({
+                kode_obat: $(this).attr('data-kode'),
+                jumlah: $(this).attr('data-jumlah'),
+                aturan_pakai: $(this).attr('data-aturan')
+            });
+        });
 
         var btn = $(this);
-        var originalText = btn.html();
+        var original = btn.html();
         btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Menyimpan...');
 
         $.ajax({
             url: window.RALAN.routes.storeResepObat,
-            method: "POST",
-            data: formData,
-            success: function(response) {
-                console.log('Success:', response);
-                btn.prop('disabled', false).html(originalText);
-
-                if(response.status === 'success' || response.status === 'success-obat') {
-                    tampilkanSukses(response.message);
-                    resetFormUmum();
-                    loadResep();
-                } else {
-                    tampilkanError(response.message || "Gagal menyimpan resep");
-                }
+            method: 'POST',
+            data: {
+                _token: window.RALAN.csrf,
+                no_rawat: $('#formResepObat input[name="no_rawat"]').val(),
+                obat: obat
+            },
+            success: function(res) {
+                btn.prop('disabled', false).html(original);
+                tampilkanSukses(res.message || 'Resep obat berhasil disimpan');
+                loadResep();
             },
             error: function(xhr) {
-                console.error('Error:', xhr);
-                btn.prop('disabled', false).html(originalText);
-
-                var errorMsg = "Gagal menyimpan resep";
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMsg = xhr.responseJSON.message;
-                } else if (xhr.status === 422) {
-                    errorMsg = "Data yang diinput tidak valid";
-                } else if (xhr.status === 500) {
-                    errorMsg = "Terjadi kesalahan server";
-                }
-
-                tampilkanError(errorMsg);
+                btn.prop('disabled', false).html(original);
+                tampilkanError(xhr.responseJSON?.message || 'Gagal menyimpan resep.');
             }
         });
     });
@@ -1209,10 +1203,9 @@ $(document).ready(function() {
         var tbody = $(this).closest('tbody');
         $(this).closest('tr').remove();
         if (tbody.find('tr[data-kode]').length === 0) {
-            var isProsedur = tbody.attr('id') === 'staging-prosedur';
-            var cols = isProsedur ? 4 : 3;
-            var label = isProsedur ? 'prosedur' : 'diagnosa';
-            tbody.append('<tr class="staging-empty"><td colspan="' + cols + '" class="text-center text-muted small py-2">Belum ada ' + label + ' dipilih</td></tr>');
+            var cols = tbody.data('cols') || 3;
+            var empty = tbody.data('empty') || 'Kosong';
+            tbody.append('<tr class="staging-empty"><td colspan="' + cols + '" class="text-center text-muted small py-2">' + empty + '</td></tr>');
         }
     });
 

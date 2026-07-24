@@ -20,7 +20,7 @@
                                 <th style="width: 44px;"></th>
                             </tr>
                         </thead>
-                        <tbody id="staging-diagnosa">
+                        <tbody id="staging-diagnosa" data-cols="3" data-empty="Belum ada diagnosa dipilih">
                             <tr class="staging-empty"><td colspan="3" class="text-center text-muted small py-2">Belum ada diagnosa dipilih</td></tr>
                         </tbody>
                     </table>
@@ -91,7 +91,7 @@
                                 <th style="width: 44px;"></th>
                             </tr>
                         </thead>
-                        <tbody id="staging-prosedur">
+                        <tbody id="staging-prosedur" data-cols="4" data-empty="Belum ada prosedur dipilih">
                             <tr class="staging-empty"><td colspan="4" class="text-center text-muted small py-2">Belum ada prosedur dipilih</td></tr>
                         </tbody>
                     </table>

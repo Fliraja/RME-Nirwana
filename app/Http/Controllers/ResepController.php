@@ -36,9 +36,11 @@ class ResepController extends Controller
     public function storeResepObat(Request $request)
     {
         $request->validate([
-            'no_rawat' => 'required',
-            'kode_obat' => 'required',
-            'jumlah' => 'required|numeric|min:1',
+            'no_rawat'            => 'required',
+            'obat'                => 'required|array|min:1',
+            'obat.*.kode_obat'    => 'required',
+            'obat.*.jumlah'       => 'required|numeric|min:1',
+            'obat.*.aturan_pakai' => 'required|string',
         ]);
 
         return DB::transaction(function () use ($request) {
@@ -52,39 +54,41 @@ class ResepController extends Controller
             if (!$resep) {
                 $lastNo = ResepObat::where('tgl_peresepan', $tgl_sekarang)
                     ->max(DB::raw('CONVERT(RIGHT(no_resep, 10), signed)')) ?? 0;
-                
-                $nextNoResep = date('Ymd') . sprintf('%04s', ($lastNo + 1)); 
+
+                $nextNoResep = date('Ymd') . sprintf('%04s', ($lastNo + 1));
 
                 $kd_dokter = Auth::user()->decrypted_id;
 
                 $resep = ResepObat::create([
-                    'no_resep'      => $nextNoResep,
-                    'tgl_perawatan' => $tgl_sekarang,
-                    'jam' => $jam_sekarang,
-                    'no_rawat'      => $request->no_rawat,
-                    'kd_dokter'     => $kd_dokter, 
-                    'tgl_peresepan' => $tgl_sekarang,
-                    'jam_peresepan' => $jam_sekarang,
-                    'status'        => 'ralan',
-                    'tgl_penyerahan'        => null,
-                    'jam_penyerahan'        => null,
+                    'no_resep'       => $nextNoResep,
+                    'tgl_perawatan'  => $tgl_sekarang,
+                    'jam'            => $jam_sekarang,
+                    'no_rawat'       => $request->no_rawat,
+                    'kd_dokter'      => $kd_dokter,
+                    'tgl_peresepan'  => $tgl_sekarang,
+                    'jam_peresepan'  => $jam_sekarang,
+                    'status'         => 'ralan',
+                    'tgl_penyerahan' => null,
+                    'jam_penyerahan' => null,
                 ]);
             }
 
-            ResepDokter::updateOrCreate(
-                [
-                    'no_resep'  => $resep->no_resep,
-                    'kode_brng' => $request->kode_obat
-                ],
-                [
-                    'jml'           => $request->jumlah,
-                    'aturan_pakai'  => $request->aturan_pakai == 'lainnya' ? $request->aturan_pakai_lainnya : $request->aturan_pakai
-                ]
-            );
+            foreach ($request->obat as $item) {
+                ResepDokter::updateOrCreate(
+                    [
+                        'no_resep'  => $resep->no_resep,
+                        'kode_brng' => $item['kode_obat'],
+                    ],
+                    [
+                        'jml'          => $item['jumlah'],
+                        'aturan_pakai' => $item['aturan_pakai'],
+                    ]
+                );
+            }
 
             return response()->json([
-                'status' => 'success-obat',
-                'message' => 'Obat berhasil ditambahkan ke resep'
+                'status'  => 'success-obat',
+                'message' => count($request->obat) . ' obat berhasil disimpan ke resep',
             ]);
         });
     }
