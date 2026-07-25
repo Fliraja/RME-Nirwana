@@ -33,6 +33,22 @@ class ResepController extends Controller
         return view('ralan.resep', compact('resep', 'pasien', 'masterAturan', 'masterMetode'));
     }
 
+    public function getResepTable($no_rawat)
+    {
+        $no_rawat = str_replace('-', '/', $no_rawat);
+
+        $resep = ResepObat::with([
+            'resepDokter.dataBarang',
+            'resepRacikan.detailRacikan.dataBarang',
+            'resepRacikan.metodeRacik'
+            ])
+            ->where('no_rawat', $no_rawat)
+            ->where('tgl_peresepan', date('Y-m-d'))
+            ->first();
+
+        return view('ralan.resep_table', compact('resep'));
+    }
+
     public function storeResepObat(Request $request)
     {
         $request->validate([

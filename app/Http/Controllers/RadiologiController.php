@@ -29,6 +29,18 @@ class RadiologiController extends Controller
         return view('ralan.radiologi', compact('pasien', 'riwayat'));
     }
 
+    public function getRadiologiTable($no_rawat)
+    {
+        $no_rawat = str_replace('-', '/', $no_rawat);
+
+        $riwayat = PermintaanRadiologi::with(['pemeriksaan.jenisPerawatan'])
+            ->where('no_rawat', $no_rawat)
+            ->where('tgl_permintaan', date('Y-m-d'))
+            ->get();
+
+        return view('ralan.radiologi_table', compact('riwayat'));
+    }
+
     public function getPemeriksaanRadiologi(Request $request)
     {
         return response()->json(
