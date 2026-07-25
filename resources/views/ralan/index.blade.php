@@ -76,22 +76,22 @@
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" id="diagnosa-prosedur-tab" data-bs-toggle="tab" href="#diagnosa-prosedur">
-                                        <i class="fas fa-stethoscope me-1"></i> DIAGNOSA & PROSEDUR
+                                        <i class="fas fa-stethoscope me-1"></i> DIAGNOSA
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" id="vital-sign-tab" data-bs-toggle="tab" href="#pemeriksaan-vital-sign">
-                                        <i class="fas fa-heartbeat me-1"></i> VITAL-SIGN
+                                        <i class="fas fa-heartbeat me-1"></i> TTV
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" id="permintaan-lab-tab" data-bs-toggle="tab" href="#permintaan-lab">
-                                        <i class="fas fa-flask me-1"></i> PERMINTAAN LAB
+                                        <i class="fas fa-flask me-1"></i> LAB
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" id="permintaan-radiologi-tab" data-bs-toggle="tab" href="#permintaan-radiologi">
-                                        <i class="fas fa-x-ray me-1"></i> PERMINTAAN RAD
+                                        <i class="fas fa-x-ray me-1"></i> RADIOLOGI
                                     </a>
                                 </li>
                                 <li class="nav-item">

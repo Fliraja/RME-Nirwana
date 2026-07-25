@@ -1129,17 +1129,28 @@ a:hover {
 .ts-dropdown { border-color: #dee2e6; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08); }
 
 /* ===== Ralan — flat & clean UI ===== */
-.ralan-tabs.nav-tabs { border-bottom: 1px solid #e5e7eb; gap: 0.25rem; }
+.ralan-tabs.nav-tabs {
+    border-bottom: 1px solid #e5e7eb;
+    flex-wrap: nowrap;             /* semua tab tetap sebaris */
+    overflow-x: auto;             /* scroll horizontal di layar sempit */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+.ralan-tabs.nav-tabs .nav-item { flex: 1 1 0; }
 .ralan-tabs.nav-tabs .nav-link {
     border: none;
     background: transparent;
     color: #6b7280;
     font-weight: 500;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     letter-spacing: 0.01em;
-    padding: 0.6rem 1rem;
+    padding: 0.55rem 0.5rem;
     border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    text-align: center;
+    width: 100%;
 }
+.ralan-tabs.nav-tabs .nav-link i { opacity: 0.8; }
 .ralan-tabs.nav-tabs .nav-link:hover { color: #0d6efd; }
 .ralan-tabs.nav-tabs .nav-link.active {
     color: #0d6efd;

@@ -46,6 +46,7 @@ function initRemoteSelect(selector, opts) {
         searchField: 'text',
         maxItems: opts.multiple ? null : 1,
         maxOptions: 50,
+        loadThrottle: 200,
         placeholder: opts.placeholder || 'Ketik untuk mencari...',
         plugins: opts.multiple ? ['remove_button'] : [],
         load: function(query, callback) {
