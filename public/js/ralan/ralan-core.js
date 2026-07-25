@@ -59,7 +59,6 @@ function initRemoteSelect(selector, opts) {
                 .catch(function() { callback(); });
         },
         shouldLoad: function(q) { return q.length >= minLen; },
-        onChange: function() { $(el).trigger('change'); },
         onItemAdd: function(value, $item) {
             if (typeof opts.onItemAdd === 'function') {
                 var data = this.options[value] || { id: value, text: value };
@@ -302,8 +301,7 @@ function initAturanSelect(selector) {
         createOnBlur: true,
         maxItems: 1,
         placeholder: 'Pilih / ketik Aturan Pakai...',
-        persist: false,
-        onChange: function() { $(el).trigger('change'); }
+        persist: false
     });
 }
 
@@ -409,16 +407,16 @@ function prosesHapusObat(no_resep, kode_brng) {
                         timer: 1500,
                         showConfirmButton: false
                     }).then(function() {
-                        loadResep();
+                        loadResep(true);
                     });
                 } else if (typeof swal !== 'undefined') {
                     swal("Terhapus!", response.message || 'Data berhasil dihapus', "success");
                     setTimeout(function() {
-                        loadResep();
+                        loadResep(true);
                     }, 1000);
                 } else {
                     alert('Data berhasil dihapus');
-                    loadResep();
+                    loadResep(true);
                 }
             } else {
                 tampilkanError(response.message || "Gagal menghapus obat");
@@ -509,16 +507,16 @@ function prosesHapusRacikan(no_resep, no_racik) {
                         timer: 1500,
                         showConfirmButton: false
                     }).then(function() {
-                        loadResep();
+                        loadResep(true);
                     });
                 } else if (typeof swal !== 'undefined') {
                     swal("Terhapus!", response.message || 'Data berhasil dihapus', "success");
                     setTimeout(function() {
-                        loadResep();
+                        loadResep(true);
                     }, 1000);
                 } else {
                     alert('Data berhasil dihapus');
-                    loadResep();
+                    loadResep(true);
                 }
             } else {
                 tampilkanError(response.message || "Gagal menghapus obat");
@@ -572,7 +570,7 @@ function hapusLab(noorder, kd_jenis_prw = null, id_template = null) {
                 data: { _token: window.RALAN.csrf, _method: 'DELETE' },
                 success: function(res) {
                     tampilkanSukses(res.message);
-                    loadFormLab();
+                    loadFormLab(true);
                 },
                 error: function(xhr) {
                     tampilkanError(xhr.responseJSON?.message || "Gagal menghapus.");
@@ -612,7 +610,7 @@ function hapusRadiologi(noorder, kd_jenis_prw = null) {
                 },
                 success: function(res) {
                     tampilkanSukses(res.message);
-                    loadFormRadiologi();
+                    loadFormRadiologi(true);
                 },
                 error: function(xhr) {
                     tampilkanError(xhr.responseJSON?.message || "Gagal menghapus.");
@@ -810,7 +808,7 @@ $(document).ready(function() {
             success: function(res) {
                 btn.prop('disabled', false).html(original);
                 tampilkanSukses(res.message || 'Resep obat berhasil disimpan');
-                loadResep();
+                loadResep(true);
             },
             error: function(xhr) {
                 btn.prop('disabled', false).html(original);
@@ -954,7 +952,7 @@ $(document).ready(function() {
                 if(response.status === 'success' || response.status === 'success-racik') {
                     tampilkanSukses(response.message || 'Resep racikan berhasil disimpan');
                     resetFormRacikan();
-                    loadResep();
+                    loadResep(true);
                 } else {
                     tampilkanError(response.message || "Gagal menyimpan resep racikan");
                 }
@@ -1130,7 +1128,7 @@ $(document).ready(function() {
                 $('#list-template-checkbox').empty();
                 $('#detail-pemeriksaan-placeholder').show();
 
-                loadFormLab();
+                loadFormLab(true);
             },
             error: function(xhr) {
                 console.error('=== LAB SAVE ERROR ===');
@@ -1190,7 +1188,7 @@ $(document).ready(function() {
                 clearRemoteSelect('#select-rad');
                 formContainer.find('textarea').val('');
 
-                loadFormRadiologi();
+                loadFormRadiologi(true);
             },
             error: function(xhr) {
                 console.error('=== RADIOLOGI SAVE ERROR ===');
