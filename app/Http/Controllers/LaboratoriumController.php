@@ -29,6 +29,18 @@ class LaboratoriumController extends Controller
         return view('ralan.lab', compact('pasien', 'riwayat'));
     }
 
+    public function getLabTable($no_rawat)
+    {
+        $no_rawat = str_replace('-', '/', $no_rawat);
+
+        $riwayat = PermintaanLab::with(['pemeriksaan.jenisPerawatan'])
+            ->where('no_rawat', $no_rawat)
+            ->where('tgl_permintaan', date('Y-m-d'))
+            ->get();
+
+        return view('ralan.lab_table', compact('riwayat'));
+    }
+
     public function getPemeriksaan(Request $request)
     {
         return response()->json(

@@ -31,6 +31,7 @@ Route::middleware(['multi.auth'])->group(function () {
 
     //Resep Obat
     Route::get('/ralan/get-resep-pasien/{no_rawat}', [ResepController::class, 'getResepPasien'])->name('ralan.get-resep');
+    Route::get('/ralan/get-resep-table/{no_rawat}', [ResepController::class, 'getResepTable'])->name('ralan.get-resep-table');
     Route::post('/ralan/store-resep-obat', [ResepController::class, 'storeResepObat'])->name('ralan.store-resep-obat');
     Route::delete('/ralan/delete-resep-obat/{no_resep}/{kode_brng}', [ResepController::class, 'deleteResepObat'])->name('ralan.delete-resep-obat');
     Route::get('/ralan/search-obat', [ResepController::class, 'getObat'])->name('ralan.search-obat');
@@ -39,6 +40,7 @@ Route::middleware(['multi.auth'])->group(function () {
 
     //Laboratorium
     Route::get('/ralan/get-lab-pasien/{no_rawat}', [LaboratoriumController::class, 'getLabPasien'])->name('ralan.get-lab-pasien');
+    Route::get('/ralan/get-lab-table/{no_rawat}', [LaboratoriumController::class, 'getLabTable'])->name('ralan.get-lab-table');
     Route::get('/ralan/search-pemeriksaan-lab', [LaboratoriumController::class, 'getPemeriksaan'])->name('ralan.search-lab');
     Route::get('/ralan/get-templates-lab/{kd_jenis_prw}', [LaboratoriumController::class, 'getTemplates'])->name('ralan.get-templates-lab');
     Route::post('/ralan/store-permintaan-lab', [LaboratoriumController::class, 'storePermintaanLab'])->name('ralan.store-lab');
@@ -46,6 +48,7 @@ Route::middleware(['multi.auth'])->group(function () {
 
     //Radiologi
     Route::get('/ralan/get-radiologi-pasien/{no_rawat}', [RadiologiController::class, 'getRadiologiPasien'])->name('ralan.get-radiologi-pasien');
+    Route::get('/ralan/get-radiologi-table/{no_rawat}', [RadiologiController::class, 'getRadiologiTable'])->name('ralan.get-radiologi-table');
     Route::get('/ralan/search-pemeriksaan-radiologi', [RadiologiController::class, 'getPemeriksaanRadiologi'])->name('ralan.search-radiologi');
     Route::post('/ralan/store-permintaan-radiologi', [RadiologiController::class, 'storePermintaanRadiologi'])->name('ralan.store-radiologi');
     Route::delete('/ralan/delete-radiologi/{noorder}/{kd_jenis_prw?}', [RadiologiController::class, 'destroyRadiologi'])->name('ralan.delete-radiologi');
