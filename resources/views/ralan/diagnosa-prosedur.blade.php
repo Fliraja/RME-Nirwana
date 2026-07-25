@@ -1,80 +1,68 @@
 {{-- File: resources/views/ralan/diagnosa-prosedur.blade.php --}}
 
-<div class="row mt-3">
-    <!-- Section Diagnosa (ICD-10) -->
-    <div class="col-md-6 mb-4">
-        <div class="card shadow-sm border-0 h-100">
-            <div class="card-header bg-primary text-white d-flex align-items-center">
-                <i class="fas fa-stethoscope me-2"></i>
-                <h6 class="mb-0 fw-bold">Diagnosa (ICD-10)</h6>
+<div class="row g-3 mt-1" id="diagnosa-prosedur-wrap" data-no-rawat="{{ $no_rawat }}">
+    <!-- Diagnosa (ICD-10) -->
+    <div class="col-lg-6">
+        <div class="ralan-card h-100">
+            <div class="ralan-card-head">
+                <span><i class="fas fa-stethoscope me-2 text-primary"></i>Diagnosa (ICD-10)</span>
             </div>
-            <div class="card-body">
-                <form id="form-diagnosa" class="mb-3">
-                    @csrf
-                    <input type="hidden" name="no_rawat" value="{{ $no_rawat }}">
-                    
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Cari Kode / Nama Penyakit (ICD-10)</label>
-                        <select id="select-icd10" name="kd_penyakit[]" class="form-select" multiple="multiple" style="width: 100%;"></select>
-                    </div>
+            <div class="ralan-card-body">
+                <label class="form-label small fw-semibold text-muted">Cari kode / nama penyakit</label>
+                <select id="select-icd10" placeholder="Ketik kode / nama penyakit..."></select>
 
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Prioritas</label>
-                            <select name="prioritas" class="form-select">
-                                <option value="1">1 - Diagnosa Utama</option>
-                                <option value="2" selected>2 - Diagnosa Sekunder</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Status Penyakit</label>
-                            <select name="status_penyakit" class="form-select">
-                                <option value="Lama" selected>Lama</option>
-                                <option value="Baru">Baru</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <button type="button" id="btn-simpan-diagnosa" class="btn btn-primary w-100">
-                        <i class="fas fa-plus-circle me-1"></i> Tambah Diagnosa
-                    </button>
-                </form>
-
-                <h6 class="fw-bold mt-4 mb-2">Daftar Diagnosa Pasien</h6>
-                <div class="table-responsive">
-                    <table class="table table-sm table-bordered align-middle" id="table-diagnosa">
-                        <thead class="table-light">
-                            <tr>
-                                <th style="width: 15%;">Kode</th>
+                <div class="table-responsive mt-3">
+                    <table class="table table-sm align-middle mb-2">
+                        <thead>
+                            <tr class="small text-muted">
+                                <th style="width: 22%;">Kode</th>
                                 <th>Nama Penyakit</th>
-                                <th style="width: 15%;">Prioritas</th>
-                                <th style="width: 15%;">Status</th>
-                                <th style="width: 10%; text-align: center;">Aksi</th>
+                                <th style="width: 44px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="staging-diagnosa" data-cols="3" data-empty="Belum ada diagnosa dipilih">
+                            <tr class="staging-empty"><td colspan="3" class="text-center text-muted small py-2">Belum ada diagnosa dipilih</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <button type="button" id="btn-simpan-diagnosa" class="btn btn-primary btn-sm w-100">
+                    <i class="fas fa-save me-1"></i> Simpan Diagnosa
+                </button>
+
+                <hr class="my-3">
+
+                <div class="small fw-semibold text-muted mb-2">Diagnosa tersimpan</div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered align-middle mb-0">
+                        <thead class="table-light">
+                            <tr class="small">
+                                <th style="width: 22%;">Kode</th>
+                                <th>Nama Penyakit</th>
+                                <th style="width: 90px;">Prioritas</th>
+                                <th style="width: 44px;"></th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse($diagnosa as $d)
                                 <tr>
-                                    <td><span class="badge bg-secondary">{{ $d->kd_penyakit }}</span></td>
-                                    <td>{{ $d->penyakit->nm_penyakit ?? '-' }}</td>
+                                    <td><span class="badge bg-light text-dark border">{{ $d->kd_penyakit }}</span></td>
+                                    <td class="small">{{ $d->penyakit->nm_penyakit ?? '-' }}</td>
                                     <td>
-                                        @if($d->prioritas == '1')
-                                            <span class="badge bg-danger">Utama</span>
+                                        @if($d->prioritas == 1)
+                                            <span class="badge bg-primary">Primer</span>
                                         @else
-                                            <span class="badge bg-info text-dark">Sekunder</span>
+                                            <span class="badge bg-secondary">{{ $d->prioritas }}</span>
                                         @endif
                                     </td>
-                                    <td>{{ $d->status_penyakit ?? '-' }}</td>
                                     <td class="text-center">
-                                        <button type="button" class="btn btn-sm btn-outline-danger btn-hapus-diagnosa" data-kd="{{ $d->kd_penyakit }}">
+                                        <button type="button" class="btn btn-sm btn-outline-danger border-0 btn-hapus-diagnosa" data-kd="{{ $d->kd_penyakit }}">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </td>
                                 </tr>
                             @empty
-                                <tr>
-                                    <td colspan="5" class="text-center text-muted">Belum ada diagnosa terinput</td>
-                                </tr>
+                                <tr><td colspan="4" class="text-center text-muted small py-2">Belum ada diagnosa terinput</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -83,60 +71,63 @@
         </div>
     </div>
 
-    <!-- Section Prosedur (ICD-9) -->
-    <div class="col-md-6 mb-4">
-        <div class="card shadow-sm border-0 h-100">
-            <div class="card-header bg-success text-white d-flex align-items-center">
-                <i class="fas fa-procedures me-2"></i>
-                <h6 class="mb-0 fw-bold">Prosedur / Tindakan (ICD-9)</h6>
+    <!-- Prosedur (ICD-9) -->
+    <div class="col-lg-6">
+        <div class="ralan-card h-100">
+            <div class="ralan-card-head">
+                <span><i class="fas fa-briefcase-medical me-2 text-success"></i>Prosedur / Tindakan (ICD-9)</span>
             </div>
-            <div class="card-body">
-                <form id="form-prosedur" class="mb-3">
-                    @csrf
-                    <input type="hidden" name="no_rawat" value="{{ $no_rawat }}">
+            <div class="ralan-card-body">
+                <label class="form-label small fw-semibold text-muted">Cari kode / deskripsi prosedur</label>
+                <select id="select-icd9" placeholder="Ketik kode / deskripsi prosedur..."></select>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Cari Kode / Deskripsi Prosedur (ICD-9)</label>
-                        <select id="select-icd9" name="kode[]" class="form-select" multiple="multiple" style="width: 100%;"></select>
-                    </div>
+                <div class="table-responsive mt-3">
+                    <table class="table table-sm align-middle mb-2">
+                        <thead>
+                            <tr class="small text-muted">
+                                <th style="width: 22%;">Kode</th>
+                                <th>Deskripsi</th>
+                                <th style="width: 74px;">Jumlah</th>
+                                <th style="width: 44px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="staging-prosedur" data-cols="4" data-empty="Belum ada prosedur dipilih">
+                            <tr class="staging-empty"><td colspan="4" class="text-center text-muted small py-2">Belum ada prosedur dipilih</td></tr>
+                        </tbody>
+                    </table>
+                </div>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Jumlah</label>
-                        <input type="number" name="jumlah" class="form-control" value="1" min="1">
-                    </div>
+                <button type="button" id="btn-simpan-prosedur" class="btn btn-success btn-sm w-100">
+                    <i class="fas fa-save me-1"></i> Simpan Prosedur
+                </button>
 
-                    <button type="button" id="btn-simpan-prosedur" class="btn btn-success w-100">
-                        <i class="fas fa-plus-circle me-1"></i> Tambah Prosedur
-                    </button>
-                </form>
+                <hr class="my-3">
 
-                <h6 class="fw-bold mt-4 mb-2">Daftar Prosedur Pasien</h6>
+                <div class="small fw-semibold text-muted mb-2">Prosedur tersimpan</div>
                 <div class="table-responsive">
-                    <table class="table table-sm table-bordered align-middle" id="table-prosedur">
+                    <table class="table table-sm table-bordered align-middle mb-0">
                         <thead class="table-light">
-                            <tr>
-                                <th style="width: 15%;">Kode</th>
-                                <th>Deskripsi Prosedur</th>
-                                <th style="width: 15%;">Jumlah</th>
-                                <th style="width: 10%; text-align: center;">Aksi</th>
+                            <tr class="small">
+                                <th style="width: 22%;">Kode</th>
+                                <th>Deskripsi</th>
+                                <th style="width: 70px;">Jumlah</th>
+                                <th style="width: 44px;"></th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse($prosedur as $p)
                                 <tr>
-                                    <td><span class="badge bg-secondary">{{ $p->kode }}</span></td>
-                                    <td>{{ $p->icd9->deskripsi_panjang ?? ($p->icd9->deskripsi_pendek ?? '-') }}</td>
-                                    <td>{{ $p->jumlah ?? 1 }}</td>
+                                    <td><span class="badge bg-light text-dark border">{{ $p->kode }}</span></td>
+                                    <td class="small">{{ $p->icd9->deskripsi_panjang ?? ($p->icd9->deskripsi_pendek ?? '-') }}</td>
+                                    <td class="small">{{ $p->jumlah ?? 1 }}</td>
                                     <td class="text-center">
-                                        <button type="button" class="btn btn-sm btn-outline-danger btn-hapus-prosedur" data-kode="{{ $p->kode }}">
+                                        <button type="button" class="btn btn-sm btn-outline-danger border-0 btn-hapus-prosedur" data-kode="{{ $p->kode }}">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </td>
                                 </tr>
                             @empty
-                                <tr>
-                                    <td colspan="4" class="text-center text-muted">Belum ada prosedur terinput</td>
-                                </tr>
+                                <tr><td colspan="4" class="text-center text-muted small py-2">Belum ada prosedur terinput</td></tr>
                             @endforelse
                         </tbody>
                     </table>

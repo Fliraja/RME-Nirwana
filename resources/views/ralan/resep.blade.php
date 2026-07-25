@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row ralan-resep">
     <div class="col-md-12">
         <ul class="nav nav-tabs nav-pills mb-3 bg-light p-2 rounded" id="pills-tab-resep" role="tablist">
             <li class="nav-item" role="presentation">
@@ -15,51 +15,59 @@
 
         <div class="tab-content" id="pills-tabContentResep">
             <div class="tab-pane fade show active" id="resep-umum" role="tabpanel">
-                <div class="card border-success mb-3">
-                    <div class="card-header bg-success text-white py-2">
-                        <i class="fas fa-pills me-1"></i> Form Resep Obat Umum
+                <div class="ralan-card mb-3">
+                    <div class="ralan-card-head">
+                        <span><i class="fas fa-pills me-2 text-success"></i>Resep Obat (Non-Racikan)</span>
                     </div>
-                    <div class="card-body">
+                    <div class="ralan-card-body">
                         <div id="formResepObat">
                             @csrf
                             <input type="hidden" name="no_rawat" value="{{ $pasien->no_rawat }}">
-                            
-                            <div class="row">
+
+                            <div class="row g-2 align-items-end">
                                 <div class="col-md-5">
-                                    <label class="small fw-bold">Nama Obat <span class="text-danger">*</span></label>
-                                    <select name="kode_obat" class="form-control form-control-sm kd_obat_ajax" style="width:100%"></select>
+                                    <label class="small fw-semibold text-muted">Nama Obat</label>
+                                    <select name="kode_obat" class="kd_obat_ajax"></select>
                                 </div>
                                 <div class="col-md-2">
-                                    <label class="small fw-bold">Jumlah <span class="text-danger">*</span></label>
-                                    <input type="number" name="jumlah" class="form-control form-control-sm" value="10" min="1">
+                                    <label class="small fw-semibold text-muted">Jumlah</label>
+                                    <input type="number" name="jumlah" class="form-control form-control-sm" value="1" min="1">
                                 </div>
-                                <div class="col-md-5">
-                                    <label class="small fw-bold">Aturan Pakai <span class="text-danger">*</span></label>
-                                    <select name="aturan_pakai" class="form-control form-control-sm select2-aturan" style="width:100%">
+                                <div class="col-md-4">
+                                    <label class="small fw-semibold text-muted">Aturan Pakai</label>
+                                    <select name="aturan_pakai" class="select2-aturan">
                                         <option value=""></option>
                                         @foreach($masterAturan as $atp)
                                             <option value="{{ $atp->aturan }}">{{ $atp->aturan }}</option>
                                         @endforeach
-                                        <option value="lainnya">--- Aturan Lainnya (Ketik Manual) ---</option>
                                     </select>
                                 </div>
-                            </div>
-                            
-                            <div class="row mt-2 d-none" id="aturanManualUmum">
-                                <div class="col-md-12">
-                                    <label class="small fw-bold">Aturan Pakai Manual</label>
-                                    <input type="text" name="aturan_pakai_lainnya" class="form-control form-control-sm" placeholder="Contoh: 3x1 sesudah makan">
+                                <div class="col-md-1 d-grid">
+                                    <button type="button" id="btnTambahObat" class="btn btn-success btn-sm" title="Tambah ke daftar">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
                                 </div>
                             </div>
-                            
-                            <div class="mt-3">
-                                <button type="button" id="btnTambahObat" class="btn btn-success btn-sm">
-                                    <i class="fas fa-plus me-1"></i> Tambah Obat
-                                </button>
-                                <button type="button" class="btn btn-secondary btn-sm" onclick="resetFormUmum()">
-                                    <i class="fas fa-redo me-1"></i> Reset
-                                </button>
+
+                            <div class="table-responsive mt-3">
+                                <table class="table table-sm align-middle mb-2">
+                                    <thead>
+                                        <tr class="small text-muted">
+                                            <th>Obat</th>
+                                            <th style="width: 80px;">Jumlah</th>
+                                            <th>Aturan Pakai</th>
+                                            <th style="width: 44px;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="staging-obat" data-cols="4" data-empty="Belum ada obat dipilih">
+                                        <tr class="staging-empty"><td colspan="4" class="text-center text-muted small py-2">Belum ada obat dipilih</td></tr>
+                                    </tbody>
+                                </table>
                             </div>
+
+                            <button type="button" id="btnSimpanResepObat" class="btn btn-primary btn-sm w-100">
+                                <i class="fas fa-save me-1"></i> Simpan Semua Obat
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -70,8 +78,8 @@
                     @csrf
                     <input type="hidden" name="no_rawat" value="{{ $pasien->no_rawat }}">
                     
-                    <div class="card border-success mb-3">
-                        <div class="card-header bg-success text-white py-2">
+                    <div class="card border mb-3">
+                        <div class="card-header bg-light py-2 fw-semibold">
                             <i class="fas fa-mortar-pestle me-1"></i> Informasi Racikan
                         </div>
                         <div class="card-body">
@@ -114,7 +122,7 @@
                     </div>
 
                     <div class="card border-secondary mb-3">
-                        <div class="card-header bg-secondary text-white py-2 d-flex justify-content-between align-items-center">
+                        <div class="card-header bg-light py-2 fw-semibold d-flex justify-content-between align-items-center">
                             <span><i class="fas fa-list me-1"></i> Komposisi Obat Racikan</span>
                             <button type="button" class="btn btn-warning btn-sm" id="btnTambahBarisObat">
                                 <i class="fas fa-plus me-1"></i> Tambah Baris
@@ -160,8 +168,8 @@
 
         <hr class="my-4">
 
-        <div class="card border-success">
-            <div class="card-header bg-success text-white py-2">
+        <div class="card border">
+            <div class="card-header bg-light py-2 fw-semibold">
                 <i class="fas fa-list-alt me-1"></i> Daftar Resep Pasien
             </div>
             <div class="card-body p-0">
@@ -172,53 +180,3 @@
         </div>
     </div>
 </div>
-
-<style>
-/* Styling tambahan untuk konsistensi */
-.nav-pills .nav-link {
-    border-radius: 0.25rem;
-    transition: all 0.3s ease;
-}
-
-.nav-pills .nav-link:hover {
-    background-color: #e9ecef;
-}
-
-.nav-pills .nav-link.active {
-    background-color: #0d6efd;
-    color: white !important;
-}
-
-.card {
-    box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
-}
-
-.card-header {
-    font-weight: 600;
-}
-
-.table th {
-    font-weight: 600;
-    background-color: #f8f9fa;
-}
-
-.btn-sm {
-    padding: 0.25rem 0.75rem;
-    font-size: 0.875rem;
-}
-
-/* Responsiveness */
-@media (max-width: 768px) {
-    .row > [class*='col-'] {
-        margin-bottom: 0.5rem;
-    }
-    
-    .d-flex.gap-2 {
-        flex-direction: column;
-    }
-    
-    .d-flex.gap-2 > .btn {
-        width: 100%;
-    }
-}
-</style>

@@ -4,18 +4,18 @@
 
     <div class="row">
         <div class="col-md-6">
-            <div class="form-group">
+            <div class="mb-3">
                 <label class="fw-bold">Pilih Pemeriksaan Lab</label>
-                <select name="kd_jenis_prw[]" id="select-lab" class="form-control" multiple="multiple" style="width: 100%"></select>
-                <small class="text-muted italic">*Bisa pilih lebih dari satu pemeriksaan</small>
+                <select name="kd_jenis_prw[]" id="select-lab" class="form-select" multiple="multiple" style="width: 100%"></select>
+                <small class="text-muted fst-italic">*Bisa pilih lebih dari satu pemeriksaan</small>
             </div>
 
-            <div class="form-group mt-3">
+            <div class="mb-3 mt-3">
                 <label class="fw-bold">Diagnosa Klinis</label>
                 <textarea name="diagnosa_klinis" class="form-control" rows="2" placeholder="Masukkan diagnosa klinis..."></textarea>
             </div>
-            
-            <div class="form-group mt-2">
+
+            <div class="mb-3 mt-2">
                 <label class="fw-bold">Informasi Tambahan</label>
                 <textarea name="informasi_tambahan" class="form-control" rows="2" placeholder="Catatan untuk petugas lab..."></textarea>
             </div>
@@ -33,7 +33,7 @@
         </div>
     </div>
 
-    <div class="text-right mt-3">
+    <div class="text-end mt-3">
         <button type="button" id="btnSimpanLab" class="btn btn-primary">
             <i class="fas fa-paper-plane"></i> Kirim Permintaan Lab
         </button>
