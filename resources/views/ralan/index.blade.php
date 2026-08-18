@@ -75,13 +75,13 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" id="diagnosa-prosedur-tab" data-bs-toggle="tab" href="#diagnosa-prosedur">
-                                        <i class="fas fa-stethoscope me-1"></i> DIAGNOSA
+                                    <a class="nav-link" id="vital-sign-tab" data-bs-toggle="tab" href="#pemeriksaan-vital-sign">
+                                        <i class="fas fa-heartbeat me-1"></i> TTV
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" id="vital-sign-tab" data-bs-toggle="tab" href="#pemeriksaan-vital-sign">
-                                        <i class="fas fa-heartbeat me-1"></i> TTV
+                                    <a class="nav-link" id="diagnosa-prosedur-tab" data-bs-toggle="tab" href="#diagnosa-prosedur">
+                                        <i class="fas fa-stethoscope me-1"></i> DIAGNOSA
                                     </a>
                                 </li>
                                 <li class="nav-item">

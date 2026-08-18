@@ -26,5 +26,9 @@ class SoapService
                 'evaluasi'      => '-',
             ]
         );
+
+        // Update jam periksa dokter untuk BPJS
+        $antrolService = new AntrolBpjsService();
+        $antrolService->upsertAntrolBpjsJam($data['no_rawat'], 'jam_periksa_dokter', date('H:i:s'));
     }
 }

@@ -11,6 +11,7 @@ use App\Http\Requests\Ralan\StoreSoapRequest;
 use App\Http\Requests\Ralan\StoreVitalSignRequest;
 use App\Services\Ralan\SoapService;
 use App\Services\Ralan\VitalSignService;
+use App\Services\Ralan\AntrolBpjsService;
 
 class RalanController extends Controller
 {
@@ -46,6 +47,10 @@ class RalanController extends Controller
                 ->first();
 
             if ($data['detailPasien']) {
+                // Set jam perawat saat nurse akses data pasien
+                $antrolService = new AntrolBpjsService();
+                $antrolService->insertJamPeriksaPerawatOnce($no_rawat, date('H:i:s'));
+
                 $data['riwayat'] = RegPeriksa::with([
                         'poliklinik', 'dokter', 'pemeriksaanRalan', 'pemeriksaanRanap',
                         'resepObat.resepDokter.dataBarang', 'detailObat.barang',
