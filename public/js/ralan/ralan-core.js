@@ -1341,8 +1341,33 @@ $(document).ready(function() {
     // Background preloading removed to prevent server bottleneck.
     // Tabs will load instantly via lazy loading when clicked.
 
+    // Hook klik nama pasien BPJS: tandai jam periksa perawat secepat mungkin sebelum redirect
+    $(document).on('click', '.pasien-link', function(e) {
+        const href = $(this).attr('href');
+        const noRawat = $(this).data('no-rawat');
+        const kdPj = $(this).data('kd-pj');
+
+        if (kdPj === 'BPJ' && window.RALAN && window.RALAN.routes && window.RALAN.routes.tandaiPerawat) {
+            e.preventDefault();
+            try {
+                fetch(window.RALAN.routes.tandaiPerawat, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': window.RALAN.csrf
+                    },
+                    body: JSON.stringify({ no_rawat: noRawat, kd_pj: kdPj }),
+                    keepalive: true
+                }).catch(function() {});
+            } catch (err) {}
+
+            window.location.href = href;
+        }
+    });
+
     console.log('=== ALL EVENT HANDLERS REGISTERED ===');
 });
+
 
 window.hapusObat = hapusObat;
 window.hapusRacikan = hapusRacikan;

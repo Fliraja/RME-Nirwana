@@ -19,6 +19,7 @@ Route::middleware(['multi.auth'])->group(function () {
 
     //Ralan Routes
     Route::match(['GET', 'POST'], '/ralan', [RalanController::class, 'index'])->name('ralan.index');
+    Route::post('/ralan/tandai-perawat', [RalanController::class, 'tandaiPerawat'])->name('ralan.tandai-perawat');
 
     //Riwayat
     Route::get('/ralan/riwayat/{no_rkm_medis}', [RalanController::class, 'getRiwayatPasien'])->name('ralan.riwayat');

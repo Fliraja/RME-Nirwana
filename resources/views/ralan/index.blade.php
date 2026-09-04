@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('title', 'Pemeriksaan')
 @section('page-title', 'Rawat Jalan')
@@ -234,7 +234,10 @@
                                     @forelse($daftarPasien as $pasien)
                                         <tr>
                                             <td>
-                                                <a href="{{ route('ralan.index', ['action' => 'view', 'no_rawat' => $pasien->no_rawat]) }}" class="text-primary fw-bold text-decoration-none">
+                                                <a href="{{ route('ralan.index', ['action' => 'view', 'no_rawat' => $pasien->no_rawat]) }}" 
+                                                   class="text-primary fw-bold text-decoration-none pasien-link"
+                                                   data-no-rawat="{{ $pasien->no_rawat }}"
+                                                   data-kd-pj="{{ $pasien->kd_pj }}">
                                                     {{ Str::limit(strtoupper($pasien->pasien->nm_pasien), 20) }}
                                                 </a>
                                                 <div class="small text-muted">{{ $pasien->no_rawat }}</div>
@@ -288,7 +291,8 @@
             storeDiagnosa: "{{ route('ralan.store-diagnosa') }}",
             storeProsedur: "{{ route('ralan.store-prosedur') }}",
             soapSimpan: "{{ route('ralan.soap.simpan') }}",
-            vitalSimpan: "{{ route('ralan.store-vital') }}"
+            vitalSimpan: "{{ route('ralan.store-vital') }}",
+            tandaiPerawat: "{{ route('ralan.tandai-perawat') }}"
         }
     };
 </script>
