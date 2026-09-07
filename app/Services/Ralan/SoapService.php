@@ -3,6 +3,8 @@
 namespace App\Services\Ralan;
 
 use App\Models\PemeriksaanRalan;
+use App\Models\RegPeriksa;
+use App\Support\AntrolBpjsUpdater;
 use Illuminate\Support\Facades\Auth;
 
 class SoapService
@@ -26,5 +28,8 @@ class SoapService
                 'evaluasi'      => '-',
             ]
         );
+
+        $kdPj = $data['kd_pj'] ?? RegPeriksa::where('no_rawat', $data['no_rawat'])->value('kd_pj');
+        AntrolBpjsUpdater::tandaiDokter($data['no_rawat'], $kdPj);
     }
 }

@@ -11,6 +11,7 @@ use App\Http\Requests\Ralan\StoreSoapRequest;
 use App\Http\Requests\Ralan\StoreVitalSignRequest;
 use App\Services\Ralan\SoapService;
 use App\Services\Ralan\VitalSignService;
+use App\Support\AntrolBpjsUpdater;
 
 class RalanController extends Controller
 {
@@ -46,6 +47,8 @@ class RalanController extends Controller
                 ->first();
 
             if ($data['detailPasien']) {
+                AntrolBpjsUpdater::tandaiPerawat($data['detailPasien']->no_rawat, $data['detailPasien']->kd_pj);
+
                 $data['riwayat'] = RegPeriksa::with([
                         'poliklinik', 'dokter', 'pemeriksaanRalan', 'pemeriksaanRanap',
                         'resepObat.resepDokter.dataBarang', 'detailObat.barang',
@@ -148,5 +151,20 @@ class RalanController extends Controller
         } catch (\Exception $e) {
             return response()->json(['status' => 'error', 'message' => 'Gagal menyimpan Vital Sign: ' . $e->getMessage()], 500);
         }
+    }
+
+    public function tandaiPerawat(Request $request)
+    {
+        $no_rawat = $request->input('no_rawat');
+        $kd_pj = $request->input('kd_pj');
+
+        if ($no_rawat) {
+            if (!$kd_pj) {
+                $kd_pj = RegPeriksa::where('no_rawat', $no_rawat)->value('kd_pj');
+            }
+            AntrolBpjsUpdater::tandaiPerawat($no_rawat, $kd_pj);
+        }
+
+        return response()->json(['status' => 'ok']);
     }
 }
