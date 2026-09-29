@@ -56,4 +56,29 @@ class RegPeriksa extends Model
     {
         return $this->hasMany(ResepObat::class, 'no_rawat', 'no_rawat');
     }
+
+    public function kamarInap()
+    {
+        return $this->hasMany(KamarInap::class, 'no_rawat', 'no_rawat');
+    }
+
+    public function kamarInapAktif()
+    {
+        return $this->hasOne(KamarInap::class, 'no_rawat', 'no_rawat')->where('stts_pulang', '-');
+    }
+
+    public function dpjpRanap()
+    {
+        return $this->hasMany(DpjpRanap::class, 'no_rawat', 'no_rawat');
+    }
+
+    public function sbarRanap()
+    {
+        return $this->hasMany(CatatanSbarRanap::class, 'no_rawat', 'no_rawat');
+    }
+
+    public function hasilRadiologi()
+    {
+        return $this->hasMany(HasilRadiologi::class, 'no_rawat', 'no_rawat');
+    }
 }

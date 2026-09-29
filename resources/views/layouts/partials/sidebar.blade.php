@@ -31,6 +31,13 @@
                 </a>
             </li>
             
+            <li class="nav-item">
+                <a href="{{ route('ranap.index') }}" class="nav-link {{ request()->is('ranap*') ? 'active' : '' }}">
+                    <i class="fas fa-procedures"></i>
+                    <span>Rawat Inap</span>
+                </a>
+            </li>
+            
             {{-- <li class="nav-item">
                 <a href="#" class="nav-link {{ request()->is('rekam-medis*') ? 'active' : '' }}">
                     <i class="fas fa-file-medical"></i>

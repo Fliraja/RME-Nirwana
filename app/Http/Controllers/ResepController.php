@@ -75,6 +75,9 @@ class ResepController extends Controller
 
                 $kd_dokter = Auth::user()->decrypted_id;
 
+                $reg = RegPeriksa::where('no_rawat', $request->no_rawat)->first();
+                $statusResep = ($reg && strtolower($reg->status_lanjut) === 'ranap') ? 'ranap' : 'ralan';
+
                 $resep = ResepObat::create([
                     'no_resep'       => $nextNoResep,
                     'tgl_perawatan'  => $tgl_sekarang,
@@ -83,7 +86,7 @@ class ResepController extends Controller
                     'kd_dokter'      => $kd_dokter,
                     'tgl_peresepan'  => $tgl_sekarang,
                     'jam_peresepan'  => $jam_sekarang,
-                    'status'         => 'ralan',
+                    'status'         => $statusResep,
                     'tgl_penyerahan' => null,
                     'jam_penyerahan' => null,
                 ]);
@@ -143,6 +146,9 @@ class ResepController extends Controller
 
                 $kd_dokter = Auth::user()->decrypted_id;
 
+                $reg = RegPeriksa::where('no_rawat', $request->no_rawat)->first();
+                $statusResep = ($reg && strtolower($reg->status_lanjut) === 'ranap') ? 'ranap' : 'ralan';
+
                 $resep = ResepObat::create([
                     'no_resep'      => $nextNoResep,
                     'tgl_perawatan' => $tgl_sekarang,
@@ -151,7 +157,7 @@ class ResepController extends Controller
                     'kd_dokter'     => $kd_dokter, 
                     'tgl_peresepan' => $tgl_sekarang,
                     'jam_peresepan' => $jam_sekarang,
-                    'status'        => 'ralan',
+                    'status'        => $statusResep,
                     'tgl_penyerahan'        => null,
                     'jam_penyerahan'        => null,
                 ]);

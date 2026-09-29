@@ -10,12 +10,28 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LaboratoriumController;
 use App\Http\Controllers\DiagnosaProsedurController;
 
+use App\Http\Controllers\RanapController;
+
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::middleware(['multi.auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    //Ranap Routes
+    Route::match(['GET', 'POST'], '/ranap', [RanapController::class, 'index'])->name('ranap.index');
+    Route::get('/ranap/riwayat/{no_rkm_medis}', [RanapController::class, 'getRiwayatPasien'])->name('ranap.riwayat');
+    Route::get('/ranap/soap/{no_rawat}', [RanapController::class, 'getSoapPasien'])->name('ranap.get-soap');
+    Route::post('/ranap/soap/simpan', [RanapController::class, 'storeSoap'])->name('ranap.soap.simpan');
+    Route::post('/ranap/soap/hapus', [RanapController::class, 'destroySoap'])->name('ranap.soap.hapus');
+    Route::get('/ranap/get-vital-pasien/{no_rawat}', [RanapController::class, 'getVitalPasien'])->name('ranap.get-vital');
+    Route::post('/ranap/store-vital', [RanapController::class, 'storeVital'])->name('ranap.store-vital');
+    Route::post('/ranap/vital/hapus', [RanapController::class, 'destroyVital'])->name('ranap.vital.hapus');
+    Route::get('/ranap/get-diagnosa-prosedur/{no_rawat}', [RanapController::class, 'getDiagnosaPasien'])->name('ranap.get-diagnosa-prosedur');
+    Route::get('/ranap/get-resep-pasien/{no_rawat}', [RanapController::class, 'getResepPasien'])->name('ranap.get-resep');
+    Route::get('/ranap/get-lab-pasien/{no_rawat}', [RanapController::class, 'getLabPasien'])->name('ranap.get-lab');
+    Route::get('/ranap/get-radiologi-pasien/{no_rawat}', [RanapController::class, 'getRadiologiPasien'])->name('ranap.get-radiologi');
 
     //Ralan Routes
     Route::match(['GET', 'POST'], '/ralan', [RalanController::class, 'index'])->name('ralan.index');
