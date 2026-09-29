@@ -20,6 +20,10 @@ class MultiRoleAuth
             return $next($request);
         }
 
-        return redirect('/login')->with('error', 'Silahkan login terlebih dahulu');
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['message' => 'Sesi berakhir, silakan login ulang.'], 401);
+        }
+
+        return redirect()->route('login')->with('error', 'Silahkan login terlebih dahulu');
     }
 }

@@ -4,6 +4,11 @@
 
 let rowCount = 0;
 
+function ralanUrl(path) {
+    const base = (window.RALAN && window.RALAN.baseUrl) ? window.RALAN.baseUrl.replace(/\/+$/, '') : '';
+    return base + (path.startsWith('/') ? path : '/' + path);
+}
+
 function tampilkanError(message) {
     if (typeof Swal !== 'undefined') {
         Swal.fire({
@@ -101,13 +106,16 @@ function loadSoap(forceReload = false) {
     }
 
     loadingTabs.soap = true;
-    $.get('/ralan/soap/' + currentSafeNoRawat, function(data) {
+    var url = ralanUrl('/ralan/soap/' + currentSafeNoRawat);
+    console.log('[RALAN] Fetching SOAP:', url);
+    $.get(url, function(data) {
         $('#content-soap').html(data);
         loadedTabs.soap = true;
         loadingTabs.soap = false;
-    }).fail(function() {
+    }).fail(function(xhr) {
+        console.error('[RALAN] Failed SOAP:', xhr.status, xhr.statusText, xhr.responseText);
         loadingTabs.soap = false;
-        if (!loadedTabs.soap) $('#content-soap').html('<div class="alert alert-danger">Gagal memuat form SOAP.</div>');
+        if (!loadedTabs.soap) $('#content-soap').html('<div class="alert alert-danger">Gagal memuat form SOAP (HTTP ' + xhr.status + ').</div>');
     });
 }
 
@@ -121,13 +129,16 @@ function loadVital(forceReload = false) {
     }
 
     loadingTabs.vital = true;
-    $.get('/ralan/get-vital-pasien/' + currentSafeNoRawat, function(data) {
+    var url = ralanUrl('/ralan/get-vital-pasien/' + currentSafeNoRawat);
+    console.log('[RALAN] Fetching Vital:', url);
+    $.get(url, function(data) {
         $('#content-vital-sign').html(data);
         loadedTabs.vital = true;
         loadingTabs.vital = false;
-    }).fail(function() {
+    }).fail(function(xhr) {
+        console.error('[RALAN] Failed Vital:', xhr.status, xhr.statusText, xhr.responseText);
         loadingTabs.vital = false;
-        if (!loadedTabs.vital) $('#content-vital-sign').html('<div class="alert alert-danger">Gagal memuat form Vital Sign.</div>');
+        if (!loadedTabs.vital) $('#content-vital-sign').html('<div class="alert alert-danger">Gagal memuat form Vital Sign (HTTP ' + xhr.status + ').</div>');
     });
 }
 
@@ -141,8 +152,10 @@ function loadResep(forceReload = false) {
     }
 
     loadingTabs.resep = true;
+    var url = ralanUrl('/ralan/get-resep-pasien/' + currentSafeNoRawat);
+    console.log('[RALAN] Fetching Resep:', url);
     $.ajax({
-        url: '/ralan/get-resep-pasien/' + currentSafeNoRawat,
+        url: url,
         method: 'GET',
         success: function(data) {
             $('#content-resep').html(data);
@@ -150,9 +163,10 @@ function loadResep(forceReload = false) {
             loadingTabs.resep = false;
             setTimeout(function() { initSelect2(); }, 100);
         },
-        error: function() {
+        error: function(xhr) {
+            console.error('[RALAN] Failed Resep:', xhr.status, xhr.statusText, xhr.responseText);
             loadingTabs.resep = false;
-            if (!loadedTabs.resep) $('#content-resep').html('<div class="alert alert-danger">Gagal memuat data resep.</div>');
+            if (!loadedTabs.resep) $('#content-resep').html('<div class="alert alert-danger">Gagal memuat data resep (HTTP ' + xhr.status + ').</div>');
         }
     });
 }
@@ -167,8 +181,10 @@ function loadFormLab(forceReload = false) {
     }
 
     loadingTabs.lab = true;
+    var url = ralanUrl('/ralan/get-lab-pasien/' + currentSafeNoRawat);
+    console.log('[RALAN] Fetching Lab:', url);
     $.ajax({
-        url: '/ralan/get-lab-pasien/' + currentSafeNoRawat,
+        url: url,
         method: 'GET',
         success: function(data) {
             $('#content-lab').html(data);
@@ -176,9 +192,10 @@ function loadFormLab(forceReload = false) {
             loadingTabs.lab = false;
             setTimeout(function() { initSelect2Lab(); }, 100);
         },
-        error: function() {
+        error: function(xhr) {
+            console.error('[RALAN] Failed Lab:', xhr.status, xhr.statusText, xhr.responseText);
             loadingTabs.lab = false;
-            if (!loadedTabs.lab) $('#content-lab').html('<div class="alert alert-danger">Gagal memuat form permintaan lab.</div>');
+            if (!loadedTabs.lab) $('#content-lab').html('<div class="alert alert-danger">Gagal memuat form permintaan lab (HTTP ' + xhr.status + ').</div>');
         }
     });
 }
@@ -193,8 +210,10 @@ function loadFormRadiologi(forceReload = false) {
     }
 
     loadingTabs.radiologi = true;
+    var url = ralanUrl('/ralan/get-radiologi-pasien/' + currentSafeNoRawat);
+    console.log('[RALAN] Fetching Radiologi:', url);
     $.ajax({
-        url: '/ralan/get-radiologi-pasien/' + currentSafeNoRawat,
+        url: url,
         method: 'GET',
         success: function(data) {
             $('#content-radiologi').html(data);
@@ -202,9 +221,10 @@ function loadFormRadiologi(forceReload = false) {
             loadingTabs.radiologi = false;
             setTimeout(function() { initSelect2Radiologi(); }, 100);
         },
-        error: function() {
+        error: function(xhr) {
+            console.error('[RALAN] Failed Radiologi:', xhr.status, xhr.statusText, xhr.responseText);
             loadingTabs.radiologi = false;
-            if (!loadedTabs.radiologi) $('#content-radiologi').html('<div class="alert alert-danger">Gagal memuat form permintaan radiologi.</div>');
+            if (!loadedTabs.radiologi) $('#content-radiologi').html('<div class="alert alert-danger">Gagal memuat form permintaan radiologi (HTTP ' + xhr.status + ').</div>');
         }
     });
 }
@@ -213,7 +233,7 @@ function loadFormRadiologi(forceReload = false) {
 function reloadLabTable() {
     if (currentNoRawat === "") return;
     $.ajax({
-        url: '/ralan/get-lab-table/' + currentSafeNoRawat,
+        url: ralanUrl('/ralan/get-lab-table/' + currentSafeNoRawat),
         method: 'GET',
         success: function(data) { $('#tabel-riwayat-lab').html(data); },
         error: function() { tampilkanError('Gagal memuat ulang tabel lab.'); }
@@ -223,7 +243,7 @@ function reloadLabTable() {
 function reloadRadiologiTable() {
     if (currentNoRawat === "") return;
     $.ajax({
-        url: '/ralan/get-radiologi-table/' + currentSafeNoRawat,
+        url: ralanUrl('/ralan/get-radiologi-table/' + currentSafeNoRawat),
         method: 'GET',
         success: function(data) { $('#tabel-riwayat-rad').html(data); },
         error: function() { tampilkanError('Gagal memuat ulang tabel radiologi.'); }
@@ -233,7 +253,7 @@ function reloadRadiologiTable() {
 function reloadResepTable() {
     if (currentNoRawat === "") return;
     $.ajax({
-        url: '/ralan/get-resep-table/' + currentSafeNoRawat,
+        url: ralanUrl('/ralan/get-resep-table/' + currentSafeNoRawat),
         method: 'GET',
         success: function(data) { $('#tabel-resep-container').html(data); },
         error: function() { tampilkanError('Gagal memuat ulang tabel resep.'); }
@@ -258,8 +278,10 @@ function loadDiagnosaProsedur(forceReload = false) {
     }
 
     loadingTabs.diagnosa = true;
+    var url = ralanUrl('/ralan/get-diagnosa-prosedur/' + currentSafeNoRawat);
+    console.log('[RALAN] Fetching Diagnosa/Prosedur:', url);
     $.ajax({
-        url: '/ralan/get-diagnosa-prosedur/' + currentSafeNoRawat,
+        url: url,
         method: 'GET',
         success: function(data) {
             $('#content-diagnosa-prosedur').html(data);
@@ -267,9 +289,10 @@ function loadDiagnosaProsedur(forceReload = false) {
             loadingTabs.diagnosa = false;
             setTimeout(function() { initSelect2DiagnosaProsedur(); }, 100);
         },
-        error: function() {
+        error: function(xhr) {
+            console.error('[RALAN] Failed Diagnosa/Prosedur:', xhr.status, xhr.statusText, xhr.responseText);
             loadingTabs.diagnosa = false;
-            if (!loadedTabs.diagnosa) $('#content-diagnosa-prosedur').html('<div class="alert alert-danger">Gagal memuat form Diagnosa & Prosedur.</div>');
+            if (!loadedTabs.diagnosa) $('#content-diagnosa-prosedur').html('<div class="alert alert-danger">Gagal memuat form Diagnosa & Prosedur (HTTP ' + xhr.status + ').</div>');
         }
     });
 }
@@ -420,7 +443,7 @@ function hapusObat(no_resep, kode_brng) {
 
 function prosesHapusObat(no_resep, kode_brng) {
     $.ajax({
-        url: '/ralan/delete-resep-obat/' + no_resep + '/' + kode_brng,
+        url: ralanUrl('/ralan/delete-resep-obat/' + no_resep + '/' + kode_brng),
         method: 'POST',
         data: {
             _token: window.RALAN.csrf,
@@ -520,7 +543,7 @@ function hapusRacikan(no_resep, no_racik) {
 
 function prosesHapusRacikan(no_resep, no_racik) {
     $.ajax({
-        url: '/ralan/delete-resep-racikan/' + no_resep + '/' + no_racik,
+        url: ralanUrl('/ralan/delete-resep-racikan/' + no_resep + '/' + no_racik),
         method: 'POST',
         data: {
             _token: window.RALAN.csrf,
@@ -581,7 +604,7 @@ function prosesHapusRacikan(no_resep, no_racik) {
 function hapusLab(noorder, kd_jenis_prw = null, id_template = null) {
     let title = 'Hapus Order?';
     let text = "Seluruh pemeriksaan dalam nomor order ini akan dihapus.";
-    let url = `/ralan/delete-lab/${noorder}`;
+    let url = ralanUrl(`/ralan/delete-lab/${noorder}`);
 
     if (kd_jenis_prw && !id_template) {
         title = 'Hapus Pemeriksaan?';
@@ -622,7 +645,7 @@ function hapusLab(noorder, kd_jenis_prw = null, id_template = null) {
 function hapusRadiologi(noorder, kd_jenis_prw = null) {
     let title = 'Hapus Order?';
     let text = "Seluruh pemeriksaan dalam nomor order ini akan dihapus.";
-    let url = `/ralan/delete-radiologi/${noorder}`;
+    let url = ralanUrl(`/ralan/delete-radiologi/${noorder}`);
 
     if (kd_jenis_prw) {
         title = 'Hapus Pemeriksaan?';
@@ -1039,7 +1062,7 @@ $(document).ready(function() {
 
         selectedValues.forEach(function(kd) {
             if (container.find(`.group-template[data-kd="${kd}"]`).length === 0) {
-                $.get(`/ralan/get-templates-lab/${kd}`, function(data) {
+                $.get(ralanUrl(`/ralan/get-templates-lab/${kd}`), function(data) {
                     if (data.length > 0) {
                         let html = `<div class="group-template mb-3" data-kd="${kd}">
                             <div class="group-header">
@@ -1306,7 +1329,7 @@ $(document).ready(function() {
         let kd = $(this).data('kd');
         if (confirm('Hapus diagnosa ini?')) {
             $.ajax({
-                url: '/ralan/delete-diagnosa/' + currentSafeNoRawat + '/' + kd,
+                url: ralanUrl('/ralan/delete-diagnosa/' + currentSafeNoRawat + '/' + kd),
                 method: 'DELETE',
                 data: { _token: window.RALAN.csrf },
                 success: function(res) {
@@ -1324,7 +1347,7 @@ $(document).ready(function() {
         let kode = $(this).data('kode');
         if (confirm('Hapus prosedur ini?')) {
             $.ajax({
-                url: '/ralan/delete-prosedur/' + currentSafeNoRawat + '/' + kode,
+                url: ralanUrl('/ralan/delete-prosedur/' + currentSafeNoRawat + '/' + kode),
                 method: 'DELETE',
                 data: { _token: window.RALAN.csrf },
                 success: function(res) {

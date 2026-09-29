@@ -277,6 +277,7 @@
     var currentNoRawat = "{{ $detailPasien->no_rawat ?? '' }}";
     var currentSafeNoRawat = currentNoRawat.replace(/\//g, '-');
     window.RALAN = {
+        baseUrl: "{{ url('/') }}",
         csrf: "{{ csrf_token() }}",
         routes: {
             searchIcd10: "{{ route('ralan.search-icd10') }}",
@@ -296,5 +297,5 @@
         }
     };
 </script>
-<script src="{{ asset('js/ralan/ralan-core.js') }}"></script>
+<script src="{{ asset('js/ralan/ralan-core.js') }}?v={{ file_exists(public_path('js/ralan/ralan-core.js')) ? filemtime(public_path('js/ralan/ralan-core.js')) : time() }}"></script>
 @endpush
