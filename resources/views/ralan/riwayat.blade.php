@@ -36,30 +36,36 @@
                     </td>
                     <td>
                         <ul class="list-unstyled mb-0">
-                            @foreach($item->detailObat as $obat)
+                            @forelse($item->detailObat as $obat)
                                 <li><i class="fas fa-pills me-1 text-primary"></i> {{ $obat->barang->nama_brng ?? 'Obat' }} ({{ $obat->jml }})</li>
-                            @endforeach
+                            @empty
+                                <li class="text-muted fst-italic">-</li>
+                            @endforelse
                         </ul>
                     </td>
                     <td>
                         <ul class="list-unstyled mb-0">
-                            @foreach($item->detailLab as $lab)
+                            @forelse($item->detailLab as $lab)
                                 <li>
                                     <small><strong>{{ $lab->template->Pemeriksaan ?? '-' }}:</strong></small><br>
                                     {{ $lab->nilai }} {{ $lab->template->satuan ?? '' }} 
                                     <small class="text-muted">(Ref: {{ $lab->nilai_rujukan }})</small>
                                 </li>
-                            @endforeach
+                            @empty
+                                <li class="text-muted fst-italic">-</li>
+                            @endforelse
                         </ul>
                     </td>
                     <td>
                         <div class="d-flex flex-wrap gap-1">
-                            @foreach($item->gambarRadiologi as $rad)
+                            @forelse($item->gambarRadiologi as $rad)
                                 <a href="{{ config('app.simrs_url') }}/radiologi/{{ $rad->lokasi_gambar }}" target="_blank">
                                     <img src="{{ config('app.simrs_url') }}/radiologi/{{ $rad->lokasi_gambar }}" 
                                          class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;">
                                 </a>
-                            @endforeach
+                            @empty
+                                <span class="text-muted fst-italic small">-</span>
+                            @endforelse
                         </div>
                     </td>
                 </tr>

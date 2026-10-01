@@ -33,15 +33,15 @@
                         <small class="text-muted"><i class="fas fa-user-md me-1"></i>{{ $item->dokter->nm_dokter ?? '-' }}</small>
                     </td>
                     <td class="small">
-                        <strong>S:</strong> {{ $soap->keluhan ?? '-' }} <br>
-                        <strong>O:</strong> {{ $soap->pemeriksaan ?? '-' }}
+                        <strong>Keluhan:</strong> {{ $soap->keluhan ?? '-' }} <br>
+                        <strong>Pemeriksaan:</strong> {{ $soap->pemeriksaan ?? '-' }}
                     </td>
                     <td class="small">
-                        <strong>A:</strong> {{ $soap->penilaian ?? '-' }}
+                        {{ $soap->penilaian ?? '-' }}
                     </td>
                     <td class="small">
-                        <strong>P (Terapi):</strong> {{ $soap->rtl ?? '-' }} <br>
-                        <strong>Instruksi:</strong> {{ $soap->instruksi ?? '-' }}
+                        <strong>Terapi:</strong> {{ $soap->rtl ?? '-' }} <br>
+                        <strong>Rencana:</strong> {{ $soap->instruksi ?? '-' }}
                     </td>
                     <td>
                         <ul class="list-unstyled mb-0 small">
