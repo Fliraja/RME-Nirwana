@@ -179,19 +179,19 @@ a:hover {
 }
 
 /* Nav List */
-.nav-list {
+.sidebar-nav .nav-list {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
 /* Nav Item - Base */
-.nav-item {
+.sidebar-nav .nav-item {
     margin: 2px 12px;
 }
 
 /* Nav Link - Base Styles */
-.nav-link {
+.sidebar-nav .nav-link {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -203,37 +203,37 @@ a:hover {
     text-decoration: none;
 }
 
-.nav-link:hover {
+.sidebar-nav .nav-link:hover {
     background: rgba(255, 255, 255, 0.1);
     color: var(--white);
     text-decoration: none;
 }
 
-.nav-link.active {
+.sidebar-nav .nav-link.active {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     color: var(--white);
     box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
 }
 
 /* Nav Link Icons */
-.nav-link i {
+.sidebar-nav .nav-link i {
     font-size: 18px;
     width: 24px;
     text-align: center;
     flex-shrink: 0;
 }
 
-.nav-link span {
+.sidebar-nav .nav-link span {
     white-space: nowrap;
 }
 
 /* Nav Divider */
-.nav-divider {
+.sidebar-nav .nav-divider {
     padding: 20px 16px 8px;
     margin: 0 12px;
 }
 
-.nav-divider span {
+.sidebar-nav .nav-divider span {
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
@@ -246,41 +246,41 @@ a:hover {
    ============================================ */
 
 /* Parent Menu dengan Submenu */
-.nav-link[data-toggle="collapse"] {
+.sidebar-nav .nav-link[data-toggle="collapse"] {
     position: relative;
     cursor: pointer;
 }
 
-.nav-link[data-toggle="collapse"] .fa-chevron-down {
+.sidebar-nav .nav-link[data-toggle="collapse"] .fa-chevron-down {
     margin-left: auto;
     font-size: 12px;
     transition: transform 0.3s ease;
 }
 
-.nav-link[data-toggle="collapse"]:not(.collapsed) .fa-chevron-down {
+.sidebar-nav .nav-link[data-toggle="collapse"]:not(.collapsed) .fa-chevron-down {
     transform: rotate(180deg);
 }
 
 /* Parent menu active saat submenu terbuka */
-.nav-item.has-submenu-open>.nav-link {
+.sidebar-nav .nav-item.has-submenu-open>.nav-link {
     background: rgba(255, 255, 255, 0.1);
 }
 
 /* Submenu Container */
-.collapse {
+.sidebar-nav .collapse {
     overflow: hidden;
     transition: height 0.3s ease-in-out;
 }
 
-.collapse:not(.show) {
+.sidebar-nav .collapse:not(.show) {
     display: none;
 }
 
-.collapse.show {
+.sidebar-nav .collapse.show {
     display: block;
 }
 
-.collapse.collapsing {
+.sidebar-nav .collapse.collapsing {
     position: relative;
     height: 0;
     overflow: hidden;
@@ -288,7 +288,7 @@ a:hover {
 }
 
 /* Submenu List Container */
-.collapse ul {
+.sidebar-nav .collapse ul {
     list-style: none;
     padding: 0;
     margin: 4px 12px 8px 12px;
@@ -297,12 +297,12 @@ a:hover {
 }
 
 /* Submenu Items - Override parent margin */
-.collapse .nav-item {
+.sidebar-nav .collapse .nav-item {
     margin: 0 !important;
 }
 
 /* Submenu Links - Override parent styles */
-.collapse .nav-link {
+.sidebar-nav .collapse .nav-link {
     padding: 10px 16px 10px 20px !important;
     font-size: 14px;
     font-weight: 400;
@@ -310,45 +310,21 @@ a:hover {
     gap: 8px;
 }
 
-/* Submenu Link Dot Indicator */
-/* .collapse .nav-link::before {
-    content: '';
-    position: absolute;
-    left: 24px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-    transition: var(--transition);
-}
-
-.collapse .nav-link:hover::before {
-    background: rgba(255, 255, 255, 0.6);
-    transform: translateY(-50%) scale(1.3);
-}
-
-.collapse .nav-link.active::before {
-    background: var(--white);
-    transform: translateY(-50%) scale(1.5);
-} */
-
 /* Submenu Link Icons - Override parent size */
-.collapse .nav-link i {
+.sidebar-nav .collapse .nav-link i {
     font-size: 16px !important;
     width: 20px !important;
 }
 
 /* Submenu Active State */
-.collapse .nav-link.active {
+.sidebar-nav .collapse .nav-link.active {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
     color: var(--white) !important;
     border-left: 3px solid rgba(255, 255, 255, 0.5);
     box-shadow: 0 2px 8px rgba(13, 148, 136, 0.2);
 }
 
-.collapse .nav-link:hover {
+.sidebar-nav .collapse .nav-link:hover {
     background: rgba(255, 255, 255, 0.08);
 }
 
@@ -1183,6 +1159,100 @@ a:hover {
     color: #0d6efd;
     background: transparent;
     border-bottom: 2px solid #0d6efd;
+}
+
+/* Card Header Tabs (seperti #ranapListTabs pada daftar pasien) */
+#ranapListTabs.nav-tabs,
+.card-header-tabs.nav-tabs {
+    border-bottom: 0 !important;
+    margin-bottom: -1px !important;
+    gap: 6px;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#ranapListTabs .nav-item,
+.card-header-tabs .nav-item {
+    margin: 0 !important;
+}
+
+#ranapListTabs .nav-link,
+.card-header-tabs .nav-link {
+    border: 1px solid transparent !important;
+    border-bottom: 1px solid transparent !important;
+    border-top-left-radius: 0.5rem !important;
+    border-top-right-radius: 0.5rem !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    padding: 0.625rem 1.25rem !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    color: #64748b !important;
+    background-color: transparent !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    box-shadow: none !important;
+    position: relative !important;
+    bottom: -1px !important;
+    transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease !important;
+}
+
+#ranapListTabs .nav-link i,
+.card-header-tabs .nav-link i {
+    font-size: 0.95rem;
+    color: #94a3b8;
+    transition: color 0.15s ease;
+}
+
+#ranapListTabs .nav-link:hover,
+.card-header-tabs .nav-link:hover {
+    color: #0d6efd !important;
+    background-color: #f8fafc !important;
+    border-color: #e2e8f0 #e2e8f0 transparent !important;
+}
+
+#ranapListTabs .nav-link:hover i,
+.card-header-tabs .nav-link:hover i {
+    color: #0d6efd;
+}
+
+#ranapListTabs .nav-link.active,
+.card-header-tabs .nav-link.active {
+    color: #0d6efd !important;
+    background-color: #ffffff !important;
+    border-color: #dee2e6 #dee2e6 #ffffff !important;
+    border-top: 2.5px solid #0d6efd !important;
+    border-bottom: 1px solid #ffffff !important;
+    font-weight: 600 !important;
+    box-shadow: none !important;
+    z-index: 2;
+}
+
+#ranapListTabs .nav-link.active i,
+.card-header-tabs .nav-link.active i {
+    color: #0d6efd !important;
+}
+
+#ranapListTabs .nav-link .badge,
+.card-header-tabs .nav-link .badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.55rem;
+    font-weight: 600;
+    line-height: 1;
+    border-radius: 9999px;
+}
+
+#ranapListTabs .nav-link.active .badge,
+.card-header-tabs .nav-link.active .badge {
+    background-color: #0d6efd !important;
+    color: #ffffff !important;
+}
+
+#ranapListTabs .nav-link:not(.active) .badge,
+.card-header-tabs .nav-link:not(.active) .badge {
+    background-color: #e2e8f0 !important;
+    color: #475569 !important;
 }
 
 .ralan-panel,

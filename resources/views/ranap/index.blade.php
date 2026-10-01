@@ -51,9 +51,9 @@
                 <div class="card-body p-3 d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-muted small fw-semibold">PULANG HARI INI</div>
-                        <h3 class="fw-bold text-dark mb-0 mt-1">{{ number_format($stats['pulangHariIni'] ?? 0) }}</h3>
+                        <h3 class="fw-bold text-success mb-0 mt-1">{{ number_format($stats['pulangHariIni'] ?? 0) }}</h3>
                     </div>
-                    <div class="rounded p-3 bg-light text-secondary border">
+                    <div class="rounded p-3 bg-light text-success border">
                         <i class="fas fa-user-check fa-2x"></i>
                     </div>
                 </div>
@@ -62,17 +62,17 @@
     </div>
 
     {{-- Main Content: Nav Tabs Pasien Aktif vs Berdasarkan Tanggal Keluar --}}
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-white border-bottom pt-3 pb-0">
+    <div class="card shadow-sm">
+        <div class="card-header bg-white border-bottom pt-3 pb-0 px-3">
             <ul class="nav nav-tabs card-header-tabs" id="ranapListTabs" role="tablist">
                 <li class="nav-item">
-                    <a class="nav-link {{ request('tab') != 'pulang' ? 'active fw-bold text-primary' : 'text-muted' }}" id="aktif-tab" data-bs-toggle="tab" href="#tab-aktif" role="tab">
+                    <a class="nav-link {{ request('tab') != 'pulang' ? 'active' : '' }}" id="aktif-tab" data-bs-toggle="tab" href="#tab-aktif" role="tab">
                         <i class="fas fa-bed me-1"></i> Pasien Aktif (Belum Pulang)
-                        <span class="badge bg-primary ms-1">{{ count($pasienAktif) }}</span>
+                        <span class="badge ms-1">{{ count($pasienAktif) }}</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request('tab') == 'pulang' ? 'active fw-bold text-primary' : 'text-muted' }}" id="pulang-tab" data-bs-toggle="tab" href="#tab-pulang" role="tab">
+                    <a class="nav-link {{ request('tab') == 'pulang' ? 'active' : '' }}" id="pulang-tab" data-bs-toggle="tab" href="#tab-pulang" role="tab">
                         <i class="fas fa-calendar-alt me-1"></i> Berdasarkan Tanggal Keluar
                     </a>
                 </li>
