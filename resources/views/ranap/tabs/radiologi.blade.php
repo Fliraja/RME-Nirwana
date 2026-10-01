@@ -1,12 +1,12 @@
 <div id="formPermintaanRadiologiRanap">
     {{-- BAGIAN 1: FORM PERMINTAAN RADIOLOGI --}}
-    <div class="card border shadow-none mb-4" style="background-color: #fafbfc;">
-        <div class="card-header bg-white border-bottom">
-            <h6 class="mb-0 fw-bold text-teal" style="color: #20c997;">
-                <i class="fas fa-x-ray me-1"></i> Form Permintaan Pemeriksaan Radiologi (Rawat Inap)
-            </h6>
+    <div class="ralan-card mb-4">
+        <div class="ralan-card-head">
+            <span class="fw-bold text-dark">
+                <i class="fas fa-x-ray me-2 text-primary"></i>Form Permintaan Pemeriksaan Radiologi (Rawat Inap)
+            </span>
         </div>
-        <div class="card-body p-3">
+        <div class="ralan-card-body">
             @csrf
             <input type="hidden" name="no_rawat" value="{{ $pasien->no_rawat }}">
 
@@ -37,16 +37,16 @@
     </div>
 
     {{-- BAGIAN 2: RIWAYAT PERMINTAAN RADIOLOGI HARI INI --}}
-    <div class="card border shadow-none mb-4">
-        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
-            <h6 class="mb-0 fw-bold text-dark">
-                <i class="fas fa-clock me-1 text-secondary"></i> Riwayat Permintaan Radiologi Hari Ini
-            </h6>
+    <div class="ralan-card mb-4">
+        <div class="ralan-card-head">
+            <span class="fw-bold text-dark">
+                <i class="fas fa-clock me-2 text-primary"></i>Riwayat Permintaan Radiologi Hari Ini
+            </span>
             <button type="button" class="btn btn-sm btn-outline-primary" onclick="loadRadiologi(true)">
                 <i class="fas fa-sync-alt me-1"></i> Refresh
             </button>
         </div>
-        <div class="card-body p-0">
+        <div class="ralan-card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover table-striped align-middle mb-0">
                     <thead class="table-light">
@@ -104,14 +104,14 @@
     <div class="row g-3">
         {{-- Galeri Foto Hasil Rontgen/Scan --}}
         <div class="col-lg-6">
-            <div class="card border shadow-sm h-100">
-                <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0 fw-bold text-dark">
-                        <i class="fas fa-images me-1 text-primary"></i> Galeri Foto Radiologi (Hasil Rontgen / Scan)
-                    </h6>
+            <div class="ralan-card h-100">
+                <div class="ralan-card-head">
+                    <span class="fw-bold text-dark">
+                        <i class="fas fa-images me-2 text-primary"></i>Galeri Foto Radiologi (Hasil Rontgen / Scan)
+                    </span>
                     <span class="badge bg-light text-muted border">{{ count($hasilRadiologi['gambar']) }} Gambar</span>
                 </div>
-                <div class="card-body p-3">
+                <div class="ralan-card-body">
                     @if(empty($hasilRadiologi['gambar']) || count($hasilRadiologi['gambar']) == 0)
                         <div class="text-center p-4 text-muted">
                             <i class="fas fa-image fa-3x mb-2 d-block text-secondary" style="opacity: 0.3;"></i>
@@ -139,13 +139,13 @@
 
         {{-- Laporan Hasil Ekspertise Dokter Spesialis Radiologi --}}
         <div class="col-lg-6">
-            <div class="card border shadow-sm h-100">
-                <div class="card-header bg-white border-bottom">
-                    <h6 class="mb-0 fw-bold text-dark">
-                        <i class="fas fa-file-signature me-1 text-success"></i> Hasil Ekspertise Radiologi (Bacaan Dokter Spesialis)
-                    </h6>
+            <div class="ralan-card h-100">
+                <div class="ralan-card-head">
+                    <span class="fw-bold text-dark">
+                        <i class="fas fa-file-signature me-2 text-success"></i>Hasil Ekspertise Radiologi (Bacaan Dokter Spesialis)
+                    </span>
                 </div>
-                <div class="card-body p-3">
+                <div class="ralan-card-body">
                     @if(empty($hasilRadiologi['expertise']) || count($hasilRadiologi['expertise']) == 0)
                         <div class="text-center p-4 text-muted">
                             <i class="fas fa-notes-medical fa-3x mb-2 d-block text-secondary" style="opacity: 0.3;"></i>

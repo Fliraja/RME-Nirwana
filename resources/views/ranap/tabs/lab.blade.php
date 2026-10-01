@@ -1,12 +1,12 @@
 <div id="formPermintaanLabRanap">
     {{-- BAGIAN 1: FORM PERMINTAAN LAB --}}
-    <div class="card border shadow-none mb-4" style="background-color: #fafbfc;">
-        <div class="card-header bg-white border-bottom">
-            <h6 class="mb-0 fw-bold text-primary">
-                <i class="fas fa-file-medical me-1"></i> Form Permintaan Pemeriksaan Laboratorium (Rawat Inap)
-            </h6>
+    <div class="ralan-card mb-4">
+        <div class="ralan-card-head">
+            <span class="fw-bold text-dark">
+                <i class="fas fa-file-medical me-2 text-primary"></i>Form Permintaan Pemeriksaan Laboratorium (Rawat Inap)
+            </span>
         </div>
-        <div class="card-body p-3">
+        <div class="ralan-card-body">
             @csrf
             <input type="hidden" name="no_rawat" value="{{ $pasien->no_rawat }}">
 
@@ -30,7 +30,7 @@
                 </div>
 
                 <div class="col-md-6">
-                    <div id="container-template-lab" class="card shadow-none border p-3 h-100" style="min-height: 200px; background-color: #ffffff;">
+                    <div id="container-template-lab" class="card shadow-none border p-3 h-100 bg-white" style="min-height: 200px;">
                         <h6 class="fw-bold border-bottom pb-2 small text-dark"><i class="fas fa-microscope text-primary me-1"></i> Detail Item / Template Pemeriksaan</h6>
                         <div id="detail-pemeriksaan-placeholder" class="text-center text-muted mt-4">
                             <i class="fas fa-flask fa-3x mb-2" style="opacity: 0.25;"></i>
@@ -50,16 +50,16 @@
     </div>
 
     {{-- BAGIAN 2: RIWAYAT PERMINTAAN LAB HARI INI --}}
-    <div class="card border shadow-none mb-4">
-        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
-            <h6 class="mb-0 fw-bold text-dark">
-                <i class="fas fa-clock me-1 text-secondary"></i> Riwayat Permintaan Lab Hari Ini
-            </h6>
+    <div class="ralan-card mb-4">
+        <div class="ralan-card-head">
+            <span class="fw-bold text-dark">
+                <i class="fas fa-clock me-2 text-primary"></i>Riwayat Permintaan Lab Hari Ini
+            </span>
             <button type="button" class="btn btn-sm btn-outline-primary" onclick="loadLab(true)">
                 <i class="fas fa-sync-alt me-1"></i> Refresh
             </button>
         </div>
-        <div class="card-body p-0">
+        <div class="ralan-card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover table-striped align-middle mb-0">
                     <thead class="table-light">
@@ -114,16 +114,16 @@
     </div>
 
     {{-- BAGIAN 3: HASIL PEMERIKSAAN LABORATORIUM RESMI (HASIL) --}}
-    <div class="card border shadow-sm">
-        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
-            <h6 class="mb-0 fw-bold text-success">
-                <i class="fas fa-poll-h me-1"></i> Hasil Pemeriksaan Laboratorium Pasien (Terverifikasi)
-            </h6>
-            <span class="badge bg-success-soft text-success border border-success">
+    <div class="ralan-card">
+        <div class="ralan-card-head">
+            <span class="fw-bold text-dark">
+                <i class="fas fa-poll-h me-2 text-primary"></i>Hasil Pemeriksaan Laboratorium Pasien (Terverifikasi)
+            </span>
+            <span class="badge bg-light text-success border">
                 <i class="fas fa-check-double me-1"></i> Terintegrasi SIMRS
             </span>
         </div>
-        <div class="card-body p-3">
+        <div class="ralan-card-body">
             @if(empty($hasilLab))
                 <div class="text-center p-4 text-muted">
                     <i class="fas fa-file-medical-alt fa-3x mb-2 d-block text-secondary" style="opacity: 0.3;"></i>

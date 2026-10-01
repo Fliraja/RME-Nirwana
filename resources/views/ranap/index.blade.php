@@ -19,13 +19,13 @@
     {{-- Cards Statistik --}}
     <div class="row g-3 mb-4">
         <div class="col-12 col-sm-6 col-xl-4">
-            <div class="card shadow-sm border-0 border-start border-primary border-4">
+            <div class="card shadow-sm border">
                 <div class="card-body p-3 d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-muted small fw-semibold">PASIEN AKTIF DIRAWAT</div>
                         <h3 class="fw-bold text-primary mb-0 mt-1">{{ number_format($stats['totalPasienAktif'] ?? 0) }}</h3>
                     </div>
-                    <div class="avatar bg-primary-soft text-primary rounded p-3" style="background: rgba(13,110,253,0.1);">
+                    <div class="rounded p-3 bg-light text-primary border">
                         <i class="fas fa-procedures fa-2x"></i>
                     </div>
                 </div>
@@ -33,13 +33,13 @@
         </div>
 
         <div class="col-12 col-sm-6 col-xl-4">
-            <div class="card shadow-sm border-0 border-start border-success border-4">
+            <div class="card shadow-sm border">
                 <div class="card-body p-3 d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-muted small fw-semibold">MASUK HARI INI</div>
                         <h3 class="fw-bold text-success mb-0 mt-1">{{ number_format($stats['masukHariIni'] ?? 0) }}</h3>
                     </div>
-                    <div class="avatar bg-success-soft text-success rounded p-3" style="background: rgba(25,135,84,0.1);">
+                    <div class="rounded p-3 bg-light text-success border">
                         <i class="fas fa-sign-in-alt fa-2x"></i>
                     </div>
                 </div>
@@ -47,13 +47,13 @@
         </div>
 
         <div class="col-12 col-sm-6 col-xl-4">
-            <div class="card shadow-sm border-0 border-start border-warning border-4">
+            <div class="card shadow-sm border">
                 <div class="card-body p-3 d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-muted small fw-semibold">PULANG HARI INI</div>
-                        <h3 class="fw-bold text-warning mb-0 mt-1">{{ number_format($stats['pulangHariIni'] ?? 0) }}</h3>
+                        <h3 class="fw-bold text-dark mb-0 mt-1">{{ number_format($stats['pulangHariIni'] ?? 0) }}</h3>
                     </div>
-                    <div class="avatar bg-warning-soft text-warning rounded p-3" style="background: rgba(255,193,7,0.1);">
+                    <div class="rounded p-3 bg-light text-secondary border">
                         <i class="fas fa-user-check fa-2x"></i>
                     </div>
                 </div>
@@ -140,7 +140,7 @@
                                             <small class="d-block text-muted">{{ $p->jam_masuk }} ({{ $lamaHari == 0 ? 'Hari ini' : $lamaHari . ' hari' }})</small>
                                         </td>
                                         <td>
-                                            <span class="badge bg-info text-dark">{{ $p->png_jawab }}</span>
+                                            <span class="badge bg-primary">{{ $p->png_jawab }}</span>
                                         </td>
                                         <td>
                                             <small class="text-dark fw-semibold">{{ $p->dpjp ?? '-' }}</small>
@@ -221,7 +221,7 @@
                                             <span class="badge bg-secondary">{{ $p->stts_pulang }}</span>
                                         </td>
                                         <td>
-                                            <small>{{ $p->png_jawab }}</small>
+                                            <span class="badge bg-primary">{{ $p->png_jawab }}</span>
                                         </td>
                                         <td class="text-center">
                                             <a href="{{ route('ranap.index', ['action' => 'view', 'no_rawat' => $p->no_rawat]) }}" class="btn btn-sm btn-outline-primary">

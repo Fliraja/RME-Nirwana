@@ -17,11 +17,11 @@
         <div class="tab-content" id="pills-tabContentResep">
             {{-- SUBTAB 1: NON RACIKAN --}}
             <div class="tab-pane fade show active" id="resep-umum" role="tabpanel">
-                <div class="card border shadow-none mb-3">
-                    <div class="card-header bg-white border-bottom">
-                        <span class="fw-bold text-primary"><i class="fas fa-pills me-2"></i>Form Resep Obat Non-Racikan (Ranap)</span>
+                <div class="ralan-card mb-3">
+                    <div class="ralan-card-head">
+                        <span class="fw-bold text-dark"><i class="fas fa-pills me-2 text-primary"></i>Form Resep Obat Non-Racikan (Ranap)</span>
                     </div>
-                    <div class="card-body p-3">
+                    <div class="ralan-card-body">
                         <div id="formResepObat">
                             @csrf
                             <input type="hidden" name="no_rawat" value="{{ $pasien->no_rawat }}">
@@ -81,11 +81,11 @@
                     @csrf
                     <input type="hidden" name="no_rawat" value="{{ $pasien->no_rawat }}">
                     
-                    <div class="card border shadow-none mb-3">
-                        <div class="card-header bg-white border-bottom fw-bold text-success">
-                            <i class="fas fa-mortar-pestle me-1"></i> Informasi Racikan
+                    <div class="ralan-card mb-3">
+                        <div class="ralan-card-head">
+                            <span class="fw-bold text-dark"><i class="fas fa-mortar-pestle me-2 text-success"></i>Informasi Racikan</span>
                         </div>
-                        <div class="card-body p-3">
+                        <div class="ralan-card-body">
                             <div class="row g-2 mb-3">
                                 <div class="col-md-4">
                                     <label class="small fw-bold">Nama Racikan <span class="text-danger">*</span></label>
@@ -178,16 +178,16 @@
         </div>
 
         {{-- BAGIAN 2: DAFTAR RESEP HARI INI DARI DOKTER --}}
-        <div class="card border shadow-none mb-4">
-            <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
-                <h6 class="mb-0 fw-bold text-dark">
-                    <i class="fas fa-clipboard-list me-1 text-warning"></i> Antrean Resep Hari Ini (Validasi Apotek)
-                </h6>
+        <div class="ralan-card mb-4">
+            <div class="ralan-card-head">
+                <span class="fw-bold text-dark">
+                    <i class="fas fa-clipboard-list me-1 text-primary"></i> Antrean Resep Hari Ini (Validasi Apotek)
+                </span>
                 <button type="button" class="btn btn-sm btn-outline-primary" onclick="loadResep(true)">
                     <i class="fas fa-sync-alt me-1"></i> Refresh
                 </button>
             </div>
-            <div class="card-body p-0">
+            <div class="ralan-card-body p-0">
                 <div id="resep-table-container">
                     @if($resep)
                         <div class="p-3">
@@ -254,16 +254,16 @@
         </div>
 
         {{-- BAGIAN 3: RIWAYAT REALISASI PEMBERIAN OBAT DI BANGSAL (HASIL) --}}
-        <div class="card border shadow-sm">
-            <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
-                <h6 class="mb-0 fw-bold text-success">
-                    <i class="fas fa-syringe me-1"></i> Riwayat Pemberian Obat di Ruang Perawatan (Realisasi Bangsal)
-                </h6>
-                <span class="badge bg-success-soft text-success border border-success">
+        <div class="ralan-card">
+            <div class="ralan-card-head">
+                <span class="fw-bold text-dark">
+                    <i class="fas fa-syringe me-2 text-primary"></i>Riwayat Pemberian Obat di Ruang Perawatan (Realisasi Bangsal)
+                </span>
+                <span class="badge bg-light text-success border">
                     <i class="fas fa-check-circle me-1"></i> Data Real-Time Perawat
                 </span>
             </div>
-            <div class="card-body p-0">
+            <div class="ralan-card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover table-striped align-middle mb-0">
                         <thead class="table-light">
