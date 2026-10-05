@@ -16,35 +16,36 @@
                     <input type="hidden" name="tgl_perawatan_edit_soap" id="tgl_perawatan_edit_soap" value="">
                     <input type="hidden" name="jam_rawat_edit_soap" id="jam_rawat_edit_soap" value="">
 
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label small fw-semibold text-muted">Subjektif (Keluhan Pasien / Anamnesis)</label>
-                            <textarea name="keluhan" id="soap_keluhan" class="form-control form-control-sm" rows="3" placeholder="Keluhan utama, riwayat keluhan saat ini..."></textarea>
+                    <div class="row mt-2">
+                        <div class="col-md-6 mb-3">
+                            <label class="fw-bold mb-2">Subjek (Keluhan)</label>
+                            <textarea name="keluhan" id="soap_keluhan" class="form-control" rows="5" placeholder="Keluhan utama, riwayat keluhan saat ini..."></textarea>
                         </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label small fw-semibold text-muted">Objektif (Pemeriksaan Fisik & Penunjang)</label>
-                            <textarea name="pemeriksaan" id="soap_pemeriksaan" class="form-control form-control-sm" rows="3" placeholder="Hasil pemeriksaan fisik, status lokalis, penunjang..."></textarea>
+                        <div class="col-md-6 mb-3">
+                            <label class="fw-bold mb-2">Objek (Pemeriksaan Fisik)</label>
+                            <textarea name="pemeriksaan" id="soap_pemeriksaan" class="form-control" rows="5" placeholder="Hasil pemeriksaan fisik, status lokalis, penunjang..."></textarea>
                         </div>
+                    </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label small fw-semibold text-muted">Asesmen (Penilaian Klinis / Diagnosa Kerja)</label>
-                            <textarea name="penilaian" id="soap_penilaian" class="form-control form-control-sm" rows="3" placeholder="Diagnosis kerja, diagnosis banding, perbaikan / perburukan..."></textarea>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="fw-bold mb-2">Assesmen (Diagnosa)</label>
+                            <textarea name="penilaian" id="soap_penilaian" class="form-control" rows="4" placeholder="Diagnosis kerja, diagnosis banding..."></textarea>
                         </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label small fw-semibold text-muted">Plan (Rencana Terapi / RTL)</label>
-                            <textarea name="rtl" id="soap_rtl" class="form-control form-control-sm" rows="3" placeholder="Rencana pengobatan, tindakan, monitoring..."></textarea>
+                        <div class="col-md-4 mb-3">
+                            <label class="fw-bold mb-2">Plan (Terapi/Tindakan)</label>
+                            <textarea name="rtl" id="soap_rtl" class="form-control" rows="4" placeholder="Rencana pengobatan, tindakan, monitoring..."></textarea>
                         </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label small fw-semibold text-muted">Instruksi Medis</label>
-                            <textarea name="instruksi" id="soap_instruksi" class="form-control form-control-sm" rows="2" placeholder="Instruksi khusus kepada perawat / tim medis..."></textarea>
+                        <div class="col-md-4 mb-3">
+                            <label class="fw-bold mb-2">Instruksi / RTL</label>
+                            <textarea name="instruksi" id="soap_instruksi" class="form-control" rows="4" placeholder="Instruksi khusus kepada perawat / tim medis..."></textarea>
                         </div>
+                    </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label small fw-semibold text-muted">Evaluasi Kondisi</label>
-                            <textarea name="evaluasi" id="soap_evaluasi" class="form-control form-control-sm" rows="2" placeholder="Evaluasi harian perkembangan terapi..."></textarea>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="fw-bold mb-2">Evaluasi</label>
+                            <textarea name="evaluasi" id="soap_evaluasi" class="form-control" rows="3" placeholder="Evaluasi harian / perkembangan respon terapi..."></textarea>
                         </div>
                     </div>
 
@@ -82,6 +83,7 @@
                             <th>Asesmen (A)</th>
                             <th>Plan (P)</th>
                             <th>Instruksi</th>
+                            <th>Evaluasi</th>
                             <th class="text-center" style="width: 110px;">Aksi</th>
                         </tr>
                     </thead>
@@ -100,6 +102,7 @@
                                 <td class="small"><strong>{{ $soap->penilaian ?: '-' }}</strong></td>
                                 <td class="small">{{ $soap->rtl ?: '-' }}</td>
                                 <td class="small">{{ $soap->instruksi ?: '-' }}</td>
+                                <td class="small">{{ $soap->evaluasi ?: '-' }}</td>
                                 <td class="text-center">
                                     @if($soap->nip == $currentUserNip || session('role') === 'admin')
                                         <div class="btn-group btn-group-sm">
@@ -117,7 +120,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center p-4 text-muted small">
+                                <td colspan="8" class="text-center p-4 text-muted small">
                                     Belum ada catatan perkembangan SOAP untuk rawat inap ini.
                                 </td>
                             </tr>

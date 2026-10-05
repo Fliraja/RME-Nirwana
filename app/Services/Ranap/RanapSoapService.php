@@ -17,9 +17,36 @@ class RanapSoapService
             ->leftJoin('pegawai', 'pemeriksaan_ranap.nip', '=', 'pegawai.nik')
             ->where('pemeriksaan_ranap.no_rawat', $noRawat)
             ->where(function ($q) {
-                $q->whereNotNull('pemeriksaan_ranap.keluhan')
-                  ->orWhereNotNull('pemeriksaan_ranap.pemeriksaan')
-                  ->orWhereNotNull('pemeriksaan_ranap.penilaian');
+                $q->where(function ($s) {
+                    $s->whereNotNull('pemeriksaan_ranap.keluhan')
+                      ->where('pemeriksaan_ranap.keluhan', '!=', '')
+                      ->where('pemeriksaan_ranap.keluhan', '!=', '-');
+                })
+                ->orWhere(function ($s) {
+                    $s->whereNotNull('pemeriksaan_ranap.pemeriksaan')
+                      ->where('pemeriksaan_ranap.pemeriksaan', '!=', '')
+                      ->where('pemeriksaan_ranap.pemeriksaan', '!=', '-');
+                })
+                ->orWhere(function ($s) {
+                    $s->whereNotNull('pemeriksaan_ranap.penilaian')
+                      ->where('pemeriksaan_ranap.penilaian', '!=', '')
+                      ->where('pemeriksaan_ranap.penilaian', '!=', '-');
+                })
+                ->orWhere(function ($s) {
+                    $s->whereNotNull('pemeriksaan_ranap.rtl')
+                      ->where('pemeriksaan_ranap.rtl', '!=', '')
+                      ->where('pemeriksaan_ranap.rtl', '!=', '-');
+                })
+                ->orWhere(function ($s) {
+                    $s->whereNotNull('pemeriksaan_ranap.instruksi')
+                      ->where('pemeriksaan_ranap.instruksi', '!=', '')
+                      ->where('pemeriksaan_ranap.instruksi', '!=', '-');
+                })
+                ->orWhere(function ($s) {
+                    $s->whereNotNull('pemeriksaan_ranap.evaluasi')
+                      ->where('pemeriksaan_ranap.evaluasi', '!=', '')
+                      ->where('pemeriksaan_ranap.evaluasi', '!=', '-');
+                });
             })
             ->select([
                 'pemeriksaan_ranap.no_rawat',
@@ -48,9 +75,9 @@ class RanapSoapService
         $isEdit = !empty($data['mode_edit_soap']) && $data['mode_edit_soap'] == '1';
 
         $keluhan = $data['keluhan'] ?? '';
-        $pemeriksaan = $data['pemeriksaan'] ?? '';
+        $pemeriksaan = $data['pemeriksaan'] ?? ($data['objek'] ?? '');
         $penilaian = $data['penilaian'] ?? '';
-        $rtl = $data['rtl'] ?? '';
+        $rtl = $data['rtl'] ?? ($data['plan'] ?? '');
         $instruksi = $data['instruksi'] ?? '';
         $evaluasi = $data['evaluasi'] ?? '-';
 

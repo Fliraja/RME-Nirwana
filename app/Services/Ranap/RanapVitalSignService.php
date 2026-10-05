@@ -21,10 +21,51 @@ class RanapVitalSignService
             ->leftJoin('pegawai', 'pemeriksaan_ranap.nip', '=', 'pegawai.nik')
             ->where('pemeriksaan_ranap.no_rawat', $noRawat)
             ->where(function ($q) {
-                $q->where('pemeriksaan_ranap.suhu_tubuh', '!=', '')
-                  ->orWhere('pemeriksaan_ranap.tensi', '!=', '-')
-                  ->orWhere('pemeriksaan_ranap.nadi', '!=', '')
-                  ->orWhereNotNull('catatan_sbar_ranap.sbar');
+                $q->where(function ($v) {
+                    $v->whereNotNull('pemeriksaan_ranap.suhu_tubuh')
+                      ->where('pemeriksaan_ranap.suhu_tubuh', '!=', '')
+                      ->where('pemeriksaan_ranap.suhu_tubuh', '!=', '-');
+                })
+                ->orWhere(function ($v) {
+                    $v->whereNotNull('pemeriksaan_ranap.tensi')
+                      ->where('pemeriksaan_ranap.tensi', '!=', '')
+                      ->where('pemeriksaan_ranap.tensi', '!=', '-');
+                })
+                ->orWhere(function ($v) {
+                    $v->whereNotNull('pemeriksaan_ranap.nadi')
+                      ->where('pemeriksaan_ranap.nadi', '!=', '')
+                      ->where('pemeriksaan_ranap.nadi', '!=', '-');
+                })
+                ->orWhere(function ($v) {
+                    $v->whereNotNull('pemeriksaan_ranap.respirasi')
+                      ->where('pemeriksaan_ranap.respirasi', '!=', '')
+                      ->where('pemeriksaan_ranap.respirasi', '!=', '-');
+                })
+                ->orWhere(function ($v) {
+                    $v->whereNotNull('pemeriksaan_ranap.spo2')
+                      ->where('pemeriksaan_ranap.spo2', '!=', '')
+                      ->where('pemeriksaan_ranap.spo2', '!=', '-');
+                })
+                ->orWhere(function ($v) {
+                    $v->whereNotNull('pemeriksaan_ranap.gcs')
+                      ->where('pemeriksaan_ranap.gcs', '!=', '')
+                      ->where('pemeriksaan_ranap.gcs', '!=', '-');
+                })
+                ->orWhere(function ($v) {
+                    $v->whereNotNull('pemeriksaan_ranap.tinggi')
+                      ->where('pemeriksaan_ranap.tinggi', '!=', '')
+                      ->where('pemeriksaan_ranap.tinggi', '!=', '-');
+                })
+                ->orWhere(function ($v) {
+                    $v->whereNotNull('pemeriksaan_ranap.berat')
+                      ->where('pemeriksaan_ranap.berat', '!=', '')
+                      ->where('pemeriksaan_ranap.berat', '!=', '-');
+                })
+                ->orWhere(function ($v) {
+                    $v->whereNotNull('catatan_sbar_ranap.sbar')
+                      ->where('catatan_sbar_ranap.sbar', '!=', '')
+                      ->where('catatan_sbar_ranap.sbar', '!=', '-');
+                });
             })
             ->select([
                 'pemeriksaan_ranap.no_rawat',
