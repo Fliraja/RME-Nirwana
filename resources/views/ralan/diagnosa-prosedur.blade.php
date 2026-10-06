@@ -97,7 +97,7 @@
                     </table>
                 </div>
 
-                <button type="button" id="btn-simpan-prosedur" class="btn btn-success btn-sm w-100">
+                <button type="button" id="btn-simpan-prosedur" class="btn btn-primary btn-sm w-100">
                     <i class="fas fa-save me-1"></i> Simpan Prosedur
                 </button>
 
