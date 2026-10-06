@@ -142,6 +142,58 @@ function initSoapHandlers() {
             }
         });
     });
+
+    // Klik badan tabel untuk langsung mengisi form input (memudahkan entri CPPT)
+    $('#tableRiwayatSoap tbody').off('click', 'tr.soap-row-item').on('click', 'tr.soap-row-item', function(e) {
+        if ($(e.target).closest('button, .btn, a').length) {
+            return;
+        }
+        var soapData = $(this).data('soap');
+        if (soapData) {
+            salinSoapKeForm(soapData, this);
+        }
+    });
+}
+
+function salinSoapKeForm(soap, rowEl) {
+    $('#soap_keluhan').val(soap.keluhan || '');
+    $('#soap_pemeriksaan').val(soap.pemeriksaan || '');
+    $('#soap_penilaian').val(soap.penilaian || '');
+    $('#soap_rtl').val(soap.rtl || '');
+    $('#soap_instruksi').val(soap.instruksi || '');
+    $('#soap_evaluasi').val(soap.evaluasi || '');
+
+    // Tetap mode tambah baru (CPPT baru dengan tgl & jam sekarang)
+    $('#mode_edit_soap').val('0');
+    $('#tgl_perawatan_edit_soap').val('');
+    $('#jam_rawat_edit_soap').val('');
+
+    var tglJam = (soap.tgl_perawatan || '') + ' ' + (soap.jam_rawat || '');
+    $('#titleFormSoap').html('<i class="fas fa-copy me-1 text-primary"></i> Form Catatan SOAP (Salin dari ' + tglJam + ')');
+    $('#badgeModeSoap').removeClass('bg-warning text-dark bg-light text-muted').addClass('bg-primary text-white').text('Mode: Salin ke Baru');
+    $('#btnBatalEditSoap').removeClass('d-none').html('<i class="fas fa-undo me-1"></i> Bersihkan Form');
+    $('#btnSimpanSoap').removeClass('btn-warning').addClass('btn-primary').html('<i class="fas fa-save me-1"></i> Simpan SOAP Baru');
+
+    $('#tableRiwayatSoap tbody tr').removeClass('table-primary table-warning');
+    if (rowEl) {
+        $(rowEl).addClass('table-primary');
+    }
+
+    $('html, body').animate({ scrollTop: $('#titleFormSoap').offset().top - 100 }, 300);
+
+    if (typeof Swal !== 'undefined') {
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 1500,
+            timerProgressBar: true
+        });
+        Toast.fire({
+            icon: 'info',
+            title: 'Data SOAP disalin ke form input'
+        });
+    }
 }
 
 function editSoap(soap) {
@@ -157,9 +209,14 @@ function editSoap(soap) {
     $('#soap_evaluasi').val(soap.evaluasi || '');
 
     $('#titleFormSoap').html('<i class="fas fa-edit me-1 text-warning"></i> Edit Catatan SOAP (' + soap.tgl_perawatan + ' ' + soap.jam_rawat + ')');
-    $('#badgeModeSoap').removeClass('bg-light text-muted').addClass('bg-warning text-dark').text('Mode: Edit');
-    $('#btnBatalEditSoap').removeClass('d-none');
+    $('#badgeModeSoap').removeClass('bg-light text-muted bg-primary text-white').addClass('bg-warning text-dark').text('Mode: Edit');
+    $('#btnBatalEditSoap').removeClass('d-none').html('<i class="fas fa-times me-1"></i> Batal Edit');
     $('#btnSimpanSoap').removeClass('btn-primary').addClass('btn-warning').html('<i class="fas fa-sync-alt me-1"></i> Perbarui Catatan SOAP');
+
+    $('#tableRiwayatSoap tbody tr').removeClass('table-primary table-warning');
+    var safeTgl = (soap.tgl_perawatan || '').replace(/-/g, '');
+    var safeJam = (soap.jam_rawat || '').replace(/:/g, '');
+    $('#row-soap-' + safeTgl + '-' + safeJam).addClass('table-warning');
 
     $('html, body').animate({ scrollTop: $('#titleFormSoap').offset().top - 100 }, 300);
 }
@@ -169,10 +226,11 @@ function resetFormSoap() {
     $('#tgl_perawatan_edit_soap').val('');
     $('#jam_rawat_edit_soap').val('');
     $('#formSoapRanap')[0].reset();
+    $('#tableRiwayatSoap tbody tr').removeClass('table-primary table-warning');
 
-    $('#titleFormSoap').html('<i class="fas fa-plus-circle me-1"></i> Form Catatan Perkembangan Pasien Terintegrasi (CPPT / SOAP)');
-    $('#badgeModeSoap').removeClass('bg-warning text-dark').addClass('bg-light text-muted').text('Mode: Tambah Baru');
-    $('#btnBatalEditSoap').addClass('d-none');
+    $('#titleFormSoap').html('<i class="fas fa-notes-medical me-2 text-primary"></i>Catatan Perkembangan Pasien Terintegrasi (CPPT / SOAP)');
+    $('#badgeModeSoap').removeClass('bg-warning text-dark bg-primary text-white').addClass('bg-light text-muted').text('Mode: Tambah Baru');
+    $('#btnBatalEditSoap').addClass('d-none').html('<i class="fas fa-times me-1"></i> Batal Edit');
     $('#btnSimpanSoap').removeClass('btn-warning').addClass('btn-primary').html('<i class="fas fa-save me-1"></i> Simpan SOAP');
 }
 

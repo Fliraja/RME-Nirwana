@@ -62,13 +62,28 @@
         </div>
     </div>
 
+<style>
+    .soap-row-item {
+        cursor: pointer;
+        transition: background-color 0.15s ease-in-out;
+    }
+    .soap-row-item:hover {
+        background-color: #eef6ff !important;
+    }
+</style>
+
     {{-- Tabel Riwayat SOAP Ranap --}}
     <div class="col-lg-12">
         <div class="ralan-card">
-            <div class="ralan-card-head">
-                <span class="fw-bold">
-                    <i class="fas fa-history me-2 text-primary"></i>Riwayat Catatan CPPT / SOAP
-                </span>
+            <div class="ralan-card-head d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="fw-bold">
+                        <i class="fas fa-history me-2 text-primary"></i>Riwayat Catatan CPPT / SOAP
+                    </span>
+                    <span class="badge bg-light text-muted border ms-2 small fw-normal">
+                        <i class="fas fa-mouse-pointer me-1 text-primary"></i>Klik baris untuk salin ke form
+                    </span>
+                </div>
                 <button type="button" class="btn btn-sm btn-outline-primary" onclick="loadSoap(true)">
                     <i class="fas fa-sync-alt me-1"></i> Refresh
                 </button>
@@ -89,7 +104,10 @@
                     </thead>
                     <tbody>
                         @forelse($riwayatSoap as $soap)
-                            <tr id="row-soap-{{ str_replace('-', '', $soap->tgl_perawatan) }}-{{ str_replace(':', '', $soap->jam_rawat) }}">
+                            <tr id="row-soap-{{ str_replace('-', '', $soap->tgl_perawatan) }}-{{ str_replace(':', '', $soap->jam_rawat) }}"
+                                class="soap-row-item"
+                                data-soap="{{ json_encode($soap) }}"
+                                title="Klik untuk menyalin data SOAP ini ke form input">
                                 <td class="small">
                                     <span class="fw-bold text-dark d-block">
                                         {{ \Carbon\Carbon::parse($soap->tgl_perawatan)->translatedFormat('d/m/Y') }}
