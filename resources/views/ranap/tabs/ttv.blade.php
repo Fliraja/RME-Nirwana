@@ -16,99 +16,102 @@
                     <input type="hidden" name="tgl_perawatan_edit_ttv" id="tgl_perawatan_edit_ttv" value="">
                     <input type="hidden" name="jam_rawat_edit_ttv" id="jam_rawat_edit_ttv" value="">
 
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-2 col-sm-4 col-6">
-                            <label class="form-label small fw-semibold text-muted">Suhu Tubuh (°C)</label>
-                            <div class="input-group input-group-sm">
-                                <input type="text" name="suhu_tubuh" id="ttv_suhu_tubuh" class="form-control" placeholder="36.5">
-                                <span class="input-group-text">°C</span>
+                    <div class="row">
+                        <div class="col-md-3 col-6">
+                            <div class="mb-3">
+                                <label class="small fw-bold">Tensi (mmHg)</label>
+                                <input type="text" name="tensi" id="ttv_tensi" class="form-control form-control-sm" placeholder="120/80">
                             </div>
                         </div>
 
-                        <div class="col-md-2 col-sm-4 col-6">
-                            <label class="form-label small fw-semibold text-muted">Tensi (TD)</label>
-                            <div class="input-group input-group-sm">
-                                <input type="text" name="tensi" id="ttv_tensi" class="form-control" placeholder="120/80">
-                                <span class="input-group-text">mmHg</span>
+                        <div class="col-md-2 col-6">
+                            <div class="mb-3">
+                                <label class="small fw-bold">Suhu (°C)</label>
+                                <input type="text" name="suhu_tubuh" id="ttv_suhu_tubuh" class="form-control form-control-sm" placeholder="36.5">
                             </div>
                         </div>
 
-                        <div class="col-md-2 col-sm-4 col-6">
-                            <label class="form-label small fw-semibold text-muted">Nadi</label>
-                            <div class="input-group input-group-sm">
-                                <input type="text" name="nadi" id="ttv_nadi" class="form-control" placeholder="80">
-                                <span class="input-group-text">x/m</span>
+                        <div class="col-md-2 col-6">
+                            <div class="mb-3">
+                                <label class="small fw-bold">Nadi (/mnt)</label>
+                                <input type="text" name="nadi" id="ttv_nadi" class="form-control form-control-sm" placeholder="80">
                             </div>
                         </div>
 
-                        <div class="col-md-2 col-sm-4 col-6">
-                            <label class="form-label small fw-semibold text-muted">Respirasi (RR)</label>
-                            <div class="input-group input-group-sm">
-                                <input type="text" name="respirasi" id="ttv_respirasi" class="form-control" placeholder="20">
-                                <span class="input-group-text">x/m</span>
+                        <div class="col-md-2 col-6">
+                            <div class="mb-3">
+                                <label class="small fw-bold">Respirasi (/mnt)</label>
+                                <input type="text" name="respirasi" id="ttv_respirasi" class="form-control form-control-sm" placeholder="20">
                             </div>
                         </div>
 
-                        <div class="col-md-2 col-sm-4 col-6">
-                            <label class="form-label small fw-semibold text-muted">SpO2</label>
-                            <div class="input-group input-group-sm">
-                                <input type="text" name="spo2" id="ttv_spo2" class="form-control" placeholder="98">
-                                <span class="input-group-text">%</span>
+                        <div class="col-md-3 col-12">
+                            <div class="mb-3">
+                                <label class="small fw-bold">Kesadaran</label>
+                                <select name="kesadaran" id="ttv_kesadaran" class="form-select form-select-sm">
+                                    <option value="Compos Mentis">Compos Mentis</option>
+                                    <option value="Somnolence">Somnolence</option>
+                                    <option value="Sopor">Sopor</option>
+                                    <option value="Coma">Coma</option>
+                                    <option value="Alert">Alert</option>
+                                    <option value="Confusion">Confusion</option>
+                                    <option value="Voice">Voice</option>
+                                    <option value="Pain">Pain</option>
+                                    <option value="Unresponsive">Unresponsive</option>
+                                    <option value="Apatis">Apatis</option>
+                                    <option value="Delirium">Delirium</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-2 col-6">
+                            <div class="mb-3">
+                                <label class="small fw-bold">Tinggi (cm)</label>
+                                <input type="text" name="tinggi" id="ttv_tinggi" class="form-control form-control-sm" placeholder="165">
                             </div>
                         </div>
 
-                        <div class="col-md-2 col-sm-4 col-6">
-                            <label class="form-label small fw-semibold text-muted">GCS (E,V,M)</label>
-                            <input type="text" name="gcs" id="ttv_gcs" class="form-control form-control-sm" placeholder="15">
-                        </div>
-
-                        <div class="col-md-2 col-sm-4 col-6">
-                            <label class="form-label small fw-semibold text-muted">Tinggi (TB)</label>
-                            <div class="input-group input-group-sm">
-                                <input type="text" name="tinggi" id="ttv_tinggi" class="form-control" placeholder="165">
-                                <span class="input-group-text">cm</span>
+                        <div class="col-md-2 col-6">
+                            <div class="mb-3">
+                                <label class="small fw-bold">Berat (Kg)</label>
+                                <input type="text" name="berat" id="ttv_berat" class="form-control form-control-sm" placeholder="60">
                             </div>
                         </div>
 
-                        <div class="col-md-2 col-sm-4 col-6">
-                            <label class="form-label small fw-semibold text-muted">Berat (BB)</label>
-                            <div class="input-group input-group-sm">
-                                <input type="text" name="berat" id="ttv_berat" class="form-control" placeholder="60">
-                                <span class="input-group-text">kg</span>
+                        <div class="col-md-2 col-6">
+                            <div class="mb-3">
+                                <label class="small fw-bold">SpO2 (%)</label>
+                                <input type="text" name="spo2" id="ttv_spo2" class="form-control form-control-sm" placeholder="98">
                             </div>
                         </div>
 
-                        <div class="col-md-4 col-sm-8 col-12">
-                            <label class="form-label small fw-semibold text-muted">Kesadaran</label>
-                            <select name="kesadaran" id="ttv_kesadaran" class="form-select form-select-sm">
-                                <option value="Compos Mentis">Compos Mentis</option>
-                                <option value="Somnolence">Somnolence</option>
-                                <option value="Sopor">Sopor</option>
-                                <option value="Coma">Coma</option>
-                                <option value="Alert">Alert</option>
-                                <option value="Confusion">Confusion</option>
-                                <option value="Voice">Voice</option>
-                                <option value="Pain">Pain</option>
-                                <option value="Unresponsive">Unresponsive</option>
-                                <option value="Apatis">Apatis</option>
-                                <option value="Delirium">Delirium</option>
-                            </select>
+                        <div class="col-md-2 col-6">
+                            <div class="mb-3">
+                                <label class="small fw-bold">GCS (E,V,M)</label>
+                                <input type="text" name="gcs" id="ttv_gcs" class="form-control form-control-sm" placeholder="15">
+                            </div>
                         </div>
 
-                        <div class="col-md-4 col-sm-12">
-                            <label class="form-label small fw-semibold text-muted">Riwayat Alergi</label>
-                            <input type="text" name="alergi" id="ttv_alergi" class="form-control form-control-sm" placeholder="Alergi obat / makanan...">
+                        <div class="col-md-4 col-12">
+                            <div class="mb-3">
+                                <label class="small fw-bold">Riwayat Alergi</label>
+                                <input type="text" name="alergi" id="ttv_alergi" class="form-control form-control-sm" placeholder="Alergi obat / makanan...">
+                            </div>
                         </div>
                     </div>
 
                     {{-- Catatan SBAR Terintegrasi --}}
-                    <div class="row g-3">
+                    <div class="row">
                         <div class="col-12">
-                            <label class="form-label small fw-semibold text-muted">
-                                <i class="fas fa-comments me-1 text-primary"></i> Catatan Komunikasi SBAR (Situation, Background, Assessment, Recommendation)
-                            </label>
-                            <textarea name="sbar" id="ttv_sbar" class="form-control" rows="3" placeholder="S: Kondisi saat ini / keluhan utama...&#10;B: Riwayat klinis & terapi yang sudah masuk...&#10;A: Penilaian kondisi kritis atau stabil...&#10;R: Rekomendasi tindakan / instruksi dokter jaga..."></textarea>
-                            <small class="text-muted fst-italic">*Catatan SBAR akan otomatis tersinkronisasi pada tabel catatan_sbar_ranap dengan timestamp yang sama.</small>
+                            <div class="mb-3">
+                                <label class="small fw-bold">
+                                    <i class="fas fa-comments me-1 text-primary"></i> Catatan SBAR (Situation, Background, Assessment, Recommendation)
+                                </label>
+                                <textarea name="sbar" id="ttv_sbar" class="form-control form-control-sm" rows="3" placeholder="Masukkan Catatan SBAR disini..."></textarea>
+                                <!-- <small class="text-muted fst-italic">*Catatan SBAR akan otomatis tersinkronisasi pada tabel catatan_sbar_ranap dengan timestamp yang sama.</small> -->
+                            </div>
                         </div>
                     </div>
 
@@ -125,13 +128,28 @@
         </div>
     </div>
 
+<style>
+    .ttv-row-item {
+        cursor: pointer;
+        transition: background-color 0.15s ease-in-out;
+    }
+    .ttv-row-item:hover {
+        background-color: #eef6ff !important;
+    }
+</style>
+
     {{-- Tabel Riwayat TTV & SBAR --}}
     <div class="col-lg-12">
         <div class="ralan-card">
-            <div class="ralan-card-head">
-                <span class="fw-bold">
-                    <i class="fas fa-history me-2 text-primary"></i>Riwayat Observasi Tanda-Tanda Vital & SBAR
-                </span>
+            <div class="ralan-card-head d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="fw-bold">
+                        <i class="fas fa-history me-2 text-primary"></i>Riwayat Observasi Tanda-Tanda Vital & SBAR
+                    </span>
+                    <span class="badge bg-light text-muted border ms-2 small fw-normal">
+                        <i class="fas fa-mouse-pointer me-1 text-primary"></i>Klik baris untuk salin ke form
+                    </span>
+                </div>
                 <button type="button" class="btn btn-sm btn-outline-primary" onclick="loadVital(true)">
                     <i class="fas fa-sync-alt me-1"></i> Refresh
                 </button>
@@ -152,7 +170,10 @@
                     </thead>
                     <tbody>
                         @forelse($riwayatTtv as $ttv)
-                            <tr id="row-ttv-{{ str_replace('-', '', $ttv->tgl_perawatan) }}-{{ str_replace(':', '', $ttv->jam_rawat) }}">
+                            <tr id="row-ttv-{{ str_replace('-', '', $ttv->tgl_perawatan) }}-{{ str_replace(':', '', $ttv->jam_rawat) }}"
+                                class="ttv-row-item"
+                                data-ttv="{{ json_encode($ttv) }}"
+                                title="Klik untuk menyalin data TTV ini ke form input">
                                 <td class="small">
                                     <span class="fw-bold text-dark d-block">
                                         {{ \Carbon\Carbon::parse($ttv->tgl_perawatan)->translatedFormat('d/m/Y') }}

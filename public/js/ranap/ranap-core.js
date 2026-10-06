@@ -317,6 +317,63 @@ function initTtvHandlers() {
             }
         });
     });
+
+    // Klik badan tabel untuk langsung mengisi form input (memudahkan entri TTV)
+    $('#tableRiwayatTtv tbody').off('click', 'tr.ttv-row-item').on('click', 'tr.ttv-row-item', function(e) {
+        if ($(e.target).closest('button, .btn, a').length) {
+            return;
+        }
+        var ttvData = $(this).data('ttv');
+        if (ttvData) {
+            salinTtvKeForm(ttvData, this);
+        }
+    });
+}
+
+function salinTtvKeForm(ttv, rowEl) {
+    $('#ttv_suhu_tubuh').val(ttv.suhu_tubuh || '');
+    $('#ttv_tensi').val(ttv.tensi || '');
+    $('#ttv_nadi').val(ttv.nadi || '');
+    $('#ttv_respirasi').val(ttv.respirasi || '');
+    $('#ttv_spo2').val(ttv.spo2 || '');
+    $('#ttv_gcs').val(ttv.gcs || '');
+    $('#ttv_tinggi').val(ttv.tinggi || '');
+    $('#ttv_berat').val(ttv.berat || '');
+    $('#ttv_kesadaran').val(ttv.kesadaran || 'Compos Mentis');
+    $('#ttv_alergi').val(ttv.alergi || '');
+    $('#ttv_sbar').val(ttv.sbar || '');
+
+    // Tetap mode tambah baru (pencatatan TTV baru)
+    $('#mode_edit_ttv').val('0');
+    $('#tgl_perawatan_edit_ttv').val('');
+    $('#jam_rawat_edit_ttv').val('');
+
+    var tglJam = (ttv.tgl_perawatan || '') + ' ' + (ttv.jam_rawat || '');
+    $('#titleFormTtv').html('<i class="fas fa-copy me-1 text-primary"></i> Form TTV & SBAR (Salin dari ' + tglJam + ')');
+    $('#badgeModeTtv').removeClass('bg-warning text-dark bg-light text-muted').addClass('bg-primary text-white').text('Mode: Salin ke Baru');
+    $('#btnBatalEditTtv').removeClass('d-none').html('<i class="fas fa-undo me-1"></i> Bersihkan Form');
+    $('#btnSimpanTtv').removeClass('btn-warning text-dark').addClass('btn-primary').html('<i class="fas fa-save me-1"></i> Simpan TTV & SBAR');
+
+    $('#tableRiwayatTtv tbody tr').removeClass('table-primary table-warning');
+    if (rowEl) {
+        $(rowEl).addClass('table-primary');
+    }
+
+    $('html, body').animate({ scrollTop: $('#titleFormTtv').offset().top - 100 }, 300);
+
+    if (typeof Swal !== 'undefined') {
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 1500,
+            timerProgressBar: true
+        });
+        Toast.fire({
+            icon: 'info',
+            title: 'Data TTV disalin ke form input'
+        });
+    }
 }
 
 function editTtv(ttv) {
@@ -337,9 +394,13 @@ function editTtv(ttv) {
     $('#ttv_sbar').val(ttv.sbar || '');
 
     $('#titleFormTtv').html('<i class="fas fa-edit me-1 text-warning"></i> Edit TTV & SBAR (' + ttv.tgl_perawatan + ' ' + ttv.jam_rawat + ')');
-    $('#badgeModeTtv').removeClass('bg-light text-muted').addClass('bg-warning text-dark').text('Mode: Edit');
-    $('#btnBatalEditTtv').removeClass('d-none');
-    $('#btnSimpanTtv').removeClass('btn-danger').addClass('btn-warning text-dark').html('<i class="fas fa-sync-alt me-1"></i> Perbarui TTV & SBAR');
+    $('#badgeModeTtv').removeClass('bg-light text-muted bg-primary text-white').addClass('bg-warning text-dark').text('Mode: Edit');
+    $('#btnBatalEditTtv').removeClass('d-none').html('<i class="fas fa-times me-1"></i> Batal Edit');
+    $('#btnSimpanTtv').removeClass('btn-primary btn-danger').addClass('btn-warning text-dark').html('<i class="fas fa-sync-alt me-1"></i> Perbarui TTV & SBAR');
+
+    $('#tableRiwayatTtv tbody tr').removeClass('table-primary table-warning');
+    var rowId = '#row-ttv-' + (ttv.tgl_perawatan || '').replace(/-/g, '') + '-' + (ttv.jam_rawat || '').replace(/:/g, '');
+    $(rowId).addClass('table-warning');
 
     $('html, body').animate({ scrollTop: $('#titleFormTtv').offset().top - 100 }, 300);
 }
@@ -350,10 +411,11 @@ function resetFormTtv() {
     $('#jam_rawat_edit_ttv').val('');
     $('#formTtvRanap')[0].reset();
 
-    $('#titleFormTtv').html('<i class="fas fa-heartbeat me-1"></i> Form Tanda-Tanda Vital (TTV) & Catatan SBAR Ranap');
-    $('#badgeModeTtv').removeClass('bg-warning text-dark').addClass('bg-light text-muted').text('Mode: Tambah Baru');
-    $('#btnBatalEditTtv').addClass('d-none');
-    $('#btnSimpanTtv').removeClass('btn-warning text-dark').addClass('btn-danger').html('<i class="fas fa-save me-1"></i> Simpan TTV & SBAR');
+    $('#titleFormTtv').html('<i class="fas fa-heartbeat me-2 text-primary"></i>Form Tanda-Tanda Vital (TTV) & Catatan SBAR');
+    $('#badgeModeTtv').removeClass('bg-warning bg-primary text-white text-dark').addClass('bg-light text-muted').text('Mode: Tambah Baru');
+    $('#btnBatalEditTtv').addClass('d-none').html('<i class="fas fa-times me-1"></i> Batal Edit');
+    $('#btnSimpanTtv').removeClass('btn-warning text-dark btn-danger').addClass('btn-primary').html('<i class="fas fa-save me-1"></i> Simpan TTV & SBAR');
+    $('#tableRiwayatTtv tbody tr').removeClass('table-primary table-warning');
 }
 
 function hapusTtv(tgl, jam) {

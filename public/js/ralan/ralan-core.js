@@ -810,6 +810,44 @@ $(document).ready(function() {
         });
     });
 
+    // Klik baris tabel riwayat vital sign ralan untuk mengisi form input
+    $(document).on('click', '#tableVitalRalan tbody tr.vital-row-item', function(e) {
+        if ($(e.target).closest('button, .btn, a').length) return;
+        var vital = $(this).data('vital');
+        if (!vital) return;
+
+        var form = $('#formVital');
+        form.find('input[name="tensi"]').val(vital.tensi || '');
+        form.find('input[name="suhu_tubuh"]').val(vital.suhu_tubuh || '');
+        form.find('input[name="nadi"]').val(vital.nadi || '');
+        form.find('input[name="respirasi"]').val(vital.respirasi || '');
+        form.find('input[name="tinggi"]').val(vital.tinggi || '');
+        form.find('input[name="berat"]').val(vital.berat || '');
+        form.find('input[name="spo2"]').val(vital.spo2 || '');
+        form.find('input[name="gcs"]').val(vital.gcs || '');
+        form.find('input[name="alergi"]').val(vital.alergi || '');
+        if (vital.kesadaran) {
+            form.find('select[name="kesadaran"]').val(vital.kesadaran);
+        }
+
+        $('#tableVitalRalan tbody tr').removeClass('table-primary');
+        $(this).addClass('table-primary');
+
+        if (typeof Swal !== 'undefined') {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 1500,
+                timerProgressBar: true
+            });
+            Toast.fire({
+                icon: 'info',
+                title: 'Data Vital Sign disalin ke form input'
+            });
+        }
+    });
+
     // Tambah obat ke daftar staging (belum simpan)
     $(document).on('click', '#btnTambahObat', function() {
         var form = $('#formResepObat');
