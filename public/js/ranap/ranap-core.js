@@ -1044,12 +1044,19 @@ function initRadiologiHandlers() {
         var $btn = $(this);
         $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Mengirim...');
 
-        var formData = $('#formPermintaanRadiologiRanap form, #formPermintaanRadiologiRanap').find('input, textarea, select').serialize();
+        var rawList = Array.isArray(kdList) ? kdList : [kdList];
+        var payload = {
+            _token: window.RANAP.csrfToken || $('input[name="_token"]').val() || $('meta[name="csrf-token"]').attr('content'),
+            no_rawat: $('#formPermintaanRadiologiRanap input[name="no_rawat"]').val() || currentNoRawat,
+            kd_jenis_prw_rad: rawList,
+            diagnosa_klinis: $('#formPermintaanRadiologiRanap textarea[name="diagnosa_klinis"]').val(),
+            informasi_tambahan: $('#formPermintaanRadiologiRanap textarea[name="informasi_tambahan"]').val()
+        };
 
         $.ajax({
             url: ranapUrl('/ralan/store-permintaan-radiologi'),
             type: 'POST',
-            data: formData,
+            data: payload,
             success: function(res) {
                 $btn.prop('disabled', false).html('<i class="fas fa-paper-plane me-1"></i> Kirim Permintaan Radiologi');
                 tampilkanSukses(res.message);

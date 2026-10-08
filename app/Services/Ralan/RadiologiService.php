@@ -69,7 +69,8 @@ class RadiologiService
                 'diagnosa_klinis'    => $data['diagnosa_klinis'] ?? '-',
             ]);
 
-            foreach ($data['kd_jenis_prw_rad'] as $kdJenis) {
+            $kdJenisList = $data['kd_jenis_prw_rad'] ?? $data['kd_jenis_prw'] ?? [];
+            foreach ($kdJenisList as $kdJenis) {
                 PermintaanPemeriksaanRadiologi::create([
                     'noorder'      => $noOrder,
                     'kd_jenis_prw' => $kdJenis,

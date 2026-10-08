@@ -13,7 +13,7 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label small fw-bold text-muted">Pilih Tindakan / Pemeriksaan Radiologi</label>
-                    <select name="kd_jenis_prw[]" id="select-radiologi" class="form-select" multiple="multiple" style="width: 100%"></select>
+                    <select name="kd_jenis_prw_rad[]" id="select-radiologi" class="form-select" multiple="multiple" style="width: 100%"></select>
                     <small class="text-muted fst-italic">*Pemeriksaan otomatis disesuaikan dengan katalog Radiologi Rawat Inap</small>
                 </div>
 
@@ -61,6 +61,10 @@
                     </thead>
                     <tbody>
                         @forelse($riwayatOrder as $order)
+                            @php
+                                $firstPemeriksaan = $order->pemeriksaan->first();
+                                $statusBayar = $firstPemeriksaan ? ($firstPemeriksaan->stts_bayar ?? $firstPemeriksaan->stts ?? 'Belum') : 'Belum';
+                            @endphp
                             <tr>
                                 <td><span class="badge bg-light text-dark border">{{ $order->noorder }}</span></td>
                                 <td class="small">{{ $order->tgl_permintaan }} <br><span class="text-muted">{{ $order->jam_permintaan }}</span></td>
@@ -73,12 +77,12 @@
                                 </td>
                                 <td class="small">{{ $order->diagnosa_klinis ?: '-' }}</td>
                                 <td>
-                                    <span class="badge {{ $order->pemeriksaan->first() && $order->pemeriksaan->first()->stts == 'Sudah' ? 'bg-success' : 'bg-warning text-dark' }}">
-                                        {{ $order->pemeriksaan->first() ? $order->pemeriksaan->first()->stts : 'Belum' }}
+                                    <span class="badge {{ $statusBayar === 'Sudah' ? 'bg-success' : 'bg-warning text-dark' }}">
+                                        {{ $statusBayar }}
                                     </span>
                                 </td>
                                 <td class="text-center">
-                                    @if(!$order->pemeriksaan->first() || $order->pemeriksaan->first()->stts == 'Belum')
+                                    @if($statusBayar === 'Belum')
                                         <button type="button" class="btn btn-sm btn-outline-danger border-0 btn-hapus-radiologi" data-noorder="{{ $order->noorder }}" title="Batalkan Permintaan">
                                             <i class="fas fa-trash-alt"></i>
                                         </button>
