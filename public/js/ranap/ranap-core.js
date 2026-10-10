@@ -83,7 +83,8 @@ var loadedTabs = {
     diagnosa: false,
     resep: false,
     lab: false,
-    radiologi: false
+    radiologi: false,
+    resume: false
 };
 
 var loadingTabs = {
@@ -93,7 +94,8 @@ var loadingTabs = {
     diagnosa: false,
     resep: false,
     lab: false,
-    radiologi: false
+    radiologi: false,
+    resume: false
 };
 
 /* ===== 1. Tab SOAP CPPT ===== */
@@ -1094,6 +1096,82 @@ function initRadiologiHandlers() {
     });
 }
 
+/* ===== 7. Tab Resume Pasien ===== */
+function loadResume(forceReload = false) {
+    if (!currentNoRawat) return;
+    if (loadedTabs.resume && !forceReload) return;
+    if (loadingTabs.resume) return;
+
+    if (!loadedTabs.resume) {
+        $('#content-resume').html('<div class="text-center p-5"><div class="spinner-border text-primary"></div><p class="mt-2 text-muted">Memuat Form Resume Medis Pasien...</p></div>');
+    }
+
+    loadingTabs.resume = true;
+    var url = ranapUrl('/ranap/get-resume-pasien/' + currentSafeNoRawat);
+    $.get(url, function(data) {
+        $('#content-resume').html(data);
+        loadedTabs.resume = true;
+        loadingTabs.resume = false;
+        initResumeHandlers();
+    }).fail(function(xhr) {
+        loadingTabs.resume = false;
+        if (!loadedTabs.resume) $('#content-resume').html('<div class="alert alert-danger">Gagal memuat resume medis (HTTP ' + xhr.status + ').</div>');
+    });
+}
+
+function initResumeHandlers() {
+    // Toggle container input faskes rujukan
+    $('input.radio-kondisi-pulang').off('change').on('change', function() {
+        if ($(this).val() === 'dirujuk') {
+            $('#containerNamaRujukan').removeClass('d-none');
+            $('#resume_nama_faskes_rujukan').focus();
+        } else {
+            $('#containerNamaRujukan').addClass('d-none');
+        }
+    });
+
+    // Tombol Tarik Data Auto Resume
+    $('#btnTarikDataAutoResume').off('click').on('click', function() {
+        Swal.fire({
+            title: 'Tarik Ulang Data Rekam Medis?',
+            text: 'Data awal dari SOAP, Kamar Inap, dan Obat akan dimuat ulang.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Tarik Data',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                loadResume(true);
+            }
+        });
+    });
+
+    // Submit Form Resume
+    $('#formResumePasienRanap').off('submit').on('submit', function(e) {
+        e.preventDefault();
+        var $btn = $('#btnSimpanResume');
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...');
+
+        var formData = $(this).serialize();
+
+        $.ajax({
+            url: ranapUrl('/ranap/store-resume-pasien'),
+            type: 'POST',
+            data: formData,
+            success: function(res) {
+                $btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan Resume Pasien');
+                tampilkanSukses(res.message || 'Resume medis berhasil disimpan.');
+                loadResume(true);
+            },
+            error: function(xhr) {
+                $btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan Resume Pasien');
+                var err = xhr.responseJSON ? xhr.responseJSON.message : 'Gagal menyimpan resume medis.';
+                tampilkanError(err);
+            }
+        });
+    });
+}
+
 /* ===== Tab Navigation Event Listeners ===== */
 $(document).ready(function() {
     $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
@@ -1110,6 +1188,8 @@ $(document).ready(function() {
             loadLab();
         } else if (target === '#permintaan-radiologi') {
             loadRadiologi();
+        } else if (target === '#resume') {
+            loadResume();
         }
     });
 

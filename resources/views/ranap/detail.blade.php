@@ -52,6 +52,11 @@
                                     <i class="fas fa-prescription me-1"></i> RESEP
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="resume-tab" data-bs-toggle="tab" href="#resume">
+                                    <i class="fas fa-file-medical-alt me-1"></i> RESUME
+                                </a>
+                            </li>
                         </ul>
 
                         <div class="tab-content ralan-panel p-3" id="ranapTabContent">
@@ -118,6 +123,16 @@
                                     <div class="text-center p-5">
                                         <div class="spinner-border text-primary"></div>
                                         <p class="mt-2 text-muted">Memuat Form Peresepan...</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Tab 8: Resume Pasien Ranap --}}
+                            <div role="tabpanel" class="tab-pane fade" id="resume">
+                                <div id="content-resume">
+                                    <div class="text-center p-5">
+                                        <div class="spinner-border text-primary"></div>
+                                        <p class="mt-2 text-muted">Memuat Form Resume Medis Pasien...</p>
                                     </div>
                                 </div>
                             </div>

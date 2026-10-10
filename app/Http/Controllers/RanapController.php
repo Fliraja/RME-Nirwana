@@ -13,6 +13,7 @@ use App\Services\Ranap\RanapPenunjangService;
 use App\Services\Ranap\RanapSoapService;
 use App\Services\Ranap\RanapVitalSignService;
 use App\Services\Ralan\DiagnosaProsedurService;
+use App\Services\Ranap\RanapResumeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -24,7 +25,8 @@ class RanapController extends Controller
         private RanapSoapService $soapService,
         private RanapVitalSignService $vitalService,
         private RanapPenunjangService $penunjangService,
-        private DiagnosaProsedurService $diagnosaService
+        private DiagnosaProsedurService $diagnosaService,
+        private RanapResumeService $resumeService
     ) {}
 
     /**
@@ -292,5 +294,30 @@ class RanapController extends Controller
         $hasilRadiologi = $this->penunjangService->getHasilRadiologi($no_rawat);
 
         return view('ranap.tabs.radiologi', compact('pasien', 'riwayatOrder', 'hasilRadiologi'));
+    }
+
+    /**
+     * Tab Resume Pasien (Ringkasan Pulang Medis)
+     */
+    public function getResumePasien($no_rawat)
+    {
+        $no_rawat = str_replace('-', '/', $no_rawat);
+        $data = $this->resumeService->getResumeData($no_rawat);
+        $data['currentUserNip'] = Auth::user()->decrypted_id ?? '';
+        $data['isAdmin'] = session('role') === 'admin';
+
+        return view('ranap.tabs.resume', $data);
+    }
+
+    public function storeResumePasien(Request $request)
+    {
+        $request->validate([
+            'no_rawat' => 'required',
+        ]);
+
+        $defaultKdDokter = Auth::user()->decrypted_id ?? null;
+        $res = $this->resumeService->simpan($request->all(), $defaultKdDokter);
+
+        return response()->json($res);
     }
 }
