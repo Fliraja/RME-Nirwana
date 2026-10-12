@@ -20,7 +20,7 @@
     }
 
     // Default pre-fill jika belum ada resume
-    $defaultRiwayatPenyakit = $isSaved ? $resume->jalannya_penyakit : ($soapAwal->keluhan ?? $soapTerakhir->keluhan ?? '');
+    $defaultRiwayatPenyakit = $isSaved ? $resume->jalannya_penyakit : ($soapTerakhir->keluhan ?? $soapAwal->keluhan ?? '');
     $defaultPemeriksaanFisik = $isSaved ? $resume->pemeriksaan_fisik : ($soapTerakhir->pemeriksaan ?? $soapAwal->pemeriksaan ?? '');
     $defaultDiagnosaPrimer = $isSaved ? $resume->diagnosa_utama : ($diagnosaList->first()->penyakit->nm_penyakit ?? $kamar->diagnosa_awal ?? '');
     $defaultKdDiagnosaPrimer = $isSaved ? $resume->kd_diagnosa_utama : ($diagnosaList->first()->kd_penyakit ?? '');
@@ -31,12 +31,26 @@
 
     $defaultTindakan = $isSaved ? $resume->tindakan_dan_operasi : ($prosedurList->map(function($p) { return ($p->icd9->deskripsi_panjang ?? $p->kode); })->implode("\n"));
     $defaultObatRs = $isSaved ? $resume->obat_di_rs : implode(', ', $obatRsList ?? []);
-    $defaultPenunjang = $isSaved ? $resume->pemeriksaan_penunjang : '';
+    $defaultPenunjang = $isSaved ? $resume->pemeriksaan_penunjang : ($ringkasanPenunjang ?? '');
     $defaultEdukasi = $isSaved ? $resume->edukasi : '';
     $defaultObatPulang = $isSaved ? $resume->obat_pulang : '';
     $defaultKontrol = $isSaved && $resume->kontrol ? date('Y-m-d\TH:i', strtotime($resume->kontrol)) : '';
 
     $selectedDokter = $isSaved ? $resume->kd_dokter : ($dpjp->kd_dokter ?? $currentUserNip ?? '');
+    $namaDokterDpjp = $isSaved ? ($resume->dokter->nm_dokter ?? ($dpjp->nm_dokter ?? $selectedDokter)) : ($dpjp->nm_dokter ?? (Auth::user()->dokter_data->nm_dokter ?? $selectedDokter));
+
+    // Data rekam medis terbaru untuk auto-pull
+    $latestDataJson = json_encode([
+        'riwayat_penyakit' => $soapTerakhir->keluhan ?? $soapAwal->keluhan ?? '',
+        'pemeriksaan_fisik' => $soapTerakhir->pemeriksaan ?? $soapAwal->pemeriksaan ?? '',
+        'pemeriksaan_penunjang' => $ringkasanPenunjang ?? '',
+        'diagnosa_utama' => $diagnosaList->first()->penyakit->nm_penyakit ?? $kamar->diagnosa_awal ?? '',
+        'kd_diagnosa_utama' => $diagnosaList->first()->kd_penyakit ?? '',
+        'diagnosa_sekunder' => $sekunderItem1->penyakit->nm_penyakit ?? '',
+        'kd_diagnosa_sekunder' => $sekunderItem1->kd_penyakit ?? '',
+        'tindakan' => $prosedurList->map(function($p) { return ($p->icd9->deskripsi_panjang ?? $p->kode); })->implode("\n"),
+        'obat_rs' => implode(', ', $obatRsList ?? []),
+    ]);
 @endphp
 
 <div id="wrapperResumeRanap">
@@ -53,7 +67,8 @@
                 @endif
             </div>
             <div class="d-flex align-items-center gap-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary" id="btnTarikDataAutoResume" title="Tarik otomatis data diagnosa, obat, dan SOAP">
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="btnTarikDataAutoResume"
+                        data-auto="{{ $latestDataJson }}" title="Tarik otomatis data terbaru dari diagnosa, obat, dan SOAP">
                     <i class="fas fa-sync-alt me-1"></i> Tarik Data Rekam Medis
                 </button>
             </div>
@@ -67,18 +82,15 @@
                 {{-- Baris Info DPJP & Diagnosa Masuk --}}
                 <div class="row g-3 mb-4 p-3 bg-light rounded border">
                     <div class="col-md-6">
-                        <label class="form-label small fw-bold text-muted">Dokter Penanggung Jawab Pelayanan (DPJP)</label>
-                        <select name="kd_dokter" id="resume_kd_dokter" class="form-select form-select-sm">
-                            <option value="">-- Pilih Dokter DPJP --</option>
-                            @foreach($dokterList as $doc)
-                                <option value="{{ $doc->kd_dokter }}" {{ $selectedDokter == $doc->kd_dokter ? 'selected' : '' }}>
-                                    {{ $doc->nm_dokter }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <label class="form-label small fw-bold text-muted">Dokter Penanggung Jawab Pelayanan (DPJP Utama)</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-white"><i class="fas fa-user-md text-primary"></i></span>
+                            <input type="text" class="form-control form-control-sm bg-light fw-semibold text-dark" value="{{ $namaDokterDpjp }}" readonly disabled>
+                        </div>
+                        <input type="hidden" name="kd_dokter" id="resume_kd_dokter" value="{{ $selectedDokter }}">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label small fw-bold text-muted">Diagnosa Awal Masuk (MRS)</label>
+                        <label class="form-label small fw-bold text-muted">Diagnosa Awal Masuk</label>
                         <input type="text" name="diagnosa_awal" id="resume_diagnosa_awal" class="form-control form-control-sm"
                                value="{{ $isSaved ? $resume->diagnosa_awal : ($kamar->diagnosa_awal ?? '') }}"
                                placeholder="Diagnosa saat awal masuk kamar inap...">

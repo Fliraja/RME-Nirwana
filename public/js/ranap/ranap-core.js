@@ -1130,18 +1130,35 @@ function initResumeHandlers() {
         }
     });
 
-    // Tombol Tarik Data Auto Resume
+    // Tombol Tarik Data Auto Resume (Ambil data terbaru dari SOAP, diagnosa, dan obat)
     $('#btnTarikDataAutoResume').off('click').on('click', function() {
+        var rawData = $(this).attr('data-auto');
+        var autoData = {};
+        try {
+            autoData = rawData ? JSON.parse(rawData) : {};
+        } catch (e) {
+            autoData = {};
+        }
+
         Swal.fire({
-            title: 'Tarik Ulang Data Rekam Medis?',
-            text: 'Data awal dari SOAP, Kamar Inap, dan Obat akan dimuat ulang.',
+            title: 'Tarik Data Rekam Medis Terbaru?',
+            text: 'Form akan diisi dengan data SOAP ranap terakhir, diagnosa ICD, obat, serta hasil Lab & Radiologi terbaru.',
             icon: 'question',
             showCancelButton: true,
-            confirmButtonText: 'Ya, Tarik Data',
+            confirmButtonText: 'Ya, Tarik Data Terbaru',
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
-                loadResume(true);
+                if (autoData.riwayat_penyakit) $('#resume_riwayat_penyakit').val(autoData.riwayat_penyakit);
+                if (autoData.pemeriksaan_fisik) $('#resume_pemeriksaan_fisik').val(autoData.pemeriksaan_fisik);
+                if (autoData.pemeriksaan_penunjang) $('#resume_pemeriksaan_penunjang').val(autoData.pemeriksaan_penunjang);
+                if (autoData.diagnosa_utama) $('#resume_diagnosa_utama').val(autoData.diagnosa_utama);
+                if (autoData.kd_diagnosa_utama) $('#resume_kd_diagnosa_utama').val(autoData.kd_diagnosa_utama);
+                if (autoData.diagnosa_sekunder) $('#resume_diagnosa_sekunder').val(autoData.diagnosa_sekunder);
+                if (autoData.kd_diagnosa_sekunder) $('#resume_kd_diagnosa_sekunder').val(autoData.kd_diagnosa_sekunder);
+                if (autoData.tindakan) $('#resume_tindakan_operasi').val(autoData.tindakan);
+                if (autoData.obat_rs) $('#resume_obat_di_rs').val(autoData.obat_rs);
+                tampilkanSukses('Data rekam medis terbaru berhasil ditarik ke form.');
             }
         });
     });

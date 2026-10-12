@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\DB;
 
 class RanapResumeService
 {
+    public function __construct(
+        private RanapPenunjangService $penunjangService
+    ) {}
+
     /**
      * Ambil data resume pasien atau persiapkan auto-fill awal jika belum ada
      */
@@ -42,6 +46,14 @@ class RanapResumeService
             ->where('dpjp_ranap.no_rawat', $noRawat)
             ->select('dokter.kd_dokter', 'dokter.nm_dokter')
             ->first();
+
+        if (!$dpjp) {
+            $dpjp = DB::table('reg_periksa')
+                ->join('dokter', 'reg_periksa.kd_dokter', '=', 'dokter.kd_dokter')
+                ->where('reg_periksa.no_rawat', $noRawat)
+                ->select('dokter.kd_dokter', 'dokter.nm_dokter')
+                ->first();
+        }
 
         $dokterList = Dokter::where('status', '1')->orderBy('nm_dokter', 'asc')->get(['kd_dokter', 'nm_dokter']);
 
@@ -80,6 +92,9 @@ class RanapResumeService
             ->pluck('nama_brng')
             ->toArray();
 
+        // Ringkasan hasil lab dan radiologi terbaru untuk pemeriksaan penunjang
+        $ringkasanPenunjang = $this->getRingkasanPenunjangTerbaru($noRawat);
+
         return compact(
             'resume',
             'reg',
@@ -91,8 +106,71 @@ class RanapResumeService
             'prosedurList',
             'soapTerakhir',
             'soapAwal',
-            'obatRsList'
+            'obatRsList',
+            'ringkasanPenunjang'
         );
+    }
+
+    /**
+     * Ambil dan format hasil laboratorium & bacaan radiologi terbaru
+     */
+    public function getRingkasanPenunjangTerbaru(string $noRawat): string
+    {
+        $parts = [];
+
+        // 1. Hasil Laboratorium Terbaru
+        $hasilLab = $this->penunjangService->getHasilLab($noRawat);
+        if (!empty($hasilLab)) {
+            $labSections = [];
+            $count = 0;
+            foreach ($hasilLab as $key => $g) {
+                if ($count >= 5) break; // Maksimal 5 paket lab terbaru
+                $validItems = array_filter($g['items'], function ($item) {
+                    return !empty($item['nilai']) && $item['nilai'] !== '-' && !empty($item['pemeriksaan']);
+                });
+
+                if (!empty($validItems)) {
+                    $lines = ["LAB: {$g['nm_perawatan']} ({$g['tgl_periksa']} {$g['jam']})"];
+                    foreach ($validItems as $it) {
+                        $satuan = !empty($it['satuan']) ? ' ' . $it['satuan'] : '';
+                        $ref = !empty($it['nilai_rujukan']) ? " (Ruj: {$it['nilai_rujukan']})" : '';
+                        $lines[] = "  • {$it['pemeriksaan']}: {$it['nilai']}{$satuan}{$ref}";
+                    }
+                    $labSections[] = implode("\n", $lines);
+                    $count++;
+                }
+            }
+
+            if (!empty($labSections)) {
+                $parts[] = "[HASIL LABORATORIUM TERBARU]\n" . implode("\n\n", $labSections);
+            }
+        }
+
+        // 2. Hasil Radiologi (Ekspertise) Terbaru
+        $hasilRad = $this->penunjangService->getHasilRadiologi($noRawat);
+        if (!empty($hasilRad['expertise']) && count($hasilRad['expertise']) > 0) {
+            $radSections = [];
+            foreach ($hasilRad['expertise'] as $exp) {
+                $radSections[] = "RADIOLOGI ({$exp->tgl_periksa} {$exp->jam}):\n" . trim($exp->hasil);
+            }
+            $parts[] = "[HASIL BACAAN RADIOLOGI TERBARU]\n" . implode("\n\n", $radSections);
+        } else {
+            // Jika belum ada teks ekspertise, tampilkan tindakan radiologi yang sudah dikerjakan
+            $periksaRad = DB::table('periksa_radiologi')
+                ->join('jns_perawatan_radiologi', 'periksa_radiologi.kd_jenis_prw', '=', 'jns_perawatan_radiologi.kd_jenis_prw')
+                ->where('periksa_radiologi.no_rawat', $noRawat)
+                ->orderBy('periksa_radiologi.tgl_periksa', 'desc')
+                ->orderBy('periksa_radiologi.jam', 'desc')
+                ->select('jns_perawatan_radiologi.nm_perawatan', 'periksa_radiologi.tgl_periksa')
+                ->get();
+
+            if ($periksaRad->isNotEmpty()) {
+                $radItems = $periksaRad->map(fn($r) => "  • {$r->nm_perawatan} ({$r->tgl_periksa})")->implode("\n");
+                $parts[] = "[TINDAKAN RADIOLOGI TERDAFTAR]\n" . $radItems;
+            }
+        }
+
+        return implode("\n\n", $parts);
     }
 
     /**
