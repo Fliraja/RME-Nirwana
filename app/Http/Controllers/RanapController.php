@@ -165,9 +165,11 @@ class RanapController extends Controller
         ]);
 
         $nip = Auth::user()->decrypted_id ?? 'DOKTER';
-        $res = $this->soapService->simpan($request->all(), $nip);
+        $res = $this->soapService->simpan($request->all(), $nip, session('role') === 'admin');
+        $code = $res['code'] ?? 200;
+        unset($res['code']);
 
-        return response()->json($res);
+        return response()->json($res, $code);
     }
 
     public function destroySoap(Request $request)
@@ -199,9 +201,11 @@ class RanapController extends Controller
         ]);
 
         $nip = Auth::user()->decrypted_id ?? 'DOKTER';
-        $res = $this->vitalService->simpan($request->all(), $nip);
+        $res = $this->vitalService->simpan($request->all(), $nip, session('role') === 'admin');
+        $code = $res['code'] ?? 200;
+        unset($res['code']);
 
-        return response()->json($res);
+        return response()->json($res, $code);
     }
 
     public function destroyVital(Request $request)
