@@ -1,0 +1,5 @@
+# Aset vendor dipatok versinya di nama folder (mis. bootstrap-5.3.3), jadi aman di-cache
+# setahun. Ganti versi = folder baru = URL baru, tidak perlu cache-busting manual.
+<IfModule mod_headers.c>
+    Header set Cache-Control "public, max-age=31536000, immutable"
+</IfModule>
