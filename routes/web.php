@@ -49,6 +49,9 @@ Route::middleware(['multi.auth'])->group(function () {
     Route::get('/ralan/soap/{no_rawat}', [RalanController::class, 'getSoapPasien'])->name('ralan.get-soap');
     Route::post('/ralan/soap/simpan', [RalanController::class, 'storeSOAP'])->name('ralan.soap.simpan');
     Route::get('/ralan/get-vital-pasien/{no_rawat}', [RalanController::class, 'getVitalPasien'])->name('ralan.get-vital');
+    Route::get('/ralan/table/{tabel}/{no_rawat}', [RalanController::class, 'getTable'])
+        ->whereIn('tabel', ['soap', 'vital', 'diagnosa', 'prosedur'])
+        ->name('ralan.table');
     Route::post('/ralan/store-vital', [RalanController::class, 'storeVital'])->name('ralan.store-vital');
 
     //Resep Obat
