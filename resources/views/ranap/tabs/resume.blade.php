@@ -20,8 +20,8 @@
     }
 
     // Default pre-fill jika belum ada resume
-    $defaultRiwayatPenyakit = $isSaved ? $resume->jalannya_penyakit : ($soapTerakhir->keluhan ?? $soapAwal->keluhan ?? '');
-    $defaultPemeriksaanFisik = $isSaved ? $resume->pemeriksaan_fisik : ($soapTerakhir->pemeriksaan ?? $soapAwal->pemeriksaan ?? '');
+    $defaultRiwayatPenyakit = $isSaved ? $resume->jalannya_penyakit : ($latestKeluhan ?? ($soapTerakhir->keluhan ?? ''));
+    $defaultPemeriksaanFisik = $isSaved ? $resume->pemeriksaan_fisik : ($latestPemeriksaan ?? ($soapTerakhir->pemeriksaan ?? ''));
     $defaultDiagnosaPrimer = $isSaved ? $resume->diagnosa_utama : ($diagnosaList->first()->penyakit->nm_penyakit ?? $kamar->diagnosa_awal ?? '');
     $defaultKdDiagnosaPrimer = $isSaved ? $resume->kd_diagnosa_utama : ($diagnosaList->first()->kd_penyakit ?? '');
     
@@ -41,8 +41,8 @@
 
     // Data rekam medis terbaru untuk auto-pull
     $latestDataJson = json_encode([
-        'riwayat_penyakit' => $soapTerakhir->keluhan ?? $soapAwal->keluhan ?? '',
-        'pemeriksaan_fisik' => $soapTerakhir->pemeriksaan ?? $soapAwal->pemeriksaan ?? '',
+        'riwayat_penyakit' => $latestKeluhan ?? ($soapTerakhir->keluhan ?? ''),
+        'pemeriksaan_fisik' => $latestPemeriksaan ?? ($soapTerakhir->pemeriksaan ?? ''),
         'pemeriksaan_penunjang' => $ringkasanPenunjang ?? '',
         'diagnosa_utama' => $diagnosaList->first()->penyakit->nm_penyakit ?? $kamar->diagnosa_awal ?? '',
         'kd_diagnosa_utama' => $diagnosaList->first()->kd_penyakit ?? '',

@@ -69,9 +69,40 @@ class RanapResumeService
             ->orderBy('prioritas', 'asc')
             ->get();
 
-        // Pemeriksaan fisik / keluhan terakhir dari SOAP ranap
+        // Ambil riwayat SOAP CPPT (hanya baris yang terisi SOAP, bukan baris TTV kosong)
+        $latestKeluhan = DB::table('pemeriksaan_ranap')
+            ->where('no_rawat', $noRawat)
+            ->whereNotNull('keluhan')
+            ->where('keluhan', '!=', '')
+            ->where('keluhan', '!=', '-')
+            ->orderBy('tgl_perawatan', 'desc')
+            ->orderBy('jam_rawat', 'desc')
+            ->value('keluhan') ?? '';
+
+        $latestPemeriksaan = DB::table('pemeriksaan_ranap')
+            ->where('no_rawat', $noRawat)
+            ->whereNotNull('pemeriksaan')
+            ->where('pemeriksaan', '!=', '')
+            ->where('pemeriksaan', '!=', '-')
+            ->orderBy('tgl_perawatan', 'desc')
+            ->orderBy('jam_rawat', 'desc')
+            ->value('pemeriksaan') ?? '';
+
+        // Baris SOAP CPPT terakhir (yang memiliki keluhan / pemeriksaan)
         $soapTerakhir = DB::table('pemeriksaan_ranap')
             ->where('no_rawat', $noRawat)
+            ->where(function ($q) {
+                $q->where(function ($s) {
+                    $s->whereNotNull('keluhan')
+                      ->where('keluhan', '!=', '')
+                      ->where('keluhan', '!=', '-');
+                })
+                ->orWhere(function ($s) {
+                    $s->whereNotNull('pemeriksaan')
+                      ->where('pemeriksaan', '!=', '')
+                      ->where('pemeriksaan', '!=', '-');
+                });
+            })
             ->orderBy('tgl_perawatan', 'desc')
             ->orderBy('jam_rawat', 'desc')
             ->first();
@@ -79,6 +110,18 @@ class RanapResumeService
         // SOAP pertama saat MRS
         $soapAwal = DB::table('pemeriksaan_ranap')
             ->where('no_rawat', $noRawat)
+            ->where(function ($q) {
+                $q->where(function ($s) {
+                    $s->whereNotNull('keluhan')
+                      ->where('keluhan', '!=', '')
+                      ->where('keluhan', '!=', '-');
+                })
+                ->orWhere(function ($s) {
+                    $s->whereNotNull('pemeriksaan')
+                      ->where('pemeriksaan', '!=', '')
+                      ->where('pemeriksaan', '!=', '-');
+                });
+            })
             ->orderBy('tgl_perawatan', 'asc')
             ->orderBy('jam_rawat', 'asc')
             ->first();
@@ -106,6 +149,8 @@ class RanapResumeService
             'prosedurList',
             'soapTerakhir',
             'soapAwal',
+            'latestKeluhan',
+            'latestPemeriksaan',
             'obatRsList',
             'ringkasanPenunjang'
         );
