@@ -8,6 +8,7 @@ use App\Models\RegPeriksa;
 use App\Models\ResepDokter;
 use Illuminate\Http\Request;
 use App\Models\MasterAturanPakai;
+use App\Support\NomorUrut;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -59,7 +60,7 @@ class ResepController extends Controller
             'obat.*.aturan_pakai' => 'required|string',
         ]);
 
-        return DB::transaction(function () use ($request) {
+        return NomorUrut::denganRetry(function () use ($request) {
             $tgl_sekarang = date('Y-m-d');
             $jam_sekarang = date('H:i:s');
 
@@ -68,10 +69,7 @@ class ResepController extends Controller
                 ->first();
 
             if (!$resep) {
-                $lastNo = ResepObat::where('tgl_peresepan', $tgl_sekarang)
-                    ->max(DB::raw('CONVERT(RIGHT(no_resep, 10), signed)')) ?? 0;
-
-                $nextNoResep = date('Ymd') . sprintf('%04s', ($lastNo + 1));
+                $nextNoResep = $this->nextNoResep();
 
                 $kd_dokter = Auth::user()->decrypted_id;
 
@@ -130,7 +128,7 @@ class ResepController extends Controller
             'detail_obat.*.jml'       => 'required|numeric',
         ]);
 
-        return DB::transaction(function () use ($request) {
+        return NomorUrut::denganRetry(function () use ($request) {
             $tgl_sekarang = date('Y-m-d');
             $jam_sekarang = date('H:i:s');
 
@@ -139,10 +137,7 @@ class ResepController extends Controller
                 ->first();
 
             if (!$resep) {
-                $lastNo = ResepObat::where('tgl_peresepan', $tgl_sekarang)
-                    ->max(DB::raw('CONVERT(RIGHT(no_resep, 10), signed)')) ?? 0;
-                
-                $nextNoResep = date('Ymd') . sprintf('%04s', ($lastNo + 1)); 
+                $nextNoResep = $this->nextNoResep();
 
                 $kd_dokter = Auth::user()->decrypted_id;
 
@@ -265,6 +260,14 @@ class ResepController extends Controller
                 ], 500);
             }
         });
+    }
+
+    /** Format Khanza: Ymd + 4 digit, contoh 202610140001. */
+    private function nextNoResep(): string
+    {
+        $prefix = date('Ymd');
+
+        return $prefix . sprintf('%04d', NomorUrut::berikutnya('resep_obat', 'no_resep', $prefix, 4));
     }
 
     /** Simpan aturan pakai baru ke master bila belum ada. */

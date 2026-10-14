@@ -4,6 +4,7 @@ namespace App\Services\Ralan;
 
 use App\Models\PermintaanRadiologi;
 use App\Models\PermintaanPemeriksaanRadiologi;
+use App\Support\NomorUrut;
 use App\Support\PenjaminResolver;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -46,16 +47,29 @@ class RadiologiService
 
     public function simpanPermintaan(array $data): array
     {
-        return DB::transaction(function () use ($data) {
-            $tgl = Carbon::now()->format('Y-m-d');
-            $jam = Carbon::now()->format('H:i:s');
-            $noOrder = 'PR' . str_replace('-', '', $tgl) . $this->nextNumber($tgl);
+        return NomorUrut::denganRetry(function () use ($data) {
+            $now = Carbon::now();
+            $tgl = $now->format('Y-m-d');
+            $jam = $now->format('H:i:s');
+
+            // Nomor final di DB: PR + ymd + 2 digit (ACSN software radiologi maks 10 karakter).
+            $urut = NomorUrut::berikutnya('permintaan_radiologi', 'noorder', 'PR' . $now->format('ymd'), 2);
+            if ($urut > 99) {
+                return [
+                    'status'  => 'error',
+                    'message' => 'Nomor order radiologi hari ini sudah mencapai batas 99.',
+                    'code'    => 422,
+                ];
+            }
+            $noOrder = 'PR' . $now->format('ymd') . sprintf('%02d', $urut);
+            // Trigger trg_format_noorder_* memotong PR + Ymd + 4 digit menjadi $noOrder.
+            $noOrderInput = 'PR' . $now->format('Ymd') . sprintf('%04d', $urut);
 
             $reg = DB::table('reg_periksa')->where('no_rawat', $data['no_rawat'])->first();
             $statusLanjut = ($reg && strtolower($reg->status_lanjut) === 'ranap') ? 'ranap' : 'ralan';
 
             PermintaanRadiologi::create([
-                'noorder'            => $noOrder,
+                'noorder'            => $noOrderInput,
                 'no_rawat'           => $data['no_rawat'],
                 'tgl_permintaan'     => $tgl,
                 'jam_permintaan'     => $jam,
@@ -72,7 +86,7 @@ class RadiologiService
             $kdJenisList = $data['kd_jenis_prw_rad'] ?? $data['kd_jenis_prw'] ?? [];
             foreach ($kdJenisList as $kdJenis) {
                 PermintaanPemeriksaanRadiologi::create([
-                    'noorder'      => $noOrder,
+                    'noorder'      => $noOrderInput,
                     'kd_jenis_prw' => $kdJenis,
                     'stts_bayar'   => 'Belum',
                 ]);
@@ -111,14 +125,5 @@ class RadiologiService
 
             return ['status' => 'success-hapus-rad', 'message' => 'Data berhasil dihapus'];
         });
-    }
-
-    private function nextNumber(string $date): string
-    {
-        $lastNo = DB::table('permintaan_radiologi')
-            ->where('tgl_permintaan', $date)
-            ->max(DB::raw('CONVERT(RIGHT(noorder, 4), signed)')) ?? 0;
-
-        return sprintf('%04s', ($lastNo + 1));
     }
 }
