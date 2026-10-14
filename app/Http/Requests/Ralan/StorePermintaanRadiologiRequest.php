@@ -11,6 +11,15 @@ class StorePermintaanRadiologiRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if (!$this->has('kd_jenis_prw_rad') && $this->has('kd_jenis_prw')) {
+            $this->merge([
+                'kd_jenis_prw_rad' => $this->kd_jenis_prw,
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         return [

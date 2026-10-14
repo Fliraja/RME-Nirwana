@@ -67,11 +67,17 @@
             </div>
             <div class="col-md-2">
                 <div class="mb-3">
+                    <label class="small fw-bold">SpO2 (%)</label>
+                    <input type="text" name="spo2" class="form-control form-control-sm" value="{{ $pasien->pemeriksaanRalan->spo2 ?? '' }}" placeholder="98">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="mb-3">
                     <label class="small fw-bold">GCS (E,V,M)</label>
                     <input type="text" name="gcs" class="form-control form-control-sm" value="{{ $pasien->pemeriksaanRalan->gcs ?? '' }}">
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="mb-3">
                     <label class="small fw-bold">Alergi</label>
                     <input type="text" name="alergi" class="form-control form-control-sm" value="{{ $pasien->pemeriksaanRalan->alergi ?? '' }}">
@@ -86,9 +92,14 @@
 
     <hr>
 
-    <h6 class="fw-bold"><i class="fas fa-history me-1"></i> Data Terakhir Pasien</h6>
+    <div class="d-flex align-items-center mb-2">
+        <h6 class="fw-bold mb-0"><i class="fas fa-history me-1"></i> Data Terakhir Pasien</h6>
+        <span class="badge bg-light text-muted border ms-2 small fw-normal">
+            <i class="fas fa-mouse-pointer me-1 text-primary"></i>Klik baris untuk salin ke form
+        </span>
+    </div>
     <div class="table-responsive">
-        <table class="table table-bordered table-sm table-hover">
+        <table class="table table-bordered table-sm table-hover" id="tableVitalRalan">
             <thead class="bg-light text-center small">
                 <tr>
                     <th>Tgl/Jam</th>
@@ -96,6 +107,7 @@
                     <th>Suhu</th>
                     <th>Nadi</th>
                     <th>Respi</th>
+                    <th>SpO2</th>
                     <th>TB/BB</th>
                     <th>GCS</th>
                     <th>Alergi</th>
@@ -103,19 +115,20 @@
             </thead>
             <tbody class="small text-center">
                 @if($pasien->pemeriksaanRalan)
-                <tr>
+                <tr class="vital-row-item" data-vital="{{ json_encode($pasien->pemeriksaanRalan) }}" style="cursor: pointer;" title="Klik untuk menyalin data Vital Sign ke form">
                     <td>{{ $pasien->pemeriksaanRalan->tgl_perawatan }} <br> {{ $pasien->pemeriksaanRalan->jam_rawat }}</td>
                     <td>{{ $pasien->pemeriksaanRalan->tensi }}</td>
                     <td>{{ $pasien->pemeriksaanRalan->suhu_tubuh }} °C</td>
                     <td>{{ $pasien->pemeriksaanRalan->nadi }}</td>
                     <td>{{ $pasien->pemeriksaanRalan->respirasi }}</td>
+                    <td>{{ $pasien->pemeriksaanRalan->spo2 ? $pasien->pemeriksaanRalan->spo2 . ' %' : '-' }}</td>
                     <td>{{ $pasien->pemeriksaanRalan->tinggi }} / {{ $pasien->pemeriksaanRalan->berat }}</td>
                     <td>{{ $pasien->pemeriksaanRalan->gcs }} ({{ $pasien->pemeriksaanRalan->kesadaran }})</td>
                     <td class="text-start text-danger fw-bold">{{ $pasien->pemeriksaanRalan->alergi }}</td>
                 </tr>
                 @else
                 <tr>
-                    <td colspan="8" class="text-muted p-3">Belum ada riwayat pemeriksaan hari ini.</td>
+                    <td colspan="9" class="text-muted p-3">Belum ada riwayat pemeriksaan hari ini.</td>
                 </tr>
                 @endif
             </tbody>

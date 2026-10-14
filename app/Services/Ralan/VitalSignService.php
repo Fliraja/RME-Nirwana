@@ -20,6 +20,7 @@ class VitalSignService
                 'respirasi'     => $data['respirasi'] ?? '-',
                 'tinggi'        => $data['tinggi'] ?? '-',
                 'berat'         => $data['berat'] ?? '-',
+                'spo2'          => $data['spo2'] ?? '-',
                 'gcs'           => $data['gcs'] ?? '-',
                 'kesadaran'     => $data['kesadaran'] ?? 'Compos Mentis',
                 'alergi'        => $data['alergi'] ?? '-',
