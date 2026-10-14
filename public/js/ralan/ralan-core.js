@@ -256,43 +256,48 @@ function loadFormRadiologi(forceReload = false) {
 }
 
 // --- Fragment-only table reloads (no form re-fetch, no Tom Select re-init) ---
-function reloadLabTable() {
-    if (currentNoRawat === "") return;
-    $.ajax({
-        url: ralanUrl('/ralan/get-lab-table/' + currentSafeNoRawat),
-        method: 'GET',
-        success: function(data) { $('#tabel-riwayat-lab').html(data); },
-        error: function() { tampilkanError('Gagal memuat ulang tabel lab.'); }
-    });
+var ralanTables = {
+    soap:      { url: '/ralan/table/soap/',          target: '#ralan-soap-table' },
+    vital:     { url: '/ralan/table/vital/',         target: '#ralan-vital-table' },
+    diagnosa:  { url: '/ralan/table/diagnosa/',      target: '#ralan-diagnosa-table' },
+    prosedur:  { url: '/ralan/table/prosedur/',      target: '#ralan-prosedur-table' },
+    lab:       { url: '/ralan/get-lab-table/',       target: '#tabel-riwayat-lab' },
+    radiologi: { url: '/ralan/get-radiologi-table/', target: '#tabel-riwayat-rad' },
+    resep:     { url: '/ralan/get-resep-table/',     target: '#tabel-resep-container' }
+};
+var ralanTableXhr = {};
+
+function reloadRalanTable(nama) {
+    var cfg = ralanTables[nama];
+    if (currentNoRawat === "" || !cfg || !$(cfg.target).length) return;
+
+    // Simpan/hapus beruntun: batalkan request lama agar respons terakhir yang tampil.
+    if (ralanTableXhr[nama]) ralanTableXhr[nama].abort();
+
+    var req = $.get(ralanUrl(cfg.url + currentSafeNoRawat))
+        .done(function(html) { $(cfg.target).html(html); })
+        .fail(function(xhr, status) {
+            if (status !== 'abort') tampilkanError('Gagal memuat ulang tabel (HTTP ' + xhr.status + ').');
+        })
+        .always(function() {
+            if (ralanTableXhr[nama] === req) ralanTableXhr[nama] = null;
+        });
+    ralanTableXhr[nama] = req;
 }
 
-function reloadRadiologiTable() {
-    if (currentNoRawat === "") return;
-    $.ajax({
-        url: ralanUrl('/ralan/get-radiologi-table/' + currentSafeNoRawat),
-        method: 'GET',
-        success: function(data) { $('#tabel-riwayat-rad').html(data); },
-        error: function() { tampilkanError('Gagal memuat ulang tabel radiologi.'); }
-    });
+function reloadLabTable() { reloadRalanTable('lab'); }
+function reloadRadiologiTable() { reloadRalanTable('radiologi'); }
+function reloadResepTable() { reloadRalanTable('resep'); }
+
+function kosongkanStaging(tbody) {
+    var $tbody = $(tbody);
+    if (!$tbody.length) return;
+    var cols = $tbody.data('cols') || 3;
+    var empty = $tbody.data('empty') || 'Belum ada data';
+    $tbody.html('<tr class="staging-empty"><td colspan="' + cols + '" class="text-center text-muted small py-2">' + empty + '</td></tr>');
 }
 
-function reloadResepTable() {
-    if (currentNoRawat === "") return;
-    $.ajax({
-        url: ralanUrl('/ralan/get-resep-table/' + currentSafeNoRawat),
-        method: 'GET',
-        success: function(data) { $('#tabel-resep-container').html(data); },
-        error: function() { tampilkanError('Gagal memuat ulang tabel resep.'); }
-    });
-}
-
-function clearStagingObat() {
-    var tbody = $('#staging-obat');
-    if (!tbody.length) return;
-    var cols = tbody.data('cols') || 4;
-    var empty = tbody.data('empty') || 'Belum ada obat dipilih';
-    tbody.html('<tr class="staging-empty"><td colspan="' + cols + '" class="text-center text-muted small py-2">' + empty + '</td></tr>');
-}
+function clearStagingObat() { kosongkanStaging('#staging-obat'); }
 
 function loadDiagnosaProsedur(forceReload = false) {
     if (currentNoRawat === "") return;
@@ -807,7 +812,9 @@ $(document).ready(function() {
             success: function(res) {
                 btn.prop('disabled', false).html(originalText);
                 tampilkanSukses(res.message || 'Data SOAP berhasil disimpan');
-                loadSoap(true);
+                // SOAP & TTV berbagi satu baris pemeriksaan_ralan: kedua tabel ikut berubah.
+                reloadRalanTable('soap');
+                reloadRalanTable('vital');
             },
             error: function(xhr) {
                 btn.prop('disabled', false).html(originalText);
@@ -830,7 +837,8 @@ $(document).ready(function() {
             success: function(res) {
                 btn.prop('disabled', false).html(originalText);
                 tampilkanSukses(res.message || 'Data Vital Sign berhasil disimpan');
-                loadVital(true);
+                reloadRalanTable('vital');
+                reloadRalanTable('soap');
             },
             error: function(xhr) {
                 btn.prop('disabled', false).html(originalText);
@@ -1353,7 +1361,8 @@ $(document).ready(function() {
             success: function(res) {
                 btn.prop('disabled', false).html(original);
                 tampilkanSukses(res.message);
-                loadDiagnosaProsedur(true);
+                kosongkanStaging('#staging-diagnosa');
+                reloadRalanTable('diagnosa');
             },
             error: function(xhr) {
                 btn.prop('disabled', false).html(original);
@@ -1383,7 +1392,8 @@ $(document).ready(function() {
             success: function(res) {
                 btn.prop('disabled', false).html(original);
                 tampilkanSukses(res.message);
-                loadDiagnosaProsedur(true);
+                kosongkanStaging('#staging-prosedur');
+                reloadRalanTable('prosedur');
             },
             error: function(xhr) {
                 btn.prop('disabled', false).html(original);
@@ -1401,7 +1411,7 @@ $(document).ready(function() {
                 data: { _token: window.RALAN.csrf },
                 success: function(res) {
                     tampilkanSukses(res.message);
-                    loadDiagnosaProsedur(true);
+                    reloadRalanTable('diagnosa');
                 },
                 error: function(xhr) {
                     tampilkanError(xhr.responseJSON?.message || "Gagal menghapus diagnosa.");
@@ -1419,7 +1429,7 @@ $(document).ready(function() {
                 data: { _token: window.RALAN.csrf },
                 success: function(res) {
                     tampilkanSukses(res.message);
-                    loadDiagnosaProsedur(true);
+                    reloadRalanTable('prosedur');
                 },
                 error: function(xhr) {
                     tampilkanError(xhr.responseJSON?.message || "Gagal menghapus prosedur.");

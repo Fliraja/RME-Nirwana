@@ -9,6 +9,7 @@ use App\Models\PemeriksaanRalan;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\Ralan\StoreSoapRequest;
 use App\Http\Requests\Ralan\StoreVitalSignRequest;
+use App\Services\Ralan\DiagnosaProsedurService;
 use App\Services\Ralan\SoapService;
 use App\Services\Ralan\VitalSignService;
 use App\Support\AntrolBpjsUpdater;
@@ -140,6 +141,24 @@ class RalanController extends Controller
         }
 
         return "<div class='alert alert-danger'>Data vital sign tidak ditemukan.</div>";
+    }
+
+    /**
+     * Fragmen tabel saja, untuk reload setelah simpan/hapus tanpa memuat ulang
+     * form tab (Tom Select & isian form tetap).
+     */
+    public function getTable(string $tabel, string $no_rawat, DiagnosaProsedurService $diagnosaService)
+    {
+        $no_rawat = str_replace('-', '/', $no_rawat);
+
+        if (in_array($tabel, ['diagnosa', 'prosedur'], true)) {
+            return view("ralan.partials.{$tabel}_table", $diagnosaService->dataPasien($no_rawat));
+        }
+
+        // SOAP & TTV berbagi satu baris pemeriksaan_ralan per kunjungan.
+        $pasien = RegPeriksa::with(['pemeriksaanRalan'])->where('no_rawat', $no_rawat)->firstOrFail();
+
+        return view("ralan.partials.{$tabel}_table", compact('pasien'));
     }
 
     public function storeVital(StoreVitalSignRequest $request, VitalSignService $service)
