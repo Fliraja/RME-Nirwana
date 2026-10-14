@@ -88,7 +88,25 @@ class RanapResumeService
             ->orderBy('jam_rawat', 'desc')
             ->value('pemeriksaan') ?? '';
 
-        // Baris SOAP CPPT terakhir (yang memiliki keluhan / pemeriksaan)
+        $latestRtl = DB::table('pemeriksaan_ranap')
+            ->where('no_rawat', $noRawat)
+            ->whereNotNull('rtl')
+            ->where('rtl', '!=', '')
+            ->where('rtl', '!=', '-')
+            ->orderBy('tgl_perawatan', 'desc')
+            ->orderBy('jam_rawat', 'desc')
+            ->value('rtl') ?? '';
+
+        $latestInstruksi = DB::table('pemeriksaan_ranap')
+            ->where('no_rawat', $noRawat)
+            ->whereNotNull('instruksi')
+            ->where('instruksi', '!=', '')
+            ->where('instruksi', '!=', '-')
+            ->orderBy('tgl_perawatan', 'desc')
+            ->orderBy('jam_rawat', 'desc')
+            ->value('instruksi') ?? '';
+
+        // Baris SOAP CPPT terakhir (yang memiliki keluhan / pemeriksaan / rtl / instruksi)
         $soapTerakhir = DB::table('pemeriksaan_ranap')
             ->where('no_rawat', $noRawat)
             ->where(function ($q) {
@@ -101,6 +119,16 @@ class RanapResumeService
                     $s->whereNotNull('pemeriksaan')
                       ->where('pemeriksaan', '!=', '')
                       ->where('pemeriksaan', '!=', '-');
+                })
+                ->orWhere(function ($s) {
+                    $s->whereNotNull('rtl')
+                      ->where('rtl', '!=', '')
+                      ->where('rtl', '!=', '-');
+                })
+                ->orWhere(function ($s) {
+                    $s->whereNotNull('instruksi')
+                      ->where('instruksi', '!=', '')
+                      ->where('instruksi', '!=', '-');
                 });
             })
             ->orderBy('tgl_perawatan', 'desc')
@@ -151,6 +179,8 @@ class RanapResumeService
             'soapAwal',
             'latestKeluhan',
             'latestPemeriksaan',
+            'latestRtl',
+            'latestInstruksi',
             'obatRsList',
             'ringkasanPenunjang'
         );

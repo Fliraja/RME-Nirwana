@@ -46,7 +46,7 @@ function initRemoteSelect(selector, opts) {
         valueField: 'id',
         labelField: 'text',
         searchField: 'text',
-        maxItems: opts.multiple ? null : 1,
+        maxItems: opts.multiple ? (opts.maxItems || null) : 1,
         maxOptions: 50,
         loadThrottle: 200,
         placeholder: opts.placeholder || 'Ketik untuk mencari...',
@@ -65,6 +65,16 @@ function initRemoteSelect(selector, opts) {
             if (typeof opts.onItemAdd === 'function') {
                 var data = this.options[value] || { id: value, text: value };
                 opts.onItemAdd(data, this);
+            }
+        },
+        onItemRemove: function(value) {
+            if (typeof opts.onItemRemove === 'function') {
+                opts.onItemRemove(value, this);
+            }
+        },
+        onChange: function(value) {
+            if (typeof opts.onChange === 'function') {
+                opts.onChange(value, this);
             }
         }
     });
@@ -1120,13 +1130,86 @@ function loadResume(forceReload = false) {
 }
 
 function initResumeHandlers() {
-    // Toggle container input faskes rujukan
+    // Toggle container input faskes rujukan & styling aktif card
     $('input.radio-kondisi-pulang').off('change').on('change', function() {
-        if ($(this).val() === 'dirujuk') {
+        var val = $(this).val();
+
+        // Update visual card active state
+        $('.kondisi-pulang-card').removeClass('border-success bg-success-subtle text-success-emphasis border-warning bg-warning-subtle text-warning-emphasis border-primary bg-primary-subtle text-primary-emphasis border-danger bg-danger-subtle text-danger-emphasis fw-bold shadow-sm')
+            .addClass('bg-light text-secondary');
+
+        var $card = $(this).closest('.kondisi-pulang-card');
+        $card.removeClass('bg-light text-secondary').addClass('fw-bold shadow-sm');
+
+        if (val === 'sembuh') {
+            $card.addClass('border-success bg-success-subtle text-success-emphasis');
+        } else if (val === 'aps') {
+            $card.addClass('border-warning bg-warning-subtle text-warning-emphasis');
+        } else if (val === 'dirujuk') {
+            $card.addClass('border-primary bg-primary-subtle text-primary-emphasis');
+        } else {
+            $card.addClass('border-danger bg-danger-subtle text-danger-emphasis');
+        }
+
+        if (val === 'dirujuk') {
             $('#containerNamaRujukan').removeClass('d-none');
             $('#resume_nama_faskes_rujukan').focus();
         } else {
             $('#containerNamaRujukan').addClass('d-none');
+        }
+    });
+
+    // TomSelect Diagnosa Primer (Single)
+    var tsResumePrimer = initRemoteSelect('#select-resume-icd10-primer', {
+        url: ranapUrl('/ralan/search-icd10'),
+        placeholder: 'Ketik kode / nama ICD-10 diagnosa utama...',
+        onItemAdd: function(item, ts) {
+            var parts = (item.text || '').split(' - ');
+            var kode = parts[0] || item.id;
+            var nama = parts.slice(1).join(' - ') || kode;
+            $('#resume_kd_diagnosa_utama').val(kode);
+            $('#resume_diagnosa_utama').val(nama);
+        },
+        onChange: function(value, ts) {
+            if (!value) {
+                $('#resume_kd_diagnosa_utama').val('');
+                $('#resume_diagnosa_utama').val('');
+            }
+        }
+    });
+
+    // Helper sinkronisasi 4 pasang hidden input diagnosa sekunder
+    function syncResumeSekunderHidden(tsInstance) {
+        var values = tsInstance ? tsInstance.getValue() : [];
+        if (!Array.isArray(values)) {
+            values = values ? [values] : [];
+        }
+
+        for (var i = 1; i <= 4; i++) {
+            var suffix = i === 1 ? '' : i;
+            var val = values[i - 1];
+            if (val && tsInstance.options[val]) {
+                var item = tsInstance.options[val];
+                var parts = (item.text || '').split(' - ');
+                var kode = parts[0] || item.id;
+                var nama = parts.slice(1).join(' - ') || kode;
+                $('#resume_kd_diagnosa_sekunder' + suffix).val(kode);
+                $('#resume_diagnosa_sekunder' + suffix).val(nama);
+            } else {
+                $('#resume_kd_diagnosa_sekunder' + suffix).val('');
+                $('#resume_diagnosa_sekunder' + suffix).val('');
+            }
+        }
+    }
+
+    // TomSelect Diagnosa Sekunder (Multiple, max 4 items)
+    var tsResumeSekunder = initRemoteSelect('#select-resume-icd10-sekunder', {
+        url: ranapUrl('/ralan/search-icd10'),
+        placeholder: 'Ketik kode / nama ICD-10 sekunder (maks. 4)...',
+        multiple: true,
+        maxItems: 4,
+        onChange: function(value, ts) {
+            syncResumeSekunderHidden(ts);
         }
     });
 
@@ -1152,12 +1235,43 @@ function initResumeHandlers() {
                 if (autoData.riwayat_penyakit) $('#resume_riwayat_penyakit').val(autoData.riwayat_penyakit);
                 if (autoData.pemeriksaan_fisik) $('#resume_pemeriksaan_fisik').val(autoData.pemeriksaan_fisik);
                 if (autoData.pemeriksaan_penunjang) $('#resume_pemeriksaan_penunjang').val(autoData.pemeriksaan_penunjang);
-                if (autoData.diagnosa_utama) $('#resume_diagnosa_utama').val(autoData.diagnosa_utama);
-                if (autoData.kd_diagnosa_utama) $('#resume_kd_diagnosa_utama').val(autoData.kd_diagnosa_utama);
-                if (autoData.diagnosa_sekunder) $('#resume_diagnosa_sekunder').val(autoData.diagnosa_sekunder);
-                if (autoData.kd_diagnosa_sekunder) $('#resume_kd_diagnosa_sekunder').val(autoData.kd_diagnosa_sekunder);
                 if (autoData.tindakan) $('#resume_tindakan_operasi').val(autoData.tindakan);
-                if (autoData.obat_rs) $('#resume_obat_di_rs').val(autoData.obat_rs);
+                if (autoData.edukasi) $('#resume_edukasi').val(autoData.edukasi);
+
+                // Set Diagnosa Primer
+                if (tsResumePrimer) {
+                    tsResumePrimer.clear(true);
+                    if (autoData.kd_diagnosa_utama) {
+                        var kdPrim = autoData.kd_diagnosa_utama;
+                        var nmPrim = autoData.diagnosa_utama || kdPrim;
+                        tsResumePrimer.addOption({ id: kdPrim, text: kdPrim + ' - ' + nmPrim });
+                        tsResumePrimer.setValue(kdPrim);
+                    } else {
+                        $('#resume_kd_diagnosa_utama').val('');
+                        $('#resume_diagnosa_utama').val('');
+                    }
+                }
+
+                // Set Diagnosa Sekunder (Maks 4 items)
+                if (tsResumeSekunder) {
+                    tsResumeSekunder.clear(true);
+                    var sekunderList = autoData.diagnosa_sekunder_items || [];
+                    var sekunderValues = [];
+                    sekunderList.slice(0, 4).forEach(function(item) {
+                        if (item.kd) {
+                            var kdSek = item.kd;
+                            var nmSek = item.nm || kdSek;
+                            tsResumeSekunder.addOption({ id: kdSek, text: kdSek + ' - ' + nmSek });
+                            sekunderValues.push(kdSek);
+                        }
+                    });
+                    if (sekunderValues.length > 0) {
+                        tsResumeSekunder.setValue(sekunderValues);
+                    } else {
+                        syncResumeSekunderHidden(tsResumeSekunder);
+                    }
+                }
+
                 tampilkanSukses('Data rekam medis terbaru berhasil ditarik ke form.');
             }
         });
