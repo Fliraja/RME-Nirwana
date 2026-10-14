@@ -85,6 +85,43 @@ function clearRemoteSelect(selector) {
     if (el && el.tomselect) el.tomselect.clear();
 }
 
+/* ===== Reload fragmen tabel riwayat (form tab & Tom Select tidak dimuat ulang) ===== */
+var ranapTables = {
+    soap:      '#ranap-soap-table',
+    ttv:       '#ranap-ttv-table',
+    diagnosa:  '#ranap-diagnosa-table',
+    prosedur:  '#ranap-prosedur-table',
+    resep:     '#resep-table-container',
+    lab:       '#ranap-lab-table',
+    radiologi: '#ranap-rad-table'
+};
+var ranapTableXhr = {};
+
+function reloadRanapTable(nama) {
+    var target = ranapTables[nama];
+    if (!currentNoRawat || !target || !$(target).length) return;
+
+    // Simpan/hapus beruntun: batalkan request lama agar respons terakhir yang tampil.
+    if (ranapTableXhr[nama]) ranapTableXhr[nama].abort();
+
+    var req = $.get(ranapUrl('/ranap/table/' + nama + '/' + currentSafeNoRawat))
+        .done(function(html) { $(target).html(html); })
+        .fail(function(xhr, status) {
+            if (status !== 'abort') tampilkanError('Gagal memuat ulang tabel (HTTP ' + xhr.status + ').');
+        })
+        .always(function() {
+            if (ranapTableXhr[nama] === req) ranapTableXhr[nama] = null;
+        });
+    ranapTableXhr[nama] = req;
+}
+
+function kosongkanStaging(tbody) {
+    var $tbody = $(tbody);
+    var cols = $tbody.data('cols') || 3;
+    var emptyTxt = $tbody.data('empty') || 'Belum ada data';
+    $tbody.html('<tr class="staging-empty"><td colspan="' + cols + '" class="text-center text-muted small py-2">' + emptyTxt + '</td></tr>');
+}
+
 /* ===== Tab State Management ===== */
 var loadedTabs = {
     riwayat: true,
@@ -108,11 +145,24 @@ var loadingTabs = {
     resume: false
 };
 
+// Reload paksa saat tab masih dimuat: tandai, lalu jalankan sekali setelah selesai.
+var pendingTabs = {};
+
+function tundaReload(tab, forceReload) {
+    if (forceReload) pendingTabs[tab] = true;
+}
+
+function jalankanReloadTertunda(tab, loader) {
+    if (!pendingTabs[tab]) return;
+    pendingTabs[tab] = false;
+    loader(true);
+}
+
 /* ===== 1. Tab SOAP CPPT ===== */
 function loadSoap(forceReload = false) {
     if (!currentNoRawat) return;
     if (loadedTabs.soap && !forceReload) return;
-    if (loadingTabs.soap) return;
+    if (loadingTabs.soap) return tundaReload('soap', forceReload);
 
     if (!loadedTabs.soap) {
         $('#content-soap').html('<div class="text-center p-5"><div class="spinner-border text-primary"></div><p class="mt-2 text-muted">Memuat Catatan SOAP Ranap...</p></div>');
@@ -128,6 +178,8 @@ function loadSoap(forceReload = false) {
     }).fail(function(xhr) {
         loadingTabs.soap = false;
         if (!loadedTabs.soap) $('#content-soap').html('<div class="alert alert-danger">Gagal memuat form SOAP (HTTP ' + xhr.status + ').</div>');
+    }).always(function() {
+        jalankanReloadTertunda('soap', loadSoap);
     });
 }
 
@@ -145,7 +197,7 @@ function initSoapHandlers() {
                 $btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan SOAP');
                 tampilkanSukses(res.message || 'Catatan SOAP berhasil disimpan.');
                 resetFormSoap();
-                loadSoap(true);
+                reloadRanapTable('soap');
             },
             error: function(xhr) {
                 $btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan SOAP');
@@ -156,7 +208,8 @@ function initSoapHandlers() {
     });
 
     // Klik badan tabel untuk langsung mengisi form input (memudahkan entri CPPT)
-    $('#tableRiwayatSoap tbody').off('click', 'tr.soap-row-item').on('click', 'tr.soap-row-item', function(e) {
+    // Delegasi di container: tetap berlaku setelah isi tabel diganti reloadRanapTable.
+    $('#ranap-soap-table').off('click', 'tr.soap-row-item').on('click', 'tr.soap-row-item', function(e) {
         if ($(e.target).closest('button, .btn, a').length) {
             return;
         }
@@ -270,7 +323,7 @@ function hapusSoap(tgl, jam) {
                 success: function(res) {
                     if (res.status === 'success') {
                         tampilkanSukses(res.message);
-                        loadSoap(true);
+                        reloadRanapTable('soap');
                     } else {
                         tampilkanError(res.message);
                     }
@@ -287,7 +340,7 @@ function hapusSoap(tgl, jam) {
 function loadVital(forceReload = false) {
     if (!currentNoRawat) return;
     if (loadedTabs.vital && !forceReload) return;
-    if (loadingTabs.vital) return;
+    if (loadingTabs.vital) return tundaReload('vital', forceReload);
 
     if (!loadedTabs.vital) {
         $('#content-vital-sign').html('<div class="text-center p-5"><div class="spinner-border text-danger"></div><p class="mt-2 text-muted">Memuat Form TTV & Catatan SBAR...</p></div>');
@@ -303,6 +356,8 @@ function loadVital(forceReload = false) {
     }).fail(function(xhr) {
         loadingTabs.vital = false;
         if (!loadedTabs.vital) $('#content-vital-sign').html('<div class="alert alert-danger">Gagal memuat form TTV (HTTP ' + xhr.status + ').</div>');
+    }).always(function() {
+        jalankanReloadTertunda('vital', loadVital);
     });
 }
 
@@ -320,7 +375,7 @@ function initTtvHandlers() {
                 $btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan TTV & SBAR');
                 tampilkanSukses(res.message || 'Data TTV & SBAR berhasil disimpan.');
                 resetFormTtv();
-                loadVital(true);
+                reloadRanapTable('ttv');
             },
             error: function(xhr) {
                 $btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan TTV & SBAR');
@@ -331,7 +386,8 @@ function initTtvHandlers() {
     });
 
     // Klik badan tabel untuk langsung mengisi form input (memudahkan entri TTV)
-    $('#tableRiwayatTtv tbody').off('click', 'tr.ttv-row-item').on('click', 'tr.ttv-row-item', function(e) {
+    // Delegasi di container: tetap berlaku setelah isi tabel diganti reloadRanapTable.
+    $('#ranap-ttv-table').off('click', 'tr.ttv-row-item').on('click', 'tr.ttv-row-item', function(e) {
         if ($(e.target).closest('button, .btn, a').length) {
             return;
         }
@@ -454,7 +510,7 @@ function hapusTtv(tgl, jam) {
                 success: function(res) {
                     if (res.status === 'success') {
                         tampilkanSukses(res.message);
-                        loadVital(true);
+                        reloadRanapTable('ttv');
                     } else {
                         tampilkanError(res.message);
                     }
@@ -471,7 +527,7 @@ function hapusTtv(tgl, jam) {
 function loadDiagnosa(forceReload = false) {
     if (!currentNoRawat) return;
     if (loadedTabs.diagnosa && !forceReload) return;
-    if (loadingTabs.diagnosa) return;
+    if (loadingTabs.diagnosa) return tundaReload('diagnosa', forceReload);
 
     if (!loadedTabs.diagnosa) {
         $('#content-diagnosa-prosedur').html('<div class="text-center p-5"><div class="spinner-border text-info"></div><p class="mt-2 text-muted">Memuat Diagnosa & Prosedur...</p></div>');
@@ -487,6 +543,8 @@ function loadDiagnosa(forceReload = false) {
     }).fail(function(xhr) {
         loadingTabs.diagnosa = false;
         if (!loadedTabs.diagnosa) $('#content-diagnosa-prosedur').html('<div class="alert alert-danger">Gagal memuat diagnosa (HTTP ' + xhr.status + ').</div>');
+    }).always(function() {
+        jalankanReloadTertunda('diagnosa', loadDiagnosa);
     });
 }
 
@@ -546,9 +604,7 @@ function initDiagnosaHandlers() {
         var $tbody = $(this).closest('tbody');
         $(this).closest('tr').remove();
         if ($tbody.children('tr').length === 0) {
-            var cols = $tbody.data('cols') || 3;
-            var emptyTxt = $tbody.data('empty') || 'Belum ada data';
-            $tbody.html('<tr class="staging-empty"><td colspan="' + cols + '" class="text-center text-muted small py-2">' + emptyTxt + '</td></tr>');
+            kosongkanStaging($tbody);
         }
     });
 
@@ -573,7 +629,8 @@ function initDiagnosaHandlers() {
             },
             success: function(res) {
                 tampilkanSukses(res.message);
-                loadDiagnosa(true);
+                kosongkanStaging('#staging-diagnosa');
+                reloadRanapTable('diagnosa');
             },
             error: function(xhr) {
                 tampilkanError(xhr.responseJSON ? xhr.responseJSON.message : 'Gagal menyimpan diagnosa.');
@@ -607,7 +664,8 @@ function initDiagnosaHandlers() {
             },
             success: function(res) {
                 tampilkanSukses(res.message);
-                loadDiagnosa(true);
+                kosongkanStaging('#staging-prosedur');
+                reloadRanapTable('prosedur');
             },
             error: function(xhr) {
                 tampilkanError(xhr.responseJSON ? xhr.responseJSON.message : 'Gagal menyimpan prosedur.');
@@ -632,7 +690,7 @@ function initDiagnosaHandlers() {
                     data: { _token: window.RANAP.csrfToken },
                     success: function(res) {
                         tampilkanSukses(res.message);
-                        loadDiagnosa(true);
+                        reloadRanapTable('diagnosa');
                     }
                 });
             }
@@ -656,7 +714,7 @@ function initDiagnosaHandlers() {
                     data: { _token: window.RANAP.csrfToken },
                     success: function(res) {
                         tampilkanSukses(res.message);
-                        loadDiagnosa(true);
+                        reloadRanapTable('prosedur');
                     }
                 });
             }
@@ -668,7 +726,7 @@ function initDiagnosaHandlers() {
 function loadResep(forceReload = false) {
     if (!currentNoRawat) return;
     if (loadedTabs.resep && !forceReload) return;
-    if (loadingTabs.resep) return;
+    if (loadingTabs.resep) return tundaReload('resep', forceReload);
 
     if (!loadedTabs.resep) {
         $('#content-resep').html('<div class="text-center p-5"><div class="spinner-border text-warning"></div><p class="mt-2 text-muted">Memuat Form Peresepan & Riwayat Obat...</p></div>');
@@ -684,7 +742,19 @@ function loadResep(forceReload = false) {
     }).fail(function(xhr) {
         loadingTabs.resep = false;
         if (!loadedTabs.resep) $('#content-resep').html('<div class="alert alert-danger">Gagal memuat resep (HTTP ' + xhr.status + ').</div>');
+    }).always(function() {
+        jalankanReloadTertunda('resep', loadResep);
     });
+}
+
+function resetFormRacikanRanap() {
+    var $tab = $('#content-resep');
+    $tab.find('input[name="nama_racik"], input[name="keterangan"]').val('');
+    $tab.find('select[name="kd_racik"]').prop('selectedIndex', 0);
+    $tab.find('input[name="jml_dr"]').val(10);
+    // change -> handler aturan_racik ikut menyembunyikan & mengosongkan input "lainnya".
+    $tab.find('select[name="aturan_racik"]').val('').trigger('change');
+    kosongkanStaging('#staging-bahan-racik');
 }
 
 function initResepHandlers() {
@@ -758,7 +828,8 @@ function initResepHandlers() {
             success: function(res) {
                 $btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan Resep Obat Ranap');
                 tampilkanSukses(res.message);
-                loadResep(true);
+                kosongkanStaging('#staging-obat');
+                reloadRanapTable('resep');
             },
             error: function(xhr) {
                 $btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan Resep Obat Ranap');
@@ -854,7 +925,8 @@ function initResepHandlers() {
             success: function(res) {
                 $btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan Resep Racikan Ranap');
                 tampilkanSukses(res.message);
-                loadResep(true);
+                resetFormRacikanRanap();
+                reloadRanapTable('resep');
             },
             error: function(xhr) {
                 $btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan Resep Racikan Ranap');
@@ -881,7 +953,7 @@ function initResepHandlers() {
                     data: { _token: window.RANAP.csrfToken },
                     success: function(res) {
                         tampilkanSukses(res.message);
-                        loadResep(true);
+                        reloadRanapTable('resep');
                     }
                 });
             }
@@ -906,7 +978,7 @@ function initResepHandlers() {
                     data: { _token: window.RANAP.csrfToken },
                     success: function(res) {
                         tampilkanSukses(res.message);
-                        loadResep(true);
+                        reloadRanapTable('resep');
                     }
                 });
             }
@@ -918,7 +990,7 @@ function initResepHandlers() {
 function loadLab(forceReload = false) {
     if (!currentNoRawat) return;
     if (loadedTabs.lab && !forceReload) return;
-    if (loadingTabs.lab) return;
+    if (loadingTabs.lab) return tundaReload('lab', forceReload);
 
     if (!loadedTabs.lab) {
         $('#content-lab').html('<div class="text-center p-5"><div class="spinner-border text-primary"></div><p class="mt-2 text-muted">Memuat Form Permintaan & Hasil Lab...</p></div>');
@@ -934,6 +1006,8 @@ function loadLab(forceReload = false) {
     }).fail(function(xhr) {
         loadingTabs.lab = false;
         if (!loadedTabs.lab) $('#content-lab').html('<div class="alert alert-danger">Gagal memuat lab (HTTP ' + xhr.status + ').</div>');
+    }).always(function() {
+        jalankanReloadTertunda('lab', loadLab);
     });
 }
 
@@ -981,7 +1055,11 @@ function initLabHandlers() {
             success: function(res) {
                 $btn.prop('disabled', false).html('<i class="fas fa-paper-plane me-1"></i> Kirim Permintaan Lab');
                 tampilkanSukses(res.message);
-                loadLab(true);
+                clearRemoteSelect('#select-lab');
+                $('#formPermintaanLabRanap textarea').val('');
+                $('#list-template-checkbox').empty();
+                $('#detail-pemeriksaan-placeholder').removeClass('d-none');
+                reloadRanapTable('lab');
             },
             error: function(xhr) {
                 $btn.prop('disabled', false).html('<i class="fas fa-paper-plane me-1"></i> Kirim Permintaan Lab');
@@ -1007,7 +1085,7 @@ function initLabHandlers() {
                     data: { _token: window.RANAP.csrfToken },
                     success: function(res) {
                         tampilkanSukses(res.message);
-                        loadLab(true);
+                        reloadRanapTable('lab');
                     }
                 });
             }
@@ -1019,7 +1097,7 @@ function initLabHandlers() {
 function loadRadiologi(forceReload = false) {
     if (!currentNoRawat) return;
     if (loadedTabs.radiologi && !forceReload) return;
-    if (loadingTabs.radiologi) return;
+    if (loadingTabs.radiologi) return tundaReload('radiologi', forceReload);
 
     if (!loadedTabs.radiologi) {
         $('#content-radiologi').html('<div class="text-center p-5"><div class="spinner-border text-teal"></div><p class="mt-2 text-muted">Memuat Form Permintaan & Hasil Radiologi...</p></div>');
@@ -1035,6 +1113,8 @@ function loadRadiologi(forceReload = false) {
     }).fail(function(xhr) {
         loadingTabs.radiologi = false;
         if (!loadedTabs.radiologi) $('#content-radiologi').html('<div class="alert alert-danger">Gagal memuat radiologi (HTTP ' + xhr.status + ').</div>');
+    }).always(function() {
+        jalankanReloadTertunda('radiologi', loadRadiologi);
     });
 }
 
@@ -1072,7 +1152,9 @@ function initRadiologiHandlers() {
             success: function(res) {
                 $btn.prop('disabled', false).html('<i class="fas fa-paper-plane me-1"></i> Kirim Permintaan Radiologi');
                 tampilkanSukses(res.message);
-                loadRadiologi(true);
+                clearRemoteSelect('#select-radiologi');
+                $('#formPermintaanRadiologiRanap textarea').val('');
+                reloadRanapTable('radiologi');
             },
             error: function(xhr) {
                 $btn.prop('disabled', false).html('<i class="fas fa-paper-plane me-1"></i> Kirim Permintaan Radiologi');
@@ -1098,7 +1180,7 @@ function initRadiologiHandlers() {
                     data: { _token: window.RANAP.csrfToken },
                     success: function(res) {
                         tampilkanSukses(res.message);
-                        loadRadiologi(true);
+                        reloadRanapTable('radiologi');
                     }
                 });
             }
@@ -1110,7 +1192,7 @@ function initRadiologiHandlers() {
 function loadResume(forceReload = false) {
     if (!currentNoRawat) return;
     if (loadedTabs.resume && !forceReload) return;
-    if (loadingTabs.resume) return;
+    if (loadingTabs.resume) return tundaReload('resume', forceReload);
 
     if (!loadedTabs.resume) {
         $('#content-resume').html('<div class="text-center p-5"><div class="spinner-border text-primary"></div><p class="mt-2 text-muted">Memuat Form Resume Medis Pasien...</p></div>');
@@ -1126,6 +1208,8 @@ function loadResume(forceReload = false) {
     }).fail(function(xhr) {
         loadingTabs.resume = false;
         if (!loadedTabs.resume) $('#content-resume').html('<div class="alert alert-danger">Gagal memuat resume medis (HTTP ' + xhr.status + ').</div>');
+    }).always(function() {
+        jalankanReloadTertunda('resume', loadResume);
     });
 }
 
@@ -1292,7 +1376,10 @@ function initResumeHandlers() {
             success: function(res) {
                 $btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan Resume Pasien');
                 tampilkanSukses(res.message || 'Resume medis berhasil disimpan.');
-                loadResume(true);
+                // Form sudah berisi nilai tersimpan; cukup perbarui status, tanpa reload tab (~20 query).
+                $('#badgeStatusResume')
+                    .removeClass('bg-warning text-dark').addClass('bg-success')
+                    .html('<i class="fas fa-check-circle me-1"></i>Sudah Tersimpan');
             },
             error: function(xhr) {
                 $btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan Resume Pasien');

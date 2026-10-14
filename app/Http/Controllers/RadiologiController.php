@@ -50,7 +50,11 @@ class RadiologiController extends Controller
 
     public function storePermintaanRadiologi(StorePermintaanRadiologiRequest $request)
     {
-        return response()->json($this->service->simpanPermintaan($request->all()));
+        $res = $this->service->simpanPermintaan($request->all());
+        $code = $res['code'] ?? 200;
+        unset($res['code']);
+
+        return response()->json($res, $code);
     }
 
     public function destroyRadiologi($noorder, $kd_jenis_prw = null)

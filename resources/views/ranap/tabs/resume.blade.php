@@ -102,9 +102,9 @@
                     <i class="fas fa-file-medical-alt me-2 text-primary"></i>Resume Pasien Pulang (Rawat Inap)
                 </span>
                 @if($isSaved)
-                    <span class="badge bg-success ms-2"><i class="fas fa-check-circle me-1"></i>Sudah Tersimpan</span>
+                    <span id="badgeStatusResume" class="badge bg-success ms-2"><i class="fas fa-check-circle me-1"></i>Sudah Tersimpan</span>
                 @else
-                    <span class="badge bg-warning text-dark ms-2"><i class="fas fa-clock me-1"></i>Belum Dibuat</span>
+                    <span id="badgeStatusResume" class="badge bg-warning text-dark ms-2"><i class="fas fa-clock me-1"></i>Belum Dibuat</span>
                 @endif
             </div>
             <div class="d-flex align-items-center gap-2">

@@ -34,6 +34,9 @@ Route::middleware(['multi.auth'])->group(function () {
     Route::get('/ranap/get-radiologi-pasien/{no_rawat}', [RanapController::class, 'getRadiologiPasien'])->name('ranap.get-radiologi');
     Route::get('/ranap/get-resume-pasien/{no_rawat}', [RanapController::class, 'getResumePasien'])->name('ranap.get-resume');
     Route::post('/ranap/store-resume-pasien', [RanapController::class, 'storeResumePasien'])->name('ranap.store-resume');
+    Route::get('/ranap/table/{tabel}/{no_rawat}', [RanapController::class, 'getTable'])
+        ->whereIn('tabel', ['soap', 'ttv', 'diagnosa', 'prosedur', 'resep', 'lab', 'radiologi'])
+        ->name('ranap.table');
 
     //Ralan Routes
     Route::match(['GET', 'POST'], '/ralan', [RalanController::class, 'index'])->name('ralan.index');

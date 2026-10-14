@@ -53,7 +53,8 @@ class AntrolBpjsUpdater
     }
 
     /**
-     * Catat jam periksa dokter (selalu overwrite jam submit + batas minimal 61 detik).
+     * Catat jam periksa dokter (first-write-wins, batas minimal 61 detik di atas jam perawat).
+     * Simpan SOAP berikutnya tidak menggeser jam yang sudah tercatat.
      */
     public static function tandaiDokter(string $noRawat, ?string $kdPj, ?Carbon $waktu = null): void
     {
@@ -72,6 +73,10 @@ class AntrolBpjsUpdater
             $jamDokter = self::hitungJamDokter($jamPerawat, $now);
 
             AntrolBpjs::where('no_rawat', $noRawat)
+                ->where(function ($q) {
+                    $q->whereNull('jam_periksa_dokter')
+                      ->orWhere('jam_periksa_dokter', '00:00:00');
+                })
                 ->update([
                     'jam_periksa_dokter' => $jamDokter
                 ]);

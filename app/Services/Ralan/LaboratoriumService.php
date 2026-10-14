@@ -6,6 +6,7 @@ use App\Models\PermintaanLab;
 use App\Models\PermintaanPemeriksaanLab;
 use App\Models\PermintaanDetailPermintaanLab;
 use App\Models\TemplateLaboratorium;
+use App\Support\NomorUrut;
 use App\Support\PenjaminResolver;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -51,10 +52,10 @@ class LaboratoriumService
 
     public function simpanPermintaan(array $data): array
     {
-        return DB::transaction(function () use ($data) {
+        return NomorUrut::denganRetry(function () use ($data) {
             $tgl = Carbon::now()->format('Y-m-d');
             $jam = Carbon::now()->format('H:i:s');
-            $noOrder = 'PL' . str_replace('-', '', $tgl) . $this->nextNumber($tgl);
+            $noOrder = $this->nextNoOrder($tgl);
 
             $reg = DB::table('reg_periksa')->where('no_rawat', $data['no_rawat'])->first();
             $statusLanjut = ($reg && strtolower($reg->status_lanjut) === 'ranap') ? 'ranap' : 'ralan';
@@ -142,12 +143,11 @@ class LaboratoriumService
         });
     }
 
-    private function nextNumber(string $date): string
+    /** Format: PL + Ymd + 4 digit, contoh PL202610140001. */
+    private function nextNoOrder(string $date): string
     {
-        $lastNo = DB::table('permintaan_lab')
-            ->where('tgl_permintaan', $date)
-            ->max(DB::raw('CONVERT(RIGHT(noorder, 4), signed)')) ?? 0;
+        $prefix = 'PL' . str_replace('-', '', $date);
 
-        return sprintf('%04s', ($lastNo + 1));
+        return $prefix . sprintf('%04d', NomorUrut::berikutnya('permintaan_lab', 'noorder', $prefix, 4));
     }
 }

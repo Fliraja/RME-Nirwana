@@ -69,7 +69,7 @@ class RanapSoapService
     /**
      * Simpan SOAP (mendukung insert baru atau update entri jam tertentu)
      */
-    public function simpan(array $data, string $nip): array
+    public function simpan(array $data, string $nip, bool $isAdmin = false): array
     {
         $noRawat = $data['no_rawat'];
         $isEdit = !empty($data['mode_edit_soap']) && $data['mode_edit_soap'] == '1';
@@ -85,19 +85,28 @@ class RanapSoapService
             $tglEdit = $data['tgl_perawatan_edit_soap'];
             $jamEdit = $data['jam_rawat_edit_soap'];
 
-            $affected = DB::table('pemeriksaan_ranap')
+            $query = DB::table('pemeriksaan_ranap')
                 ->where('no_rawat', $noRawat)
                 ->where('tgl_perawatan', $tglEdit)
-                ->where('jam_rawat', $jamEdit)
-                ->update([
-                    'keluhan'     => $keluhan,
-                    'pemeriksaan' => $pemeriksaan,
-                    'penilaian'   => $penilaian,
-                    'rtl'         => $rtl,
-                    'instruksi'   => $instruksi,
-                    'evaluasi'    => $evaluasi,
-                    'nip'         => $nip,
-                ]);
+                ->where('jam_rawat', $jamEdit);
+
+            // Aturan sama dengan hapus: non-admin hanya boleh mengubah catatan miliknya.
+            if (!$isAdmin) {
+                $query->where('nip', $nip);
+            }
+
+            if (!$query->exists()) {
+                return ['status' => 'error', 'message' => 'Data tidak ditemukan atau Anda tidak memiliki akses', 'code' => 403];
+            }
+
+            $query->update([
+                'keluhan'     => $keluhan,
+                'pemeriksaan' => $pemeriksaan,
+                'penilaian'   => $penilaian,
+                'rtl'         => $rtl,
+                'instruksi'   => $instruksi,
+                'evaluasi'    => $evaluasi,
+            ]);
 
             return [
                 'status'  => 'success',

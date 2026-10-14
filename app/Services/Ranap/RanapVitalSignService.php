@@ -93,9 +93,9 @@ class RanapVitalSignService
     /**
      * Simpan data TTV dan SBAR (insert baru atau edit spesifik)
      */
-    public function simpan(array $data, string $nip): array
+    public function simpan(array $data, string $nip, bool $isAdmin = false): array
     {
-        return DB::transaction(function () use ($data, $nip) {
+        return DB::transaction(function () use ($data, $nip, $isAdmin) {
             $noRawat = $data['no_rawat'];
             $isEdit = !empty($data['mode_edit_ttv']) && $data['mode_edit_ttv'] == '1';
 
@@ -115,11 +115,22 @@ class RanapVitalSignService
                 $tglEdit = $data['tgl_perawatan_edit_ttv'];
                 $jamEdit = $data['jam_rawat_edit_ttv'];
 
-                DB::table('pemeriksaan_ranap')
+                $query = DB::table('pemeriksaan_ranap')
                     ->where('no_rawat', $noRawat)
                     ->where('tgl_perawatan', $tglEdit)
-                    ->where('jam_rawat', $jamEdit)
-                    ->update([
+                    ->where('jam_rawat', $jamEdit);
+
+                // Aturan sama dengan hapus: non-admin hanya boleh mengubah catatan miliknya.
+                if (!$isAdmin) {
+                    $query->where('nip', $nip);
+                }
+
+                $pemilik = $query->value('nip');
+                if ($pemilik === null) {
+                    return ['status' => 'error', 'message' => 'Data tidak ditemukan atau Anda tidak memiliki akses', 'code' => 403];
+                }
+
+                $query->update([
                         'suhu_tubuh' => $suhu,
                         'tensi'      => $tensi,
                         'nadi'       => $nadi,
@@ -130,7 +141,6 @@ class RanapVitalSignService
                         'gcs'        => $gcs,
                         'kesadaran'  => $kesadaran,
                         'alergi'     => $alergi,
-                        'nip'        => $nip,
                     ]);
 
                 if ($sbar !== '') {
@@ -145,14 +155,14 @@ class RanapVitalSignService
                             ->where('no_rawat', $noRawat)
                             ->where('tgl_perawatan', $tglEdit)
                             ->where('jam_rawat', $jamEdit)
-                            ->update(['sbar' => $sbar, 'nip' => $nip]);
+                            ->update(['sbar' => $sbar]);
                     } else {
                         DB::table('catatan_sbar_ranap')->insert([
                             'no_rawat'      => $noRawat,
                             'tgl_perawatan' => $tglEdit,
                             'jam_rawat'     => $jamEdit,
                             'sbar'          => $sbar,
-                            'nip'           => $nip,
+                            'nip'           => $pemilik,
                         ]);
                     }
                 } else {

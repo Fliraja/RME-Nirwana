@@ -96,10 +96,23 @@ var loadingTabs = {
     resep: false
 };
 
+// Reload paksa saat tab masih dimuat: tandai, lalu jalankan sekali setelah selesai.
+var pendingTabs = {};
+
+function tundaReload(tab, forceReload) {
+    if (forceReload) pendingTabs[tab] = true;
+}
+
+function jalankanReloadTertunda(tab, loader) {
+    if (!pendingTabs[tab]) return;
+    pendingTabs[tab] = false;
+    loader(true);
+}
+
 function loadSoap(forceReload = false) {
     if (currentNoRawat === "") return;
     if (loadedTabs.soap && !forceReload) return;
-    if (loadingTabs.soap) return;
+    if (loadingTabs.soap) return tundaReload('soap', forceReload);
 
     if (!loadedTabs.soap) {
         $('#content-soap').html('<div class="text-center p-5"><div class="spinner-border text-primary"></div><p>Memuat Form SOAP...</p></div>');
@@ -116,13 +129,15 @@ function loadSoap(forceReload = false) {
         console.error('[RALAN] Failed SOAP:', xhr.status, xhr.statusText, xhr.responseText);
         loadingTabs.soap = false;
         if (!loadedTabs.soap) $('#content-soap').html('<div class="alert alert-danger">Gagal memuat form SOAP (HTTP ' + xhr.status + ').</div>');
+    }).always(function() {
+        jalankanReloadTertunda('soap', loadSoap);
     });
 }
 
 function loadVital(forceReload = false) {
     if (currentNoRawat === "") return;
     if (loadedTabs.vital && !forceReload) return;
-    if (loadingTabs.vital) return;
+    if (loadingTabs.vital) return tundaReload('vital', forceReload);
 
     if (!loadedTabs.vital) {
         $('#content-vital-sign').html('<div class="text-center p-5"><div class="spinner-border text-primary"></div><p>Memuat Form Vital Sign...</p></div>');
@@ -139,13 +154,15 @@ function loadVital(forceReload = false) {
         console.error('[RALAN] Failed Vital:', xhr.status, xhr.statusText, xhr.responseText);
         loadingTabs.vital = false;
         if (!loadedTabs.vital) $('#content-vital-sign').html('<div class="alert alert-danger">Gagal memuat form Vital Sign (HTTP ' + xhr.status + ').</div>');
+    }).always(function() {
+        jalankanReloadTertunda('vital', loadVital);
     });
 }
 
 function loadResep(forceReload = false) {
     if (currentNoRawat === "") return;
     if (loadedTabs.resep && !forceReload) return;
-    if (loadingTabs.resep) return;
+    if (loadingTabs.resep) return tundaReload('resep', forceReload);
 
     if (!loadedTabs.resep) {
         $('#content-resep').html('<div class="text-center p-5"><div class="spinner-border text-primary"></div><p>Memuat data resep...</p></div>');
@@ -167,6 +184,9 @@ function loadResep(forceReload = false) {
             console.error('[RALAN] Failed Resep:', xhr.status, xhr.statusText, xhr.responseText);
             loadingTabs.resep = false;
             if (!loadedTabs.resep) $('#content-resep').html('<div class="alert alert-danger">Gagal memuat data resep (HTTP ' + xhr.status + ').</div>');
+        },
+        complete: function() {
+            jalankanReloadTertunda('resep', loadResep);
         }
     });
 }
@@ -174,7 +194,7 @@ function loadResep(forceReload = false) {
 function loadFormLab(forceReload = false) {
     if (currentNoRawat === "") return;
     if (loadedTabs.lab && !forceReload) return;
-    if (loadingTabs.lab) return;
+    if (loadingTabs.lab) return tundaReload('lab', forceReload);
 
     if (!loadedTabs.lab) {
         $('#content-lab').html('<div class="text-center p-5"><div class="spinner-border text-primary"></div><p>Memuat Form Permintaan Lab...</p></div>');
@@ -196,6 +216,9 @@ function loadFormLab(forceReload = false) {
             console.error('[RALAN] Failed Lab:', xhr.status, xhr.statusText, xhr.responseText);
             loadingTabs.lab = false;
             if (!loadedTabs.lab) $('#content-lab').html('<div class="alert alert-danger">Gagal memuat form permintaan lab (HTTP ' + xhr.status + ').</div>');
+        },
+        complete: function() {
+            jalankanReloadTertunda('lab', loadFormLab);
         }
     });
 }
@@ -203,7 +226,7 @@ function loadFormLab(forceReload = false) {
 function loadFormRadiologi(forceReload = false) {
     if (currentNoRawat === "") return;
     if (loadedTabs.radiologi && !forceReload) return;
-    if (loadingTabs.radiologi) return;
+    if (loadingTabs.radiologi) return tundaReload('radiologi', forceReload);
 
     if (!loadedTabs.radiologi) {
         $('#content-radiologi').html('<div class="text-center p-5"><div class="spinner-border text-info"></div><p>Memuat Form Permintaan Radiologi...</p></div>');
@@ -225,6 +248,9 @@ function loadFormRadiologi(forceReload = false) {
             console.error('[RALAN] Failed Radiologi:', xhr.status, xhr.statusText, xhr.responseText);
             loadingTabs.radiologi = false;
             if (!loadedTabs.radiologi) $('#content-radiologi').html('<div class="alert alert-danger">Gagal memuat form permintaan radiologi (HTTP ' + xhr.status + ').</div>');
+        },
+        complete: function() {
+            jalankanReloadTertunda('radiologi', loadFormRadiologi);
         }
     });
 }
@@ -271,7 +297,7 @@ function clearStagingObat() {
 function loadDiagnosaProsedur(forceReload = false) {
     if (currentNoRawat === "") return;
     if (loadedTabs.diagnosa && !forceReload) return;
-    if (loadingTabs.diagnosa) return;
+    if (loadingTabs.diagnosa) return tundaReload('diagnosa', forceReload);
 
     if (!loadedTabs.diagnosa) {
         $('#content-diagnosa-prosedur').html('<div class="text-center p-5"><div class="spinner-border text-primary"></div><p>Memuat Form Diagnosa & Prosedur...</p></div>');
@@ -293,6 +319,9 @@ function loadDiagnosaProsedur(forceReload = false) {
             console.error('[RALAN] Failed Diagnosa/Prosedur:', xhr.status, xhr.statusText, xhr.responseText);
             loadingTabs.diagnosa = false;
             if (!loadedTabs.diagnosa) $('#content-diagnosa-prosedur').html('<div class="alert alert-danger">Gagal memuat form Diagnosa & Prosedur (HTTP ' + xhr.status + ').</div>');
+        },
+        complete: function() {
+            jalankanReloadTertunda('diagnosa', loadDiagnosaProsedur);
         }
     });
 }

@@ -165,9 +165,11 @@ class RanapController extends Controller
         ]);
 
         $nip = Auth::user()->decrypted_id ?? 'DOKTER';
-        $res = $this->soapService->simpan($request->all(), $nip);
+        $res = $this->soapService->simpan($request->all(), $nip, session('role') === 'admin');
+        $code = $res['code'] ?? 200;
+        unset($res['code']);
 
-        return response()->json($res);
+        return response()->json($res, $code);
     }
 
     public function destroySoap(Request $request)
@@ -199,9 +201,11 @@ class RanapController extends Controller
         ]);
 
         $nip = Auth::user()->decrypted_id ?? 'DOKTER';
-        $res = $this->vitalService->simpan($request->all(), $nip);
+        $res = $this->vitalService->simpan($request->all(), $nip, session('role') === 'admin');
+        $code = $res['code'] ?? 200;
+        unset($res['code']);
 
-        return response()->json($res);
+        return response()->json($res, $code);
     }
 
     public function destroyVital(Request $request)
@@ -231,14 +235,7 @@ class RanapController extends Controller
     {
         $no_rawat = str_replace('-', '/', $no_rawat);
 
-        $resep = ResepObat::with([
-                'resepDokter.dataBarang',
-                'resepRacikan.detailRacikan.dataBarang',
-                'resepRacikan.metodeRacik'
-            ])
-            ->where('no_rawat', $no_rawat)
-            ->where('tgl_peresepan', date('Y-m-d'))
-            ->first();
+        $resep = $this->resepHariIni($no_rawat);
 
         $masterAturan = MasterAturanPakai::all();
         $masterMetode = DB::table('metode_racik')->get();
@@ -262,10 +259,7 @@ class RanapController extends Controller
             ->where('no_rawat', $no_rawat)
             ->first();
 
-        $riwayatOrder = PermintaanLab::with(['pemeriksaan.jenisPerawatan'])
-            ->where('no_rawat', $no_rawat)
-            ->where('tgl_permintaan', date('Y-m-d'))
-            ->get();
+        $riwayatOrder = $this->orderHariIni(PermintaanLab::class, $no_rawat);
 
         // Hasil tes laboratorium resmi
         $hasilLab = $this->penunjangService->getHasilLab($no_rawat);
@@ -285,10 +279,7 @@ class RanapController extends Controller
             ->where('no_rawat', $no_rawat)
             ->first();
 
-        $riwayatOrder = PermintaanRadiologi::with(['pemeriksaan.jenisPerawatan'])
-            ->where('no_rawat', $no_rawat)
-            ->where('tgl_permintaan', date('Y-m-d'))
-            ->get();
+        $riwayatOrder = $this->orderHariIni(PermintaanRadiologi::class, $no_rawat);
 
         // Gambar dan Hasil Ekspertise
         $hasilRadiologi = $this->penunjangService->getHasilRadiologi($no_rawat);
@@ -319,5 +310,50 @@ class RanapController extends Controller
         $res = $this->resumeService->simpan($request->all(), $defaultKdDokter);
 
         return response()->json($res);
+    }
+
+    /**
+     * Fragmen tabel riwayat saja, untuk reload setelah simpan/hapus tanpa
+     * memuat ulang form tab (Tom Select & isian form tetap).
+     */
+    public function getTable(string $tabel, string $no_rawat)
+    {
+        $no_rawat = str_replace('-', '/', $no_rawat);
+        $currentUserNip = Auth::user()->decrypted_id ?? '';
+
+        return match ($tabel) {
+            'soap'      => view('ranap.tabs.partials.soap_table', [
+                'riwayatSoap' => $this->soapService->getRiwayatSoap($no_rawat), 'currentUserNip' => $currentUserNip,
+            ]),
+            'ttv'       => view('ranap.tabs.partials.ttv_table', [
+                'riwayatTtv' => $this->vitalService->getRiwayatTtv($no_rawat), 'currentUserNip' => $currentUserNip,
+            ]),
+            'diagnosa'  => view('ranap.tabs.partials.diagnosa_table', $this->diagnosaService->dataPasien($no_rawat)),
+            'prosedur'  => view('ranap.tabs.partials.prosedur_table', $this->diagnosaService->dataPasien($no_rawat)),
+            'resep'     => view('ranap.tabs.partials.resep_table', ['resep' => $this->resepHariIni($no_rawat)]),
+            'lab'       => view('ranap.tabs.partials.lab_table', ['riwayatOrder' => $this->orderHariIni(PermintaanLab::class, $no_rawat)]),
+            'radiologi' => view('ranap.tabs.partials.radiologi_table', ['riwayatOrder' => $this->orderHariIni(PermintaanRadiologi::class, $no_rawat)]),
+        };
+    }
+
+    private function resepHariIni(string $no_rawat): ?ResepObat
+    {
+        return ResepObat::with([
+                'resepDokter.dataBarang',
+                'resepRacikan.detailRacikan.dataBarang',
+                'resepRacikan.metodeRacik'
+            ])
+            ->where('no_rawat', $no_rawat)
+            ->where('tgl_peresepan', date('Y-m-d'))
+            ->first();
+    }
+
+    /** @param class-string<PermintaanLab|PermintaanRadiologi> $model */
+    private function orderHariIni(string $model, string $no_rawat)
+    {
+        return $model::with(['pemeriksaan.jenisPerawatan'])
+            ->where('no_rawat', $no_rawat)
+            ->where('tgl_permintaan', date('Y-m-d'))
+            ->get();
     }
 }
