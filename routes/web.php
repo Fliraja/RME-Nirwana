@@ -71,6 +71,7 @@ Route::middleware(['multi.auth'])->group(function () {
     //Resume medis
     Route::get('/ralan/resume/{no_rawat}', [ResumeRalanController::class, 'show'])->name('ralan.resume');
     Route::post('/ralan/resume/verifikasi', [ResumeRalanController::class, 'verifikasi'])->name('ralan.resume.verifikasi');
+    Route::get('/ralan/resume/pdf/{no_rawat}', [ResumeRalanController::class, 'pdf'])->name('ralan.resume.pdf');
 
     //Resep Obat
     Route::get('/ralan/get-resep-pasien/{no_rawat}', [ResepController::class, 'getResepPasien'])->name('ralan.get-resep');

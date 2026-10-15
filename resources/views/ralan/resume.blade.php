@@ -40,6 +40,7 @@
                     @endif
                 </span>
                 <span class="d-flex gap-2 resume-aksi">
+                    <a href="{{ route('ralan.resume.pdf', str_replace('/', '-', $noRawat)) }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary">Cetak PDF</a>
                     @if($bolehVerifikasi)
                         <button type="submit" class="btn btn-sm btn-resume-utama">
                             @if($pakaiTerbaru)
