@@ -41,7 +41,15 @@
                 </span>
                 <span class="d-flex gap-2 resume-aksi">
                     @if($bolehVerifikasi)
-                        <button type="submit" class="btn btn-sm btn-resume-utama">Simpan &amp; Verifikasi</button>
+                        <button type="submit" class="btn btn-sm btn-resume-utama">
+                            @if($pakaiTerbaru)
+                                Simpan &amp; Verifikasi ulang
+                            @elseif($status === 'diverifikasi')
+                                Simpan perubahan
+                            @else
+                                Simpan &amp; Verifikasi
+                            @endif
+                        </button>
                     @endif
                 </span>
             </div>
