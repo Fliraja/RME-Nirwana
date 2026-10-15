@@ -39,7 +39,7 @@
             <div class="dropdown-menu dropdown-menu-end user-menu">
                 <div class="dropdown-divider"></div>
                 <a href="#" class="dropdown-item text-danger" 
-                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                onclick="event.preventDefault(); try { sessionStorage.clear(); } catch (e) {} document.getElementById('logout-form').submit();">
                     <i class="fas fa-sign-out-alt me-2"></i> Keluar
                 </a>
 

@@ -85,21 +85,46 @@ function clearRemoteSelect(selector) {
     if (el && el.tomselect) el.tomselect.clear();
 }
 
-/* ===== LocalStorage Draft Auto-Save Helper ===== */
+/* ===== Draf form otomatis ===== */
+// Draf berisi data klinis pasien: simpan di sessionStorage (hilang saat tab ditutup / logout), bukan localStorage.
+var draftStore = {
+    get: function(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } },
+    set: function(k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} },
+    remove: function(k) { try { sessionStorage.removeItem(k); } catch (e) {} }
+};
+
+// Bersihkan draf lama yang sempat tertulis di localStorage oleh versi sebelumnya.
+try {
+    Object.keys(localStorage).forEach(function(k) {
+        if (k.indexOf('rme_draft_') === 0) localStorage.removeItem(k);
+    });
+} catch (e) {}
+
+function pulihkanDraf($form, data) {
+    $.each(data, function(name, val) {
+        var $field = $form.find('[name="' + name + '"]');
+        if (!$field.length) return;
+        if ($field.is(':radio, :checkbox')) {
+            $field.filter(function() { return this.value === val; }).prop('checked', true).trigger('change');
+        } else if (!$field.is(':hidden')) {
+            $field.val(val);
+        }
+    });
+}
+
 function initAutoSaveDraft(formSelector, storageKey, alertContainerSelector, onRestoreCallback) {
     var $form = $(formSelector);
     if (!$form.length || !currentSafeNoRawat) return;
 
     var fullKey = storageKey + '_' + currentSafeNoRawat;
 
-    // Cek apakah ada draft tersimpan
-    var savedDraft = localStorage.getItem(fullKey);
+    var savedDraft = draftStore.get(fullKey);
     if (savedDraft) {
         try {
             var draftObj = JSON.parse(savedDraft);
             if (draftObj && draftObj.data && draftObj.time) {
                 var alertHtml = '<div class="alert alert-info py-2 px-3 mb-3 d-flex justify-content-between align-items-center draft-alert" id="alert-' + fullKey + '">' +
-                    '<div><i class="fas fa-history me-1 text-primary"></i> <strong>Draf Lokal Ditemukan</strong> <small class="text-muted">(' + draftObj.time + ')</small></div>' +
+                    '<div><i class="fas fa-history me-1 text-primary"></i> <strong>Draf Ditemukan</strong> <small class="text-muted">(' + draftObj.time + ')</small></div>' +
                     '<div class="d-flex gap-2">' +
                     '<button type="button" class="btn btn-sm btn-primary btn-restore-draft"><i class="fas fa-undo me-1"></i> Pulihkan Draf</button>' +
                     '<button type="button" class="btn btn-sm btn-outline-secondary btn-dismiss-draft"><i class="fas fa-times"></i> Abaikan</button>' +
@@ -113,43 +138,36 @@ function initAutoSaveDraft(formSelector, storageKey, alertContainerSelector, onR
                         if (typeof onRestoreCallback === 'function') {
                             onRestoreCallback(draftObj.data);
                         } else {
-                            $.each(draftObj.data, function(name, val) {
-                                var $field = $form.find('[name="' + name + '"]');
-                                if ($field.length && !$field.is(':hidden')) {
-                                    $field.val(val);
-                                }
-                            });
+                            pulihkanDraf($form, draftObj.data);
                         }
                         tampilkanSukses('Draf berhasil dipulihkan.');
                         $('#alert-' + fullKey).remove();
                     });
 
                     $('#alert-' + fullKey + ' .btn-dismiss-draft').on('click', function() {
-                        localStorage.removeItem(fullKey);
+                        draftStore.remove(fullKey);
                         $('#alert-' + fullKey).remove();
                     });
                 }
             }
         } catch (e) {
-            localStorage.removeItem(fullKey);
+            draftStore.remove(fullKey);
         }
     }
 
-    // Auto-save tiap kali ada ketikan (debounce 1.5 detik)
     var autoSaveTimer = null;
     $form.off('input.autosave change.autosave').on('input.autosave change.autosave', 'input, textarea, select', function() {
         clearTimeout(autoSaveTimer);
         autoSaveTimer = setTimeout(function() {
-            var rawArray = $form.serializeArray();
             var dataObj = {};
-            rawArray.forEach(function(item) {
+            $form.serializeArray().forEach(function(item) {
                 if (item.name !== '_token') {
                     dataObj[item.name] = item.value;
                 }
             });
 
             var nowStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            localStorage.setItem(fullKey, JSON.stringify({ data: dataObj, time: nowStr }));
+            draftStore.set(fullKey, JSON.stringify({ data: dataObj, time: nowStr }));
         }, 1500);
     });
 }
@@ -157,7 +175,7 @@ function initAutoSaveDraft(formSelector, storageKey, alertContainerSelector, onR
 function clearAutoSaveDraft(storageKey) {
     if (!currentSafeNoRawat) return;
     var fullKey = storageKey + '_' + currentSafeNoRawat;
-    localStorage.removeItem(fullKey);
+    draftStore.remove(fullKey);
     $('#alert-' + fullKey).remove();
 }
 
@@ -1473,7 +1491,7 @@ function initResumeHandlers() {
     });
 }
 
-/* ===== Tab Navigation & Sticky Header Event Listeners ===== */
+/* ===== Tab Navigation Event Listeners ===== */
 $(document).ready(function() {
     $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
         var target = $(e.target).attr('href');
@@ -1493,17 +1511,6 @@ $(document).ready(function() {
             loadResume();
         }
     });
-
-    // Sticky Compact Bar Scroll Listener (jika elemen aktif di halaman)
-    if ($('#ranapStickyBar').length) {
-        $(window).on('scroll', function() {
-            if ($(this).scrollTop() > 180) {
-                $('#ranapStickyBar').removeClass('d-none');
-            } else {
-                $('#ranapStickyBar').addClass('d-none');
-            }
-        });
-    }
 
     // Hash check on load
     if (window.location.hash) {
