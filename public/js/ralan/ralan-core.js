@@ -84,7 +84,8 @@ var loadedTabs = {
     vital: false,
     lab: false,
     radiologi: false,
-    resep: false
+    resep: false,
+    resume: false
 };
 
 var loadingTabs = {
@@ -93,7 +94,8 @@ var loadingTabs = {
     vital: false,
     lab: false,
     radiologi: false,
-    resep: false
+    resep: false,
+    resume: false
 };
 
 // Reload paksa saat tab masih dimuat: tandai, lalu jalankan sekali setelah selesai.
@@ -255,6 +257,76 @@ function loadFormRadiologi(forceReload = false) {
     });
 }
 
+/* ===== Resume medis ralan ===== */
+function loadResume(forceReload = false, pakaiTerbaru = false) {
+    if (currentNoRawat === "") return;
+    if (loadedTabs.resume && !forceReload) return;
+    if (loadingTabs.resume) return tundaReload('resume', forceReload);
+
+    $('#content-resume').html('<div class="text-center p-5"><div class="spinner-border text-primary"></div><p>Memuat resume...</p></div>');
+    loadingTabs.resume = true;
+    var url = ralanUrl('/ralan/resume/' + currentSafeNoRawat) + (pakaiTerbaru ? '?pakai=terbaru' : '');
+    $.get(url)
+        .done(function(html) {
+            $('#content-resume').html(html);
+            loadedTabs.resume = true;
+            nomoriBarisResume();
+        })
+        .fail(function(xhr) {
+            loadedTabs.resume = false;
+            $('#content-resume').html(
+                '<div class="alert alert-danger d-flex flex-wrap justify-content-between align-items-center gap-2">' +
+                '<span>Resume belum bisa disusun (HTTP ' + xhr.status + ').</span>' +
+                '<button type="button" class="btn btn-sm btn-outline-danger" id="btn-resume-coba-lagi">Coba lagi</button></div>');
+        })
+        .always(function() {
+            loadingTabs.resume = false;
+            jalankanReloadTertunda('resume', loadResume);
+        });
+}
+
+// Data sumber berubah di tab lain: resume dimuat ulang saat tab dibuka lagi.
+function tandaiResumeBasi() { loadedTabs.resume = false; }
+
+function barisResumeHtml(nama, nilai) {
+    var $baris = $(
+        '<div class="resume-baris">' +
+        '<span class="resume-baris-label"></span>' +
+        '<input type="text" class="form-control form-control-sm" maxlength="80">' +
+        '<div class="btn-group btn-group-sm" role="group">' +
+        '<button type="button" class="btn btn-outline-secondary resume-naik" aria-label="Naikkan">↑</button>' +
+        '<button type="button" class="btn btn-outline-secondary resume-turun" aria-label="Turunkan">↓</button>' +
+        '<button type="button" class="btn btn-outline-danger resume-hapus" aria-label="Hapus baris">✕</button>' +
+        '</div></div>');
+    $baris.find('input').attr('name', nama + '[]').val(nilai || '');
+    return $baris;
+}
+
+function nomoriBarisResume() {
+    $('.resume-daftar').each(function() {
+        var $daftar = $(this);
+        var maks = parseInt($daftar.data('maks'), 10);
+        var $baris = $daftar.children('.resume-baris');
+        $baris.each(function(i) {
+            var label = i === 0 ? 'Utama' : 'Sekunder ' + i;
+            $(this).find('.resume-baris-label').text(label).toggleClass('utama', i === 0);
+            $(this).find('input').attr('aria-label', ($daftar.data('nama') === 'diagnosa' ? 'Diagnosis ' : 'Prosedur ') + label.toLowerCase());
+        });
+        $daftar.nextAll('.resume-tambah').first().prop('disabled', $baris.length >= maks);
+    });
+}
+
+function tampilkanErrorResume($form, errors) {
+    $.each(errors, function(kunci, pesan) {
+        var cocok = kunci.match(/^(\w+)\.(\d+)$/);
+        var $el = cocok ? $form.find('[name="' + cocok[1] + '[]"]').eq(parseInt(cocok[2], 10)) : $form.find('[name="' + kunci + '"]').not(':hidden').first();
+        if (!$el.length) return;
+        $el.addClass('is-invalid');
+        var $setelah = $el.closest('.resume-baris').length ? $el.closest('.resume-baris') : $el;
+        $('<div class="invalid-feedback d-block resume-err"></div>').text(pesan[0]).insertAfter($setelah);
+    });
+}
+
 // --- Fragment-only table reloads (no form re-fetch, no Tom Select re-init) ---
 var ralanTables = {
     soap:      { url: '/ralan/table/soap/',          target: '#ralan-soap-table' },
@@ -270,6 +342,9 @@ var ralanTableXhr = {};
 function reloadRalanTable(nama) {
     var cfg = ralanTables[nama];
     if (currentNoRawat === "" || !cfg || !$(cfg.target).length) return;
+
+    // Tabel sumber resume dimuat ulang hanya sesudah simpan/hapus.
+    if (['soap', 'vital', 'resep', 'lab', 'radiologi'].indexOf(nama) !== -1) tandaiResumeBasi();
 
     // Simpan/hapus beruntun: batalkan request lama agar respons terakhir yang tampil.
     if (ralanTableXhr[nama]) ralanTableXhr[nama].abort();
@@ -792,6 +867,10 @@ $('a[href="#permintaan-radiologi"]').on('shown.bs.tab', function (e) {
     loadFormRadiologi();
 });
 
+$('a[href="#resume"]').on('shown.bs.tab', function () {
+    loadResume();
+});
+
 $(document).ready(function() {
     console.log('=== RESEP MODULE LOADED ===');
     console.log('Current no_rawat:', currentNoRawat);
@@ -815,6 +894,16 @@ $(document).ready(function() {
                 // SOAP & TTV berbagi satu baris pemeriksaan_ralan: kedua tabel ikut berubah.
                 reloadRalanTable('soap');
                 reloadRalanTable('vital');
+                $('#soap-resume-hint').remove();
+                if (['disusun', 'tetap', 'terverifikasi'].indexOf(res.resume) !== -1) {
+                    var pesan = res.resume === 'terverifikasi'
+                        ? 'Resume sudah diverifikasi. Buka untuk cek data baru.'
+                        : 'Resume disusun dari SOAP ini.';
+                    $('<div id="soap-resume-hint" class="resume-banner" role="status"></div>')
+                        .append($('<span></span>').text(pesan))
+                        .append('<button type="button" class="btn btn-sm btn-resume-utama" id="btn-lihat-resume">Lihat Resume</button>')
+                        .insertAfter(form);
+                }
             },
             error: function(xhr) {
                 btn.prop('disabled', false).html(originalText);
@@ -1334,6 +1423,105 @@ $(document).ready(function() {
                 tampilkanError(xhr.responseJSON?.message || "Gagal menyimpan permintaan radiologi.");
             }
         });
+    });
+
+    $(document).on('click', '#btn-lihat-resume', function() {
+        $('a[href="#resume"]').tab('show');
+    });
+
+    $(document).on('click', '#btn-resume-ke-soap', function() {
+        $('a[href="#pemeriksaan-soap"]').tab('show');
+    });
+
+    $(document).on('click', '#btn-resume-coba-lagi', function() {
+        loadResume(true);
+    });
+
+    $(document).on('click', '#btn-resume-perbarui', function() {
+        loadResume(true, true);
+    });
+
+    $(document).on('click', '.resume-tambah', function() {
+        var $daftar = $(this).prevAll('.resume-daftar').first();
+        $daftar.append(barisResumeHtml($daftar.data('nama'), ''));
+        nomoriBarisResume();
+        $daftar.children('.resume-baris').last().find('input').trigger('focus');
+    });
+
+    $(document).on('click', '.resume-naik', function() {
+        var $baris = $(this).closest('.resume-baris');
+        $baris.prev('.resume-baris').before($baris);
+        nomoriBarisResume();
+        $baris.find('.resume-naik').trigger('focus');
+    });
+
+    $(document).on('click', '.resume-turun', function() {
+        var $baris = $(this).closest('.resume-baris');
+        $baris.next('.resume-baris').after($baris);
+        nomoriBarisResume();
+        $baris.find('.resume-turun').trigger('focus');
+    });
+
+    $(document).on('click', '.resume-hapus', function() {
+        $(this).closest('.resume-baris').remove();
+        nomoriBarisResume();
+    });
+
+    $(document).on('click', '.resume-chip', function() {
+        var teks = $(this).data('teks');
+        var $daftar = $('#resume-prosedur');
+        var $kosong = $daftar.find('input').filter(function() { return !this.value.trim(); }).first();
+        if ($kosong.length) {
+            $kosong.val(teks);
+        } else if ($daftar.children('.resume-baris').length < parseInt($daftar.data('maks'), 10)) {
+            $daftar.append(barisResumeHtml('prosedur', teks));
+        } else {
+            tampilkanError('Prosedur maksimal 4 baris.');
+            return;
+        }
+        $(this).remove();
+        nomoriBarisResume();
+    });
+
+    $(document).on('change', '#formResumeRalan input[name="tindak_lanjut"]', function() {
+        var nilai = $(this).val();
+        $('.resume-tl-pilihan').removeClass('aktif');
+        $(this).closest('.resume-tl-pilihan').addClass('aktif');
+        $('#resume-tl-kontrol').toggleClass('d-none', nilai !== 'kontrol');
+        $('#resume-tl-ket').toggleClass('d-none', nilai !== 'dirujuk' && nilai !== 'aps');
+        $('#resume-tl-ket-label').text(nilai === 'dirujuk' ? 'Nama RS / faskes tujuan' : 'Alasan (opsional)');
+    });
+
+    $(document).on('click', '.resume-ubah', function() {
+        var $baris = $(this).closest('.resume-salinan');
+        $baris.find('.resume-salinan-teks').addClass('d-none');
+        $baris.find('textarea').removeClass('d-none').trigger('focus');
+        $(this).addClass('d-none');
+    });
+
+    $(document).on('submit', '#formResumeRalan', function(e) {
+        e.preventDefault();
+        var $form = $(this);
+        var $btn = $form.find('button[type="submit"]');
+        var asli = $btn.html();
+        $form.find('.is-invalid').removeClass('is-invalid');
+        $form.find('.resume-err').remove();
+        $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Menyimpan...');
+
+        $.ajax({ url: window.RALAN.routes.resumeVerifikasi, method: 'POST', data: $form.serialize() + '&_token=' + encodeURIComponent(window.RALAN.csrf) })
+            .done(function(res) {
+                tampilkanSukses(res.message || 'Resume diverifikasi dan disimpan.');
+                loadResume(true);
+            })
+            .fail(function(xhr) {
+                if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
+                    tampilkanErrorResume($form, xhr.responseJSON.errors);
+                }
+                tampilkanError((xhr.responseJSON && xhr.responseJSON.message) || 'Gagal menyimpan resume.');
+            })
+            .always(function() {
+                $btn.prop('disabled', false).html(asli);
+            });
     });
 
     $(document).on('click', '.staging-remove', function() {

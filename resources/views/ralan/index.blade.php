@@ -99,6 +99,11 @@
                                         <i class="fas fa-prescription me-1"></i> RESEP
                                     </a>
                                 </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="resume-tab" data-bs-toggle="tab" href="#resume">
+                                        <i class="fas fa-file-medical me-1"></i> RESUME
+                                    </a>
+                                </li>
                             </ul>
 
                             <div class="tab-content ralan-panel p-3" id="myTabContent">
@@ -160,6 +165,15 @@
                                         <div class="text-center p-5">
                                             <div class="spinner-border text-primary"></div>
                                             <p>Memuat Form Peresepan...</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane fade" id="resume">
+                                    <div id="content-resume">
+                                        <div class="text-center p-5">
+                                            <div class="spinner-border text-primary"></div>
+                                            <p>Memuat resume...</p>
                                         </div>
                                     </div>
                                 </div>
@@ -253,6 +267,11 @@
                                                 <span class="badge {{ $pasien->stts == 'Sudah' ? 'bg-success' : 'bg-warning' }}">
                                                     {{ $pasien->stts }}
                                                 </span>
+                                                @if($pasien->resumeRalan)
+                                                    <span class="resume-status {{ $pasien->resumeRalan->status === 'diverifikasi' ? 'resume-status-ok' : 'resume-status-tunggu' }} d-inline-block mt-1">
+                                                        {{ $pasien->resumeRalan->status === 'diverifikasi' ? 'Resume terverifikasi' : 'Resume belum diverifikasi' }}
+                                                    </span>
+                                                @endif
                                             </td>
                                             <td>{{ $pasien->penjab->png_jawab }}</td>
                                         </tr>
@@ -293,6 +312,7 @@
             storeProsedur: "{{ route('ralan.store-prosedur') }}",
             soapSimpan: "{{ route('ralan.soap.simpan') }}",
             vitalSimpan: "{{ route('ralan.store-vital') }}",
+            resumeVerifikasi: "{{ route('ralan.resume.verifikasi') }}",
             tandaiPerawat: "{{ route('ralan.tandai-perawat') }}"
         }
     };

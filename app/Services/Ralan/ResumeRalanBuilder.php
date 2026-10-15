@@ -64,9 +64,10 @@ class ResumeRalanBuilder
         }
         $isi['kondisi_pulang'] = $tl['nilai'] === 'meninggal' ? 'Meninggal' : 'Hidup';
 
+        // Pilihan manual dokter bukan data sumber; hanya tindak lanjut dari Khanza yang ikut sidik.
         $sidik = sha1(json_encode([
             $salinan, $soap->penilaian,
-            [$tl['nilai'], $tl['terkunci'], $tl['tgl_kontrol'], $tl['ket']],
+            $tl['terkunci'] ? [$tl['nilai'], $tl['tgl_kontrol'], $tl['ket']] : null,
         ]));
 
         return [

@@ -16,8 +16,9 @@ final class ResumeFormat
                 $bagian[] = "{$label} {$nilai}";
             }
         }
+        // Kesadaran punya default 'Compos Mentis' di baris SOAP; tanpa TTV lain berarti belum dinilai.
         $kesadaran = trim((string) ($baris->kesadaran ?? ''));
-        if ($kesadaran !== '') {
+        if ($kesadaran !== '' && $bagian !== []) {
             $bagian[] = "Kes. {$kesadaran}";
         }
 

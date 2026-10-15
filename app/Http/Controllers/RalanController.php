@@ -66,7 +66,7 @@ class RalanController extends Controller
             }
         } 
         else {
-            $query = RegPeriksa::with(['pasien', 'poliklinik', 'penjab'])
+            $query = RegPeriksa::with(['pasien', 'poliklinik', 'penjab', 'resumeRalan'])
                 ->where('tgl_registrasi', $tanggal)
                 ->where('stts', '!=', 'Batal');
 
