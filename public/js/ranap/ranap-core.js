@@ -1,5 +1,5 @@
 /* Ranap Core JS - Sistem Rekam Medis Elektronik Rawat Inap Nirwana
- * Mengelola pemuatan asynchronous seluruh tab (SOAP, TTV, SBAR, Diagnosa, Resep, Lab, Radiologi)
+ * Mengelola pemuatan asynchronous seluruh tab (SOAP, TTV, SBAR, Resep, Lab, Radiologi, Resume)
  * Berjalan modular tanpa full page reload.
  */
 
@@ -183,8 +183,6 @@ function clearAutoSaveDraft(storageKey) {
 var ranapTables = {
     soap:      '#ranap-soap-table',
     ttv:       '#ranap-ttv-table',
-    diagnosa:  '#ranap-diagnosa-table',
-    prosedur:  '#ranap-prosedur-table',
     resep:     '#resep-table-container',
     lab:       '#ranap-lab-table',
     radiologi: '#ranap-rad-table'
@@ -221,7 +219,6 @@ var loadedTabs = {
     riwayat: true,
     soap: false,
     vital: false,
-    diagnosa: false,
     resep: false,
     lab: false,
     radiologi: false,
@@ -232,7 +229,6 @@ var loadingTabs = {
     riwayat: false,
     soap: false,
     vital: false,
-    diagnosa: false,
     resep: false,
     lab: false,
     radiologi: false,
@@ -620,205 +616,6 @@ function hapusTtv(tgl, jam) {
     });
 }
 
-/* ===== 3. Tab Diagnosa & Prosedur ===== */
-function loadDiagnosa(forceReload = false) {
-    if (!currentNoRawat) return;
-    if (loadedTabs.diagnosa && !forceReload) return;
-    if (loadingTabs.diagnosa) return tundaReload('diagnosa', forceReload);
-
-    if (!loadedTabs.diagnosa) {
-        $('#content-diagnosa-prosedur').html('<div class="text-center p-5"><div class="spinner-border text-info"></div><p class="mt-2 text-muted">Memuat Diagnosa & Prosedur...</p></div>');
-    }
-
-    loadingTabs.diagnosa = true;
-    var url = ranapUrl('/ranap/get-diagnosa-prosedur/' + currentSafeNoRawat);
-    $.get(url, function(data) {
-        $('#content-diagnosa-prosedur').html(data);
-        loadedTabs.diagnosa = true;
-        loadingTabs.diagnosa = false;
-        initDiagnosaHandlers();
-    }).fail(function(xhr) {
-        loadingTabs.diagnosa = false;
-        if (!loadedTabs.diagnosa) $('#content-diagnosa-prosedur').html('<div class="alert alert-danger">Gagal memuat diagnosa (HTTP ' + xhr.status + ').</div>');
-    }).always(function() {
-        jalankanReloadTertunda('diagnosa', loadDiagnosa);
-    });
-}
-
-function initDiagnosaHandlers() {
-    var tsDiagnosa = initRemoteSelect('#select-icd10', {
-        url: ranapUrl('/ralan/search-icd10'),
-        placeholder: 'Ketik kode / nama ICD-10...',
-        onItemAdd: function(item, ts) {
-            var parts = (item.text || '').split(' - ');
-            var kode = parts[0] || item.id;
-            var nama = parts.slice(1).join(' - ') || kode;
-
-            if ($('#staging-diagnosa tr[data-kd="' + kode + '"]').length > 0) {
-                tampilkanError('Penyakit ini sudah ada di daftar staging.');
-                ts.clear();
-                return;
-            }
-
-            $('#staging-diagnosa .staging-empty').remove();
-            var row = '<tr data-kd="' + kode + '">' +
-                '<td><span class="badge bg-light text-dark border">' + kode + '</span><input type="hidden" name="kd_penyakit[]" value="' + kode + '"></td>' +
-                '<td class="small">' + nama + '</td>' +
-                '<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger border-0 btn-remove-row"><i class="fas fa-times"></i></button></td>' +
-                '</tr>';
-            $('#staging-diagnosa').append(row);
-            ts.clear();
-        }
-    });
-
-    var tsProsedur = initRemoteSelect('#select-icd9', {
-        url: ranapUrl('/ralan/search-icd9'),
-        placeholder: 'Ketik kode / nama ICD-9...',
-        onItemAdd: function(item, ts) {
-            var parts = (item.text || '').split(' - ');
-            var kode = parts[0] || item.id;
-            var nama = parts.slice(1).join(' - ') || kode;
-
-            if ($('#staging-prosedur tr[data-kd="' + kode + '"]').length > 0) {
-                tampilkanError('Prosedur ini sudah ada di daftar staging.');
-                ts.clear();
-                return;
-            }
-
-            $('#staging-prosedur .staging-empty').remove();
-            var row = '<tr data-kd="' + kode + '">' +
-                '<td><span class="badge bg-light text-dark border">' + kode + '</span><input type="hidden" name="kode[]" value="' + kode + '"></td>' +
-                '<td class="small">' + nama + '</td>' +
-                '<td><input type="number" name="jumlah[]" class="form-control form-control-sm text-center" value="1" min="1"></td>' +
-                '<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger border-0 btn-remove-row"><i class="fas fa-times"></i></button></td>' +
-                '</tr>';
-            $('#staging-prosedur').append(row);
-            ts.clear();
-        }
-    });
-
-    $(document).off('click', '.btn-remove-row').on('click', '.btn-remove-row', function() {
-        var $tbody = $(this).closest('tbody');
-        $(this).closest('tr').remove();
-        if ($tbody.children('tr').length === 0) {
-            kosongkanStaging($tbody);
-        }
-    });
-
-    $('#btn-simpan-diagnosa').off('click').on('click', function() {
-        var kdList = [];
-        $('#staging-diagnosa input[name="kd_penyakit[]"]').each(function() {
-            kdList.push($(this).val());
-        });
-
-        if (kdList.length === 0) {
-            tampilkanError('Pilih minimal 1 diagnosa sebelum menyimpan.');
-            return;
-        }
-
-        $.ajax({
-            url: ranapUrl('/ranap/store-diagnosa'),
-            type: 'POST',
-            data: {
-                _token: window.RANAP.csrfToken,
-                no_rawat: currentNoRawat,
-                kd_penyakit: kdList
-            },
-            success: function(res) {
-                tampilkanSukses(res.message);
-                kosongkanStaging('#staging-diagnosa');
-                reloadRanapTable('diagnosa');
-            },
-            error: function(xhr) {
-                tampilkanError(xhr.responseJSON ? xhr.responseJSON.message : 'Gagal menyimpan diagnosa.');
-            }
-        });
-    });
-
-    $('#btn-simpan-prosedur').off('click').on('click', function() {
-        var kodeList = [];
-        var jumlahList = [];
-        $('#staging-prosedur input[name="kode[]"]').each(function() {
-            kodeList.push($(this).val());
-        });
-        $('#staging-prosedur input[name="jumlah[]"]').each(function() {
-            jumlahList.push($(this).val());
-        });
-
-        if (kodeList.length === 0) {
-            tampilkanError('Pilih minimal 1 prosedur sebelum menyimpan.');
-            return;
-        }
-
-        $.ajax({
-            url: ranapUrl('/ranap/store-prosedur'),
-            type: 'POST',
-            data: {
-                _token: window.RANAP.csrfToken,
-                no_rawat: currentNoRawat,
-                kode: kodeList,
-                jumlah: jumlahList
-            },
-            success: function(res) {
-                tampilkanSukses(res.message);
-                kosongkanStaging('#staging-prosedur');
-                reloadRanapTable('prosedur');
-            },
-            error: function(xhr) {
-                tampilkanError(xhr.responseJSON ? xhr.responseJSON.message : 'Gagal menyimpan prosedur.');
-            }
-        });
-    });
-
-    $(document).off('click', '.btn-hapus-diagnosa').on('click', '.btn-hapus-diagnosa', function() {
-        var kd = $(this).data('kd');
-        Swal.fire({
-            title: 'Hapus Diagnosa?',
-            text: 'Diagnosa ' + kd + ' akan dihapus dari rekam rawat inap ini.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'Ya, Hapus!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: ranapUrl('/ranap/delete-diagnosa/' + currentSafeNoRawat + '/' + kd),
-                    type: 'DELETE',
-                    data: { _token: window.RANAP.csrfToken },
-                    success: function(res) {
-                        tampilkanSukses(res.message);
-                        reloadRanapTable('diagnosa');
-                    }
-                });
-            }
-        });
-    });
-
-    $(document).off('click', '.btn-hapus-prosedur').on('click', '.btn-hapus-prosedur', function() {
-        var kd = $(this).data('kd');
-        Swal.fire({
-            title: 'Hapus Prosedur?',
-            text: 'Prosedur ' + kd + ' akan dihapus dari rekam rawat inap ini.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'Ya, Hapus!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: ranapUrl('/ranap/delete-prosedur/' + currentSafeNoRawat + '/' + kd),
-                    type: 'DELETE',
-                    data: { _token: window.RANAP.csrfToken },
-                    success: function(res) {
-                        tampilkanSukses(res.message);
-                        reloadRanapTable('prosedur');
-                    }
-                });
-            }
-        });
-    });
-}
-
 /* ===== 4. Tab Resep & Obat ===== */
 function loadResep(forceReload = false) {
     if (!currentNoRawat) return;
@@ -855,6 +652,15 @@ function resetFormRacikanRanap() {
 }
 
 function initResepHandlers() {
+    // Hapus baris staging obat dan bahan racikan.
+    $(document).off('click', '.btn-remove-row').on('click', '.btn-remove-row', function() {
+        var $tbody = $(this).closest('tbody');
+        $(this).closest('tr').remove();
+        if ($tbody.children('tr').length === 0) {
+            kosongkanStaging($tbody);
+        }
+    });
+
     var tsObat = initRemoteSelect('#formResepObat .kd_obat_ajax', {
         url: ranapUrl('/ralan/search-obat'),
         placeholder: 'Ketik nama obat / kode...'
@@ -1499,8 +1305,6 @@ $(document).ready(function() {
             loadSoap();
         } else if (target === '#pemeriksaan-vital-sign') {
             loadVital();
-        } else if (target === '#diagnosa-prosedur') {
-            loadDiagnosa();
         } else if (target === '#resep') {
             loadResep();
         } else if (target === '#permintaan-lab') {

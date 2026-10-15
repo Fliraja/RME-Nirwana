@@ -12,15 +12,12 @@ use App\Services\Ranap\RanapDashboardService;
 use App\Services\Ranap\RanapPenunjangService;
 use App\Services\Ranap\RanapSoapService;
 use App\Services\Ranap\RanapVitalSignService;
-use App\Services\Ralan\DiagnosaProsedurService;
 use App\Services\Ranap\RanapResumeService;
 use App\Services\Ralan\LaboratoriumService;
 use App\Services\Ralan\RadiologiService;
 use App\Http\Requests\Ranap\StoreSoapRanapRequest;
 use App\Http\Requests\Ranap\StoreVitalRanapRequest;
 use App\Http\Requests\Ranap\StoreResumeRanapRequest;
-use App\Http\Requests\Ralan\StoreDiagnosaRequest;
-use App\Http\Requests\Ralan\StoreProsedurRequest;
 use App\Http\Requests\Ralan\StorePermintaanLabRequest;
 use App\Http\Requests\Ralan\StorePermintaanRadiologiRequest;
 use App\Support\Alergi;
@@ -36,7 +33,6 @@ class RanapController extends Controller
         private RanapSoapService $soapService,
         private RanapVitalSignService $vitalService,
         private RanapPenunjangService $penunjangService,
-        private DiagnosaProsedurService $diagnosaService,
         private RanapResumeService $resumeService,
         private LaboratoriumService $labService,
         private RadiologiService $radiologiService,
@@ -223,17 +219,6 @@ class RanapController extends Controller
     }
 
     /**
-     * Tab Diagnosa & Prosedur (ICD-10 & ICD-9)
-     */
-    public function getDiagnosaPasien($no_rawat)
-    {
-        $no_rawat = str_replace('-', '/', $no_rawat);
-        $data = $this->diagnosaService->dataPasien($no_rawat);
-
-        return view('ranap.tabs.diagnosa', array_merge($data, ['no_rawat' => $no_rawat]));
-    }
-
-    /**
      * Tab Resep Obat (Form Order + Antrean Hari Ini + Riwayat Pemberian Obat Bangsal)
      */
     public function getResepPasien($no_rawat)
@@ -335,33 +320,6 @@ class RanapController extends Controller
     // DECOUPLED RANAP ACTION HANDLERS
     // =========================================================================
 
-    public function storeDiagnosa(StoreDiagnosaRequest $request)
-    {
-        return response()->json($this->diagnosaService->simpanDiagnosa(
-            $request->no_rawat,
-            $request->kd_penyakit
-        ));
-    }
-
-    public function storeProsedur(StoreProsedurRequest $request)
-    {
-        return response()->json($this->diagnosaService->simpanProsedur(
-            $request->no_rawat,
-            $request->kode,
-            $request->jumlah ?? []
-        ));
-    }
-
-    public function destroyDiagnosa(string $no_rawat, string $kd_penyakit)
-    {
-        return response()->json($this->diagnosaService->hapusDiagnosa(str_replace('-', '/', $no_rawat), $kd_penyakit));
-    }
-
-    public function destroyProsedur(string $no_rawat, string $kode)
-    {
-        return response()->json($this->diagnosaService->hapusProsedur(str_replace('-', '/', $no_rawat), $kode));
-    }
-
     public function storeResepObat(Request $request)
     {
         return $this->resepController->storeResepObat($request);
@@ -430,8 +388,6 @@ class RanapController extends Controller
             'ttv'       => view('ranap.tabs.partials.ttv_table', [
                 'riwayatTtv' => $this->vitalService->getRiwayatTtv($no_rawat), 'currentUserNip' => $currentUserNip,
             ]),
-            'diagnosa'  => view('ranap.tabs.partials.diagnosa_table', $this->diagnosaService->dataPasien($no_rawat)),
-            'prosedur'  => view('ranap.tabs.partials.prosedur_table', $this->diagnosaService->dataPasien($no_rawat)),
             'resep'     => view('ranap.tabs.partials.resep_table', ['resep' => $this->resepHariIni($no_rawat)]),
             'lab'       => view('ranap.tabs.partials.lab_table', ['riwayatOrder' => $this->orderHariIni(PermintaanLab::class, $no_rawat)]),
             'radiologi' => view('ranap.tabs.partials.radiologi_table', ['riwayatOrder' => $this->orderHariIni(PermintaanRadiologi::class, $no_rawat)]),

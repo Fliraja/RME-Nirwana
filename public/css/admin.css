@@ -1427,3 +1427,44 @@ a:hover {
         width: 100%;
     }
 }
+/* Resume medis ralan (lihat design.md) */
+.btn-resume-utama { background: #0d7a4a; border-color: #0d7a4a; color: #fff; font-weight: 600; min-height: 36px; }
+.btn-resume-utama:hover, .btn-resume-utama:focus-visible { background: #0a5f3a; border-color: #0a5f3a; color: #fff; }
+#resume-ralan :focus-visible { outline: 2px solid #0d7a4a; outline-offset: 2px; }
+#resume-ralan fieldset { border: 0; margin: 0; min-width: 0; }
+.resume-status { font-size: 0.75rem; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-sm); }
+.resume-status-tunggu { background: #fef3c7; color: #92400e; }
+.resume-status-ok { background: #dcfce7; color: #166534; }
+.resume-sumber-badge { font-size: 0.72rem; font-weight: 500; background: #f1f5f9; color: #475569; padding: 1px 6px; border-radius: var(--radius-sm); margin-left: 6px; }
+.resume-judul { font-size: 0.8rem; font-weight: 700; color: var(--gray-700); margin: 0 0 6px; }
+.resume-catatan { font-size: 0.8rem; color: var(--gray-500); }
+.resume-banner { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; background: var(--info-soft); border: 1px solid #bae6fd; color: #075985; border-radius: var(--radius); padding: 8px 12px; margin-bottom: 12px; }
+.resume-baris { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+.resume-baris-label { width: 88px; flex-shrink: 0; font-size: 0.8rem; color: var(--gray-500); }
+.resume-baris-label.utama { color: #0d7a4a; font-weight: 700; }
+.resume-baris input { flex: 1; min-width: 0; }
+.resume-baris .btn { min-width: 36px; min-height: 36px; }
+#resume-ralan .btn-link { color: #0d7a4a; font-weight: 600; text-decoration: none; }
+#resume-ralan .btn-link:hover { text-decoration: underline; }
+.resume-chip { border: 1px dashed var(--primary); color: #0d7a4a; background: #fff; border-radius: 999px; padding: 4px 10px; font-size: 0.8rem; margin: 4px 4px 0 0; min-height: 36px; }
+.resume-chip:hover { background: var(--primary-soft); }
+.resume-tl { display: flex; flex-wrap: wrap; gap: 6px; }
+.resume-tl-pilihan { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--gray-300); border-radius: var(--radius-sm); padding: 8px 12px; min-height: 44px; cursor: pointer; }
+.resume-tl-pilihan.aktif { border-color: var(--primary); background: var(--primary-soft); font-weight: 600; }
+.resume-tl-pilihan.nonaktif { opacity: 0.55; cursor: not-allowed; }
+.resume-input-pendek { max-width: 220px; }
+.resume-salinan { display: flex; gap: 12px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--gray-100); }
+.resume-salinan:last-child { border-bottom: 0; }
+.resume-salinan-label { width: 150px; flex-shrink: 0; color: var(--gray-500); font-size: 0.85rem; }
+.resume-salinan-isi { flex: 1; min-width: 0; }
+.resume-salinan-teks { white-space: pre-line; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+@media (max-width: 767.98px) {
+    .resume-salinan { flex-wrap: wrap; gap: 4px; }
+    .resume-salinan-label { width: 100%; }
+    .resume-baris { flex-wrap: wrap; }
+    .resume-baris-label { width: 100%; }
+    .resume-baris .btn, .resume-chip, .btn-resume-utama, #resume-ralan .btn-link, #resume-ralan .btn-outline-secondary { min-height: 44px; min-width: 44px; }
+    .resume-aksi { width: 100%; }
+    .resume-aksi .btn { flex: 1; }
+    .resume-input-pendek { max-width: none; }
+}

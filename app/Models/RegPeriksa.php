@@ -81,4 +81,9 @@ class RegPeriksa extends Model
     {
         return $this->hasMany(HasilRadiologi::class, 'no_rawat', 'no_rawat');
     }
+
+    public function resumeRalan()
+    {
+        return $this->hasOne(RmeResumeRalan::class, 'no_rawat', 'no_rawat');
+    }
 }

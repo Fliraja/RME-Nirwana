@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LaboratoriumController;
 use App\Http\Controllers\DiagnosaProsedurController;
+use App\Http\Controllers\ResumeRalanController;
 
 use App\Http\Controllers\RanapController;
 
@@ -28,11 +29,6 @@ Route::middleware(['multi.auth'])->group(function () {
     Route::get('/ranap/get-vital-pasien/{no_rawat}', [RanapController::class, 'getVitalPasien'])->name('ranap.get-vital');
     Route::post('/ranap/store-vital', [RanapController::class, 'storeVital'])->name('ranap.store-vital');
     Route::post('/ranap/vital/hapus', [RanapController::class, 'destroyVital'])->name('ranap.vital.hapus');
-    Route::get('/ranap/get-diagnosa-prosedur/{no_rawat}', [RanapController::class, 'getDiagnosaPasien'])->name('ranap.get-diagnosa-prosedur');
-    Route::post('/ranap/store-diagnosa', [RanapController::class, 'storeDiagnosa'])->name('ranap.store-diagnosa');
-    Route::post('/ranap/store-prosedur', [RanapController::class, 'storeProsedur'])->name('ranap.store-prosedur');
-    Route::delete('/ranap/delete-diagnosa/{no_rawat}/{kd_penyakit}', [RanapController::class, 'destroyDiagnosa'])->name('ranap.delete-diagnosa');
-    Route::delete('/ranap/delete-prosedur/{no_rawat}/{kode}', [RanapController::class, 'destroyProsedur'])->name('ranap.delete-prosedur');
     Route::get('/ranap/get-resep-pasien/{no_rawat}', [RanapController::class, 'getResepPasien'])->name('ranap.get-resep');
     Route::post('/ranap/store-resep-obat', [RanapController::class, 'storeResepObat'])->name('ranap.store-resep-obat');
     Route::post('/ranap/store-resep-racikan', [RanapController::class, 'storeResepRacikan'])->name('ranap.store-resep-racikan');
@@ -48,7 +44,7 @@ Route::middleware(['multi.auth'])->group(function () {
     Route::post('/ranap/store-resume-pasien', [RanapController::class, 'storeResumePasien'])->name('ranap.store-resume');
     Route::get('/ranap/resume/pdf/{no_rawat}', [RanapController::class, 'pdfResume'])->name('ranap.resume-pdf');
     Route::get('/ranap/table/{tabel}/{no_rawat}', [RanapController::class, 'getTable'])
-        ->whereIn('tabel', ['soap', 'ttv', 'diagnosa', 'prosedur', 'resep', 'lab', 'radiologi'])
+        ->whereIn('tabel', ['soap', 'ttv', 'resep', 'lab', 'radiologi'])
         ->name('ranap.table');
 
     //Ralan Routes
@@ -63,9 +59,14 @@ Route::middleware(['multi.auth'])->group(function () {
     Route::post('/ralan/soap/simpan', [RalanController::class, 'storeSOAP'])->name('ralan.soap.simpan');
     Route::get('/ralan/get-vital-pasien/{no_rawat}', [RalanController::class, 'getVitalPasien'])->name('ralan.get-vital');
     Route::get('/ralan/table/{tabel}/{no_rawat}', [RalanController::class, 'getTable'])
-        ->whereIn('tabel', ['soap', 'vital', 'diagnosa', 'prosedur'])
+        ->whereIn('tabel', ['soap', 'vital'])
         ->name('ralan.table');
     Route::post('/ralan/store-vital', [RalanController::class, 'storeVital'])->name('ralan.store-vital');
+
+    //Resume medis
+    Route::get('/ralan/resume/{no_rawat}', [ResumeRalanController::class, 'show'])->name('ralan.resume');
+    Route::post('/ralan/resume/verifikasi', [ResumeRalanController::class, 'verifikasi'])->name('ralan.resume.verifikasi');
+    Route::get('/ralan/resume/pdf/{no_rawat}', [ResumeRalanController::class, 'pdf'])->name('ralan.resume.pdf');
 
     //Resep Obat
     Route::get('/ralan/get-resep-pasien/{no_rawat}', [ResepController::class, 'getResepPasien'])->name('ralan.get-resep');
@@ -91,14 +92,9 @@ Route::middleware(['multi.auth'])->group(function () {
     Route::post('/ralan/store-permintaan-radiologi', [RadiologiController::class, 'storePermintaanRadiologi'])->name('ralan.store-radiologi');
     Route::delete('/ralan/delete-radiologi/{noorder}/{kd_jenis_prw?}', [RadiologiController::class, 'destroyRadiologi'])->name('ralan.delete-radiologi');
 
-    //Diagnosa & Prosedur
-    Route::get('/ralan/get-diagnosa-prosedur/{no_rawat}', [DiagnosaProsedurController::class, 'index'])->name('ralan.get-diagnosa-prosedur');
+    //Pencarian ICD (dipakai resume ranap)
     Route::get('/ralan/search-icd10', [DiagnosaProsedurController::class, 'searchIcd10'])->name('ralan.search-icd10');
     Route::get('/ralan/search-icd9', [DiagnosaProsedurController::class, 'searchIcd9'])->name('ralan.search-icd9');
-    Route::post('/ralan/store-diagnosa', [DiagnosaProsedurController::class, 'storeDiagnosa'])->name('ralan.store-diagnosa');
-    Route::post('/ralan/store-prosedur', [DiagnosaProsedurController::class, 'storeProsedur'])->name('ralan.store-prosedur');
-    Route::delete('/ralan/delete-diagnosa/{no_rawat}/{kd_penyakit}', [DiagnosaProsedurController::class, 'destroyDiagnosa'])->name('ralan.delete-diagnosa');
-    Route::delete('/ralan/delete-prosedur/{no_rawat}/{kode}', [DiagnosaProsedurController::class, 'destroyProsedur'])->name('ralan.delete-prosedur');
 
     //Report Routes
     Route::get('/report/soap', [ReportController::class, 'indexSoap'])->name('report.soap-index');
