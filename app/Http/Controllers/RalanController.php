@@ -10,9 +10,11 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\Ralan\StoreSoapRequest;
 use App\Http\Requests\Ralan\StoreVitalSignRequest;
 use App\Services\Ralan\DiagnosaProsedurService;
+use App\Services\Ralan\ResumeRalanService;
 use App\Services\Ralan\SoapService;
 use App\Services\Ralan\VitalSignService;
 use App\Support\AntrolBpjsUpdater;
+use Illuminate\Support\Facades\Log;
 
 class RalanController extends Controller
 {
@@ -117,15 +119,19 @@ class RalanController extends Controller
         return "<div class='alert alert-danger'>Data pendaftaran tidak ditemukan.</div>";
     }
 
-    public function storeSOAP(StoreSoapRequest $request, SoapService $service)
+    public function storeSOAP(StoreSoapRequest $request, SoapService $service, ResumeRalanService $resume)
     {
         try {
             $service->simpan($request->all());
-
-            return response()->json(['status' => 'success-soap', 'message' => 'Data SOAP berhasil disimpan']);
         } catch (\Exception $e) {
             return response()->json(['status' => 'error', 'message' => 'Gagal menyimpan SOAP: ' . $e->getMessage()], 500);
         }
+
+        return response()->json([
+            'status'  => 'success-soap',
+            'message' => 'Data SOAP berhasil disimpan',
+            'resume'  => $this->susunResume($resume, $request->no_rawat),
+        ]);
     }
 
     public function getVitalPasien($no_rawat)
@@ -161,14 +167,29 @@ class RalanController extends Controller
         return view("ralan.partials.{$tabel}_table", compact('pasien'));
     }
 
-    public function storeVital(StoreVitalSignRequest $request, VitalSignService $service)
+    public function storeVital(StoreVitalSignRequest $request, VitalSignService $service, ResumeRalanService $resume)
     {
         try {
             $service->simpan($request->all());
-
-            return response()->json(['status' => 'success-vital', 'message' => 'Data Vital Sign berhasil disimpan']);
         } catch (\Exception $e) {
             return response()->json(['status' => 'error', 'message' => 'Gagal menyimpan Vital Sign: ' . $e->getMessage()], 500);
+        }
+
+        return response()->json([
+            'status'  => 'success-vital',
+            'message' => 'Data Vital Sign berhasil disimpan',
+            'resume'  => $this->susunResume($resume, $request->no_rawat),
+        ]);
+    }
+
+    /** SOAP/TTV tidak boleh gagal karena resume. */
+    private function susunResume(ResumeRalanService $resume, string $noRawat): string
+    {
+        try {
+            return $resume->susunOtomatis($noRawat);
+        } catch (\Throwable $e) {
+            Log::warning('Resume ralan gagal disusun', ['no_rawat' => $noRawat, 'error' => $e->getMessage()]);
+            return 'gagal';
         }
     }
 

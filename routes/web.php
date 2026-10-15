@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LaboratoriumController;
 use App\Http\Controllers\DiagnosaProsedurController;
+use App\Http\Controllers\ResumeRalanController;
 
 use App\Http\Controllers\RanapController;
 
@@ -66,6 +67,10 @@ Route::middleware(['multi.auth'])->group(function () {
         ->whereIn('tabel', ['soap', 'vital', 'diagnosa', 'prosedur'])
         ->name('ralan.table');
     Route::post('/ralan/store-vital', [RalanController::class, 'storeVital'])->name('ralan.store-vital');
+
+    //Resume medis
+    Route::get('/ralan/resume/{no_rawat}', [ResumeRalanController::class, 'show'])->name('ralan.resume');
+    Route::post('/ralan/resume/verifikasi', [ResumeRalanController::class, 'verifikasi'])->name('ralan.resume.verifikasi');
 
     //Resep Obat
     Route::get('/ralan/get-resep-pasien/{no_rawat}', [ResepController::class, 'getResepPasien'])->name('ralan.get-resep');
