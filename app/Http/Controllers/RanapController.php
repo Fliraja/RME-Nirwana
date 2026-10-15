@@ -23,6 +23,7 @@ use App\Http\Requests\Ralan\StoreDiagnosaRequest;
 use App\Http\Requests\Ralan\StoreProsedurRequest;
 use App\Http\Requests\Ralan\StorePermintaanLabRequest;
 use App\Http\Requests\Ralan\StorePermintaanRadiologiRequest;
+use App\Support\Alergi;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -119,6 +120,7 @@ class RanapController extends Controller
         $data = [
             'detailPasien' => $detailPasien,
             'kamarAktif'   => $kamarAktif,
+            'alergiPasien' => Alergi::terakhirRanap($no_rawat),
             'riwayat'      => $riwayat,
             'nama_dokter'  => $isAdmin ? session('nama_lengkap') : (Auth::user()->dokter_data->nm_dokter ?? 'Dokter'),
             'role'         => session('role'),
@@ -317,9 +319,9 @@ class RanapController extends Controller
     public function pdfResume(string $no_rawat)
     {
         $no_rawat = str_replace('-', '/', $no_rawat);
-        $data = $this->resumeService->getResumeData($no_rawat);
+        $data = $this->resumeService->getPdfData($no_rawat);
 
-        if (empty($data['resume'])) {
+        if (!$data) {
             return back()->with('error', 'Resume medis untuk pasien ini belum dibuat / disimpan.');
         }
 

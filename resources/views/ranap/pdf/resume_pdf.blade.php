@@ -166,12 +166,14 @@
 
     {{-- Identitas Pasien & Data Rawat --}}
     @php
-        $tglMasuk = $kamar ? \Carbon\Carbon::parse($kamar->tgl_masuk)->format('d/m/Y') . ' ' . $kamar->jam_masuk : '-';
-        $tglKeluar = ($kamar && $kamar->tgl_keluar && $kamar->tgl_keluar != '0000-00-00') 
-            ? \Carbon\Carbon::parse($kamar->tgl_keluar)->format('d/m/Y') . ' ' . $kamar->jam_keluar 
+        $tglMasuk = $kamarMasuk ? \Carbon\Carbon::parse($kamarMasuk->tgl_masuk)->format('d/m/Y') . ' ' . $kamarMasuk->jam_masuk : '-';
+        $sudahKeluar = $kamarAkhir && $kamarAkhir->stts_pulang !== '-' && $kamarAkhir->tgl_keluar && $kamarAkhir->tgl_keluar != '0000-00-00';
+        $tglKeluar = $sudahKeluar
+            ? \Carbon\Carbon::parse($kamarAkhir->tgl_keluar)->format('d/m/Y') . ' ' . $kamarAkhir->jam_keluar
             : '-';
-        $lamaRawat = ($kamar && $kamar->lama) ? $kamar->lama . ' Hari' : '-';
-        $namaDokterDpjp = $resume->dokter->nm_dokter ?? ($dpjp->nm_dokter ?? '-');
+        $lamaRawat = $lamaRawat > 0 ? $lamaRawat . ' Hari' : '-';
+        $dokterTtd = $resume->dokter ?? $dpjp;
+        $namaDokterDpjp = $dokterTtd->nm_dokter ?? '-';
     @endphp
 
     <table class="info-table">
@@ -181,15 +183,15 @@
             <td class="info-val"><strong>{{ $reg->no_rkm_medis ?? '-' }}</strong></td>
             <td class="info-label">Kamar / Bangsal</td>
             <td class="info-sep">:</td>
-            <td class="info-val">{{ $kamar->kd_kamar ?? '-' }} ({{ $kamar->kamar->bangsal->nm_bangsal ?? 'Ranap' }})</td>
+            <td class="info-val">{{ $kamarAkhir->kd_kamar ?? '-' }} ({{ $kamarAkhir->kamar->bangsal->nm_bangsal ?? '-' }})</td>
         </tr>
         <tr>
             <td class="info-label">Nama Pasien</td>
             <td class="info-sep">:</td>
-            <td class="info-val"><strong>{{ $reg->nm_pasien ?? ($reg->pasien->nm_pasien ?? '-') }}</strong></td>
+            <td class="info-val"><strong>{{ $reg->pasien->nm_pasien ?? '-' }}</strong></td>
             <td class="info-label">Kelas Perawatan</td>
             <td class="info-sep">:</td>
-            <td class="info-val">{{ $kamar->kamar->kelas ?? 'Kelas' }}</td>
+            <td class="info-val">{{ $kamarAkhir->kamar->kelas ?? '-' }}</td>
         </tr>
         <tr>
             <td class="info-label">No. Rawat</td>
@@ -202,7 +204,7 @@
         <tr>
             <td class="info-label">Jenis Kelamin / Umur</td>
             <td class="info-sep">:</td>
-            <td class="info-val">{{ ($reg->jk ?? 'L') == 'L' ? 'Laki-Laki' : 'Perempuan' }} / {{ $reg->umurdaftar ?? ($reg->umur ?? '-') }} Th</td>
+            <td class="info-val">{{ ($reg->pasien->jk ?? '') === 'P' ? 'Perempuan' : 'Laki-Laki' }} / {{ $reg->umurdaftar ?? '-' }} {{ $reg->sttsumur ?? '' }}</td>
             <td class="info-label">Tanggal Keluar</td>
             <td class="info-sep">:</td>
             <td class="info-val">{{ $tglKeluar }} ({{ $lamaRawat }})</td>
@@ -210,7 +212,7 @@
         <tr>
             <td class="info-label">Penjamin (Cara Bayar)</td>
             <td class="info-sep">:</td>
-            <td class="info-val">{{ $reg->penjab->png_jawab ?? ($reg->kd_pj ?? '-') }}</td>
+            <td class="info-val">{{ $reg->penjab->png_jawab ?? '-' }}</td>
             <td class="info-label">Dokter DPJP</td>
             <td class="info-sep">:</td>
             <td class="info-val"><strong>{{ $namaDokterDpjp }}</strong></td>
@@ -231,7 +233,7 @@
         </tr>
         <tr>
             <td colspan="2">
-                {!! nl2br(e($resume->jalannya_penyakit ?? ($resume->keluhan_utama ?? '-'))) !!}
+                {!! nl2br(e($resume->jalannya_penyakit ?: ($resume->keluhan_utama ?: '-'))) !!}
             </td>
         </tr>
 
@@ -240,7 +242,7 @@
         </tr>
         <tr>
             <td colspan="2">
-                {!! nl2br(e($resume->pemeriksaan_fisik ?? '-')) !!}
+                {!! nl2br(e($resume->pemeriksaan_fisik ?: '-')) !!}
             </td>
         </tr>
 
@@ -249,7 +251,7 @@
         </tr>
         <tr>
             <td colspan="2">
-                {!! nl2br(e($resume->pemeriksaan_penunjang ?? '-')) !!}
+                {!! nl2br(e($resume->pemeriksaan_penunjang ?: '-')) !!}
             </td>
         </tr>
 
@@ -259,7 +261,7 @@
         <tr>
             <td style="width: 25%; font-weight: bold; background-color: #fafafa;">Diagnosa Primer (Utama)</td>
             <td style="width: 75%;">
-                <strong>{{ $resume->diagnosa_utama ?? '-' }}</strong>
+                <strong>{{ $resume->diagnosa_utama ?: '-' }}</strong>
                 @if(!empty($resume->kd_diagnosa_utama))
                     <span class="badge-code">ICD-10: {{ $resume->kd_diagnosa_utama }}</span>
                 @endif
@@ -301,7 +303,7 @@
         </tr>
         <tr>
             <td colspan="2">
-                {!! nl2br(e($resume->tindakan_dan_operasi ?? ($resume->obat_di_rs ?? '-'))) !!}
+                {!! nl2br(e($resume->tindakan_dan_operasi ?: ($resume->obat_di_rs ?: '-'))) !!}
             </td>
         </tr>
 
@@ -326,7 +328,7 @@
         </tr>
         <tr>
             <td colspan="2">
-                {!! nl2br(e($resume->obat_pulang ?? '-')) !!}
+                {!! nl2br(e($resume->obat_pulang ?: '-')) !!}
             </td>
         </tr>
 
@@ -342,7 +344,7 @@
                         (Jam: {{ \Carbon\Carbon::parse($resume->kontrol)->format('H:i') }})
                     </div>
                 @endif
-                <div>{!! nl2br(e($resume->edukasi ?? '-')) !!}</div>
+                <div>{!! nl2br(e($resume->edukasi ?: '-')) !!}</div>
             </td>
         </tr>
     </table>
@@ -358,14 +360,14 @@
                     {{ $namaDokterDpjp }}
                 </div>
                 <div style="font-size: 7.5pt; color: #555;">
-                    NIP / SIP: {{ $resume->kd_dokter ?? ($dpjp->kd_dokter ?? '-') }}
+                    {{ !empty($dokterTtd->no_ijn_praktek) ? 'SIP: ' . $dokterTtd->no_ijn_praktek : 'Kode Dokter: ' . ($dokterTtd->kd_dokter ?? '-') }}
                 </div>
             </td>
         </tr>
     </table>
 
     <div class="footer-note">
-        * Dokumen Rekam Medis Elektronik ini dicetak secara otomatis melalui Sistem RME RSU Nirwana. Sah tanpa tanda tangan basah jika telah diverifikasi secara elektronik.
+        * Dokumen Rekam Medis Elektronik ini dicetak secara otomatis melalui Sistem RME RSU Nirwana.
     </div>
 </body>
 </html>
