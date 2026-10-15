@@ -39,7 +39,12 @@
                         <span class="badge bg-light text-dark border mb-1 d-inline-block">
                             {{ $ttv->kesadaran ?: 'Compos Mentis' }}
                         </span>
-                        @if($ttv->alergi)
+                        @php
+                            $valAlergi = trim($ttv->alergi ?? '');
+                            $normAlergi = strtolower(str_replace(' ', '', $valAlergi));
+                            $hasAlergi = !empty($valAlergi) && !in_array($normAlergi, ['-', 'tidakada', 'none', 'nihil', 'tidak']);
+                        @endphp
+                        @if($hasAlergi)
                             <div class="text-danger small"><i class="fas fa-exclamation-triangle me-1"></i> Alergi: {{ $ttv->alergi }}</div>
                         @endif
                     </td>
