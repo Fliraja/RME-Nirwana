@@ -75,11 +75,6 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" id="diagnosa-prosedur-tab" data-bs-toggle="tab" href="#diagnosa-prosedur">
-                                        <i class="fas fa-stethoscope me-1"></i> DIAGNOSA
-                                    </a>
-                                </li>
-                                <li class="nav-item">
                                     <a class="nav-link" id="vital-sign-tab" data-bs-toggle="tab" href="#pemeriksaan-vital-sign">
                                         <i class="fas fa-heartbeat me-1"></i> TTV
                                     </a>
@@ -120,15 +115,6 @@
                                         <div class="text-center p-5">
                                             <div class="spinner-border text-primary"></div>
                                             <p>Memuat Form SOAP...</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div role="tabpanel" class="tab-pane fade" id="diagnosa-prosedur">
-                                    <div id="content-diagnosa-prosedur">
-                                        <div class="text-center p-5">
-                                            <div class="spinner-border text-primary"></div>
-                                            <p>Memuat Form Diagnosa & Prosedur...</p>
                                         </div>
                                     </div>
                                 </div>
@@ -299,8 +285,6 @@
         baseUrl: "{{ url('/') }}",
         csrf: "{{ csrf_token() }}",
         routes: {
-            searchIcd10: "{{ route('ralan.search-icd10') }}",
-            searchIcd9: "{{ route('ralan.search-icd9') }}",
             searchObat: "{{ route('ralan.search-obat') }}",
             searchLab: "{{ route('ralan.search-lab') }}",
             searchRadiologi: "{{ route('ralan.search-radiologi') }}",
@@ -308,8 +292,6 @@
             storeResepRacikan: "{{ route('ralan.store-resep-racikan') }}",
             storeLab: "{{ route('ralan.store-lab') }}",
             storeRadiologi: "{{ route('ralan.store-radiologi') }}",
-            storeDiagnosa: "{{ route('ralan.store-diagnosa') }}",
-            storeProsedur: "{{ route('ralan.store-prosedur') }}",
             soapSimpan: "{{ route('ralan.soap.simpan') }}",
             vitalSimpan: "{{ route('ralan.store-vital') }}",
             resumeVerifikasi: "{{ route('ralan.resume.verifikasi') }}",

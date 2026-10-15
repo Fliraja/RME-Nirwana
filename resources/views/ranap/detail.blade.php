@@ -28,11 +28,6 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" id="diagnosa-prosedur-tab" data-bs-toggle="tab" href="#diagnosa-prosedur">
-                                    <i class="fas fa-stethoscope me-1"></i> DIAGNOSA
-                                </a>
-                            </li>
-                            <li class="nav-item">
                                 <a class="nav-link" id="vital-sign-tab" data-bs-toggle="tab" href="#pemeriksaan-vital-sign">
                                     <i class="fas fa-heartbeat me-1"></i> TTV
                                 </a>
@@ -73,16 +68,6 @@
                                     <div class="text-center p-5">
                                         <div class="spinner-border text-primary"></div>
                                         <p class="mt-2 text-muted">Memuat Form & Riwayat SOAP...</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- Tab 3: Diagnosa & Prosedur --}}
-                            <div role="tabpanel" class="tab-pane fade" id="diagnosa-prosedur">
-                                <div id="content-diagnosa-prosedur">
-                                    <div class="text-center p-5">
-                                        <div class="spinner-border text-primary"></div>
-                                        <p class="mt-2 text-muted">Memuat Diagnosa & Prosedur...</p>
                                     </div>
                                 </div>
                             </div>

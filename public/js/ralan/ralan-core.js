@@ -80,7 +80,6 @@ function clearRemoteSelect(selector) {
 
 var loadedTabs = {
     soap: false,
-    diagnosa: false,
     vital: false,
     lab: false,
     radiologi: false,
@@ -90,7 +89,6 @@ var loadedTabs = {
 
 var loadingTabs = {
     soap: false,
-    diagnosa: false,
     vital: false,
     lab: false,
     radiologi: false,
@@ -331,8 +329,6 @@ function tampilkanErrorResume($form, errors) {
 var ralanTables = {
     soap:      { url: '/ralan/table/soap/',          target: '#ralan-soap-table' },
     vital:     { url: '/ralan/table/vital/',         target: '#ralan-vital-table' },
-    diagnosa:  { url: '/ralan/table/diagnosa/',      target: '#ralan-diagnosa-table' },
-    prosedur:  { url: '/ralan/table/prosedur/',      target: '#ralan-prosedur-table' },
     lab:       { url: '/ralan/get-lab-table/',       target: '#tabel-riwayat-lab' },
     radiologi: { url: '/ralan/get-radiologi-table/', target: '#tabel-riwayat-rad' },
     resep:     { url: '/ralan/get-resep-table/',     target: '#tabel-resep-container' }
@@ -373,83 +369,6 @@ function kosongkanStaging(tbody) {
 }
 
 function clearStagingObat() { kosongkanStaging('#staging-obat'); }
-
-function loadDiagnosaProsedur(forceReload = false) {
-    if (currentNoRawat === "") return;
-    if (loadedTabs.diagnosa && !forceReload) return;
-    if (loadingTabs.diagnosa) return tundaReload('diagnosa', forceReload);
-
-    if (!loadedTabs.diagnosa) {
-        $('#content-diagnosa-prosedur').html('<div class="text-center p-5"><div class="spinner-border text-primary"></div><p>Memuat Form Diagnosa & Prosedur...</p></div>');
-    }
-
-    loadingTabs.diagnosa = true;
-    var url = ralanUrl('/ralan/get-diagnosa-prosedur/' + currentSafeNoRawat);
-    console.log('[RALAN] Fetching Diagnosa/Prosedur:', url);
-    $.ajax({
-        url: url,
-        method: 'GET',
-        success: function(data) {
-            $('#content-diagnosa-prosedur').html(data);
-            loadedTabs.diagnosa = true;
-            loadingTabs.diagnosa = false;
-            setTimeout(function() { initSelect2DiagnosaProsedur(); }, 100);
-        },
-        error: function(xhr) {
-            console.error('[RALAN] Failed Diagnosa/Prosedur:', xhr.status, xhr.statusText, xhr.responseText);
-            loadingTabs.diagnosa = false;
-            if (!loadedTabs.diagnosa) $('#content-diagnosa-prosedur').html('<div class="alert alert-danger">Gagal memuat form Diagnosa & Prosedur (HTTP ' + xhr.status + ').</div>');
-        },
-        complete: function() {
-            jalankanReloadTertunda('diagnosa', loadDiagnosaProsedur);
-        }
-    });
-}
-
-function stagingKode(tbodySel) {
-    return $(tbodySel + ' tr[data-kode]').map(function() { return $(this).data('kode'); }).get();
-}
-
-function addStagingRow(tbodySel, data, withJumlah) {
-    var kode = String(data.id);
-    if ($(tbodySel + ' tr[data-kode="' + kode.replace(/"/g, '') + '"]').length) return;
-    $(tbodySel + ' .staging-empty').remove();
-    var nama = String(data.text).replace(kode + ' - ', '');
-    var jumlahCell = withJumlah
-        ? '<td><input type="number" class="form-control form-control-sm staging-jumlah" min="1" value="1"></td>'
-        : '';
-    $(tbodySel).append(
-        '<tr data-kode="' + kode + '">' +
-        '<td><span class="badge bg-light text-dark border">' + kode + '</span></td>' +
-        '<td class="small">' + nama + '</td>' +
-        jumlahCell +
-        '<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger border-0 staging-remove"><i class="fas fa-times"></i></button></td>' +
-        '</tr>'
-    );
-}
-
-function initSelect2DiagnosaProsedur() {
-    initRemoteSelect('#select-icd10', {
-        url: window.RALAN.routes.searchIcd10,
-        multiple: false,
-        placeholder: 'Ketik kode / nama penyakit...',
-        onItemAdd: function(data, ts) {
-            addStagingRow('#staging-diagnosa', data, false);
-            ts.clear(true);
-            ts.clearOptions();
-        }
-    });
-    initRemoteSelect('#select-icd9', {
-        url: window.RALAN.routes.searchIcd9,
-        multiple: false,
-        placeholder: 'Ketik kode / deskripsi prosedur...',
-        onItemAdd: function(data, ts) {
-            addStagingRow('#staging-prosedur', data, true);
-            ts.clear(true);
-            ts.clearOptions();
-        }
-    });
-}
 
 function initSelect2() {
     initRemoteSelect('.kd_obat_ajax', {
@@ -845,10 +764,6 @@ function hapusBaris(rowId) {
 
 $('a[href="#pemeriksaan-soap"]').on('shown.bs.tab', function (e) {
     loadSoap();
-});
-
-$('a[href="#diagnosa-prosedur"]').on('shown.bs.tab', function (e) {
-    loadDiagnosaProsedur();
 });
 
 $('a[href="#pemeriksaan-vital-sign"]').on('shown.bs.tab', function (e) {
@@ -1531,98 +1446,6 @@ $(document).ready(function() {
             var cols = tbody.data('cols') || 3;
             var empty = tbody.data('empty') || 'Kosong';
             tbody.append('<tr class="staging-empty"><td colspan="' + cols + '" class="text-center text-muted small py-2">' + empty + '</td></tr>');
-        }
-    });
-
-    $(document).on('click', '#btn-simpan-diagnosa', function() {
-        var kd = stagingKode('#staging-diagnosa');
-        if (!kd.length) { tampilkanError('Belum ada diagnosa dipilih.'); return; }
-
-        var btn = $(this);
-        var original = btn.html();
-        btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Menyimpan...');
-
-        $.ajax({
-            url: window.RALAN.routes.storeDiagnosa,
-            method: 'POST',
-            data: { _token: window.RALAN.csrf, no_rawat: currentNoRawat, kd_penyakit: kd },
-            success: function(res) {
-                btn.prop('disabled', false).html(original);
-                tampilkanSukses(res.message);
-                kosongkanStaging('#staging-diagnosa');
-                reloadRalanTable('diagnosa');
-            },
-            error: function(xhr) {
-                btn.prop('disabled', false).html(original);
-                tampilkanError(xhr.responseJSON?.message || 'Gagal menyimpan diagnosa.');
-            }
-        });
-    });
-
-    $(document).on('click', '#btn-simpan-prosedur', function() {
-        var rows = $('#staging-prosedur tr[data-kode]');
-        if (!rows.length) { tampilkanError('Belum ada prosedur dipilih.'); return; }
-
-        var kode = [], jumlah = [];
-        rows.each(function() {
-            kode.push($(this).data('kode'));
-            jumlah.push($(this).find('.staging-jumlah').val() || '');
-        });
-
-        var btn = $(this);
-        var original = btn.html();
-        btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Menyimpan...');
-
-        $.ajax({
-            url: window.RALAN.routes.storeProsedur,
-            method: 'POST',
-            data: { _token: window.RALAN.csrf, no_rawat: currentNoRawat, kode: kode, jumlah: jumlah },
-            success: function(res) {
-                btn.prop('disabled', false).html(original);
-                tampilkanSukses(res.message);
-                kosongkanStaging('#staging-prosedur');
-                reloadRalanTable('prosedur');
-            },
-            error: function(xhr) {
-                btn.prop('disabled', false).html(original);
-                tampilkanError(xhr.responseJSON?.message || 'Gagal menyimpan prosedur.');
-            }
-        });
-    });
-
-    $(document).on('click', '.btn-hapus-diagnosa', function() {
-        let kd = $(this).data('kd');
-        if (confirm('Hapus diagnosa ini?')) {
-            $.ajax({
-                url: ralanUrl('/ralan/delete-diagnosa/' + currentSafeNoRawat + '/' + kd),
-                method: 'DELETE',
-                data: { _token: window.RALAN.csrf },
-                success: function(res) {
-                    tampilkanSukses(res.message);
-                    reloadRalanTable('diagnosa');
-                },
-                error: function(xhr) {
-                    tampilkanError(xhr.responseJSON?.message || "Gagal menghapus diagnosa.");
-                }
-            });
-        }
-    });
-
-    $(document).on('click', '.btn-hapus-prosedur', function() {
-        let kode = $(this).data('kode');
-        if (confirm('Hapus prosedur ini?')) {
-            $.ajax({
-                url: ralanUrl('/ralan/delete-prosedur/' + currentSafeNoRawat + '/' + kode),
-                method: 'DELETE',
-                data: { _token: window.RALAN.csrf },
-                success: function(res) {
-                    tampilkanSukses(res.message);
-                    reloadRalanTable('prosedur');
-                },
-                error: function(xhr) {
-                    tampilkanError(xhr.responseJSON?.message || "Gagal menghapus prosedur.");
-                }
-            });
         }
     });
 
