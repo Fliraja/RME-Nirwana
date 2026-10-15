@@ -131,19 +131,25 @@ class ResumeRalanBuilder
             ->implode("\n");
     }
 
+    /** Obat yang diserahkan apotek (bisa berbeda dari resep); kosong sampai obat diserahkan. */
     private function obat(string $noRawat): string
     {
-        $resep = DB::table('resep_obat')->where('no_rawat', $noRawat)->where('status', 'ralan')->pluck('no_resep');
-        if ($resep->isEmpty()) {
-            return '';
-        }
+        $diberikan = DB::table('detail_pemberian_obat as d')->join('databarang as b', 'b.kode_brng', '=', 'd.kode_brng')
+            ->where('d.no_rawat', $noRawat)->where('d.status', 'Ralan')
+            ->groupBy('d.kode_brng', 'b.nama_brng')->orderBy('b.nama_brng')
+            ->selectRaw('d.kode_brng, b.nama_brng, SUM(d.jml) as jml')->get();
 
-        $jadi = DB::table('resep_dokter as r')->join('databarang as b', 'b.kode_brng', '=', 'r.kode_brng')
-            ->whereIn('r.no_resep', $resep)->orderBy('b.nama_brng')
-            ->get(['b.nama_brng', 'r.jml', 'r.aturan_pakai'])
-            ->map(fn ($r) => ResumeFormat::barisObat($r->nama_brng, self::jumlah($r->jml), (string) $r->aturan_pakai));
+        $aturanApotek = DB::table('aturan_pakai')->where('no_rawat', $noRawat)->pluck('aturan', 'kode_brng');
+        $aturanResep = DB::table('resep_obat as r')->join('resep_dokter as d', 'd.no_resep', '=', 'r.no_resep')
+            ->where('r.no_rawat', $noRawat)->pluck('d.aturan_pakai', 'd.kode_brng');
 
-        $racik = DB::table('resep_dokter_racikan')->whereIn('no_resep', $resep)->orderBy('no_racik')
+        $jadi = $diberikan->map(fn ($r) => ResumeFormat::barisObat(
+            $r->nama_brng,
+            self::jumlah($r->jml),
+            (string) ($aturanApotek[$r->kode_brng] ?? $aturanResep[$r->kode_brng] ?? '')
+        ));
+
+        $racik = DB::table('obat_racikan')->where('no_rawat', $noRawat)->orderBy('no_racik')
             ->get(['nama_racik', 'jml_dr', 'aturan_pakai'])
             ->map(fn ($r) => ResumeFormat::barisObat($r->nama_racik, self::jumlah($r->jml_dr), (string) $r->aturan_pakai));
 
