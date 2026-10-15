@@ -139,7 +139,7 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label small fw-bold text-muted">Diagnosa Awal Masuk</label>
-                        <input type="text" name="diagnosa_awal" id="resume_diagnosa_awal" class="form-control form-control-sm"
+                        <input type="text" name="diagnosa_awal" id="resume_diagnosa_awal" class="form-control form-control-sm" maxlength="100"
                                value="{{ $isSaved ? $resume->diagnosa_awal : ($kamar->diagnosa_awal ?? '') }}"
                                placeholder="Diagnosa saat awal masuk kamar inap...">
                     </div>
@@ -324,7 +324,7 @@
                                 <label class="form-label small fw-bold text-primary">
                                     <i class="fas fa-hospital me-1"></i> Nama Rumah Sakit / Faskes Rujukan Tujuan
                                 </label>
-                                <input type="text" name="nama_faskes_rujukan" id="resume_nama_faskes_rujukan" class="form-control form-control-sm"
+                                <input type="text" name="nama_faskes_rujukan" id="resume_nama_faskes_rujukan" class="form-control form-control-sm" maxlength="50"
                                        value="{{ $namaRujukan }}" placeholder="Contoh: RSUP Dr. Kariadi Semarang, RSUD Tugurejo...">
                             </div>
                         </div>
