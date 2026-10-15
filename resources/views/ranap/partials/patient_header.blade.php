@@ -1,18 +1,4 @@
 @php
-    $alergiPasien = \Illuminate\Support\Facades\DB::table('pemeriksaan_ranap')
-        ->where('no_rawat', $detailPasien->no_rawat)
-        ->whereNotNull('alergi')
-        ->where('alergi', '!=', '')
-        ->where('alergi', '!=', '-')
-        ->where('alergi', '!=', 'tidak ada')
-        ->where('alergi', '!=', 'TidakAda')
-        ->where('alergi', '!=', 'tidak Ada')
-        ->where('alergi', '!=', 'Tidak Ada')
-        ->where('alergi', '!=', 'Tidak ada')
-        ->orderBy('tgl_perawatan', 'desc')
-        ->orderBy('jam_rawat', 'desc')
-        ->value('alergi');
-
     $lamaHari = $kamarAktif ? (int) \Carbon\Carbon::parse($kamarAktif->tgl_masuk)->startOfDay()->diffInDays(\Carbon\Carbon::now()->startOfDay()) : 0;
 @endphp
 

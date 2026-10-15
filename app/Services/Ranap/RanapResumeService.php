@@ -5,7 +5,9 @@ namespace App\Services\Ranap;
 use App\Models\DiagnosaPasien;
 use App\Models\Dokter;
 use App\Models\ProsedurPasien;
+use App\Models\RegPeriksa;
 use App\Models\ResumePasienRanap;
+use App\Support\Alergi;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -29,12 +31,7 @@ class RanapResumeService
             ->select('reg_periksa.*', 'pasien.nm_pasien')
             ->first();
 
-        $alergiPasien = DB::table('pemeriksaan_ranap')
-            ->where('no_rawat', $noRawat)
-            ->whereNotNull('alergi')
-            ->where('alergi', '!=', '')
-            ->where('alergi', '!=', '-')
-            ->value('alergi') ?? '';
+        $alergiPasien = Alergi::terakhirRanap($noRawat) ?? '';
 
         $kamar = DB::table('kamar_inap')
             ->where('no_rawat', $noRawat)
@@ -184,6 +181,36 @@ class RanapResumeService
             'obatRsList',
             'ringkasanPenunjang'
         );
+    }
+
+    /**
+     * Data lembar cetak resume: hanya identitas, kamar, DPJP, dan isi resume tersimpan.
+     */
+    public function getPdfData(string $noRawat): ?array
+    {
+        $resume = ResumePasienRanap::with('dokter')->find($noRawat);
+        if (!$resume) {
+            return null;
+        }
+
+        $reg = RegPeriksa::with([
+                'kamarInap' => fn ($q) => $q->orderBy('tgl_masuk')->orderBy('jam_masuk'),
+                'kamarInap.kamar.bangsal', 'pasien', 'penjab', 'dokter', 'dpjpRanap.dokter',
+            ])
+            ->where('no_rawat', $noRawat)
+            ->first();
+
+        $kamarList = $reg?->kamarInap ?? collect();
+
+        return [
+            'resume'       => $resume,
+            'reg'          => $reg,
+            'kamarMasuk'   => $kamarList->first(),
+            'kamarAkhir'   => $kamarList->last(),
+            'lamaRawat'    => (int) $kamarList->sum('lama'),
+            'dpjp'         => $reg?->dpjpRanap->first()?->dokter ?? $reg?->dokter,
+            'alergiPasien' => Alergi::terakhirRanap($noRawat),
+        ];
     }
 
     /**
