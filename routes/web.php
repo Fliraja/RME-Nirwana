@@ -29,11 +29,24 @@ Route::middleware(['multi.auth'])->group(function () {
     Route::post('/ranap/store-vital', [RanapController::class, 'storeVital'])->name('ranap.store-vital');
     Route::post('/ranap/vital/hapus', [RanapController::class, 'destroyVital'])->name('ranap.vital.hapus');
     Route::get('/ranap/get-diagnosa-prosedur/{no_rawat}', [RanapController::class, 'getDiagnosaPasien'])->name('ranap.get-diagnosa-prosedur');
+    Route::post('/ranap/store-diagnosa', [RanapController::class, 'storeDiagnosa'])->name('ranap.store-diagnosa');
+    Route::post('/ranap/store-prosedur', [RanapController::class, 'storeProsedur'])->name('ranap.store-prosedur');
+    Route::delete('/ranap/delete-diagnosa/{no_rawat}/{kd_penyakit}', [RanapController::class, 'destroyDiagnosa'])->name('ranap.delete-diagnosa');
+    Route::delete('/ranap/delete-prosedur/{no_rawat}/{kode}', [RanapController::class, 'destroyProsedur'])->name('ranap.delete-prosedur');
     Route::get('/ranap/get-resep-pasien/{no_rawat}', [RanapController::class, 'getResepPasien'])->name('ranap.get-resep');
+    Route::post('/ranap/store-resep-obat', [RanapController::class, 'storeResepObat'])->name('ranap.store-resep-obat');
+    Route::post('/ranap/store-resep-racikan', [RanapController::class, 'storeResepRacikan'])->name('ranap.store-resep-racikan');
+    Route::delete('/ranap/delete-resep-obat/{no_resep}/{kode_brng}', [RanapController::class, 'destroyResepObat'])->name('ranap.delete-resep-obat');
+    Route::delete('/ranap/delete-resep-racikan/{no_resep}/{no_racik}', [RanapController::class, 'destroyResepRacikan'])->name('ranap.delete-resep-racikan');
     Route::get('/ranap/get-lab-pasien/{no_rawat}', [RanapController::class, 'getLabPasien'])->name('ranap.get-lab');
+    Route::post('/ranap/store-permintaan-lab', [RanapController::class, 'storePermintaanLab'])->name('ranap.store-lab');
+    Route::delete('/ranap/delete-lab/{noorder}/{kd_jenis_prw?}/{id_template?}', [RanapController::class, 'destroyLab'])->name('ranap.delete-lab');
     Route::get('/ranap/get-radiologi-pasien/{no_rawat}', [RanapController::class, 'getRadiologiPasien'])->name('ranap.get-radiologi');
+    Route::post('/ranap/store-permintaan-radiologi', [RanapController::class, 'storePermintaanRadiologi'])->name('ranap.store-radiologi');
+    Route::delete('/ranap/delete-radiologi/{noorder}/{kd_jenis_prw?}', [RanapController::class, 'destroyRadiologi'])->name('ranap.delete-radiologi');
     Route::get('/ranap/get-resume-pasien/{no_rawat}', [RanapController::class, 'getResumePasien'])->name('ranap.get-resume');
     Route::post('/ranap/store-resume-pasien', [RanapController::class, 'storeResumePasien'])->name('ranap.store-resume');
+    Route::get('/ranap/resume/pdf/{no_rawat}', [RanapController::class, 'pdfResume'])->name('ranap.resume-pdf');
     Route::get('/ranap/table/{tabel}/{no_rawat}', [RanapController::class, 'getTable'])
         ->whereIn('tabel', ['soap', 'ttv', 'diagnosa', 'prosedur', 'resep', 'lab', 'radiologi'])
         ->name('ranap.table');

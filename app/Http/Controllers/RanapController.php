@@ -14,6 +14,16 @@ use App\Services\Ranap\RanapSoapService;
 use App\Services\Ranap\RanapVitalSignService;
 use App\Services\Ralan\DiagnosaProsedurService;
 use App\Services\Ranap\RanapResumeService;
+use App\Services\Ralan\LaboratoriumService;
+use App\Services\Ralan\RadiologiService;
+use App\Http\Requests\Ranap\StoreSoapRanapRequest;
+use App\Http\Requests\Ranap\StoreVitalRanapRequest;
+use App\Http\Requests\Ranap\StoreResumeRanapRequest;
+use App\Http\Requests\Ralan\StoreDiagnosaRequest;
+use App\Http\Requests\Ralan\StoreProsedurRequest;
+use App\Http\Requests\Ralan\StorePermintaanLabRequest;
+use App\Http\Requests\Ralan\StorePermintaanRadiologiRequest;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -26,7 +36,10 @@ class RanapController extends Controller
         private RanapVitalSignService $vitalService,
         private RanapPenunjangService $penunjangService,
         private DiagnosaProsedurService $diagnosaService,
-        private RanapResumeService $resumeService
+        private RanapResumeService $resumeService,
+        private LaboratoriumService $labService,
+        private RadiologiService $radiologiService,
+        private ResepController $resepController
     ) {}
 
     /**
@@ -156,16 +169,10 @@ class RanapController extends Controller
         return view('ranap.tabs.soap', compact('pasien', 'riwayatSoap', 'currentUserNip'));
     }
 
-    public function storeSoap(Request $request)
+    public function storeSoap(StoreSoapRanapRequest $request)
     {
-        $request->validate([
-            'no_rawat'  => 'required',
-            'keluhan'   => 'nullable|string',
-            'penilaian' => 'nullable|string',
-        ]);
-
         $nip = Auth::user()->decrypted_id ?? 'DOKTER';
-        $res = $this->soapService->simpan($request->all(), $nip, session('role') === 'admin');
+        $res = $this->soapService->simpan($request->validated(), $nip, session('role') === 'admin');
         $code = $res['code'] ?? 200;
         unset($res['code']);
 
@@ -194,14 +201,10 @@ class RanapController extends Controller
         return view('ranap.tabs.ttv', compact('pasien', 'riwayatTtv', 'currentUserNip'));
     }
 
-    public function storeVital(Request $request)
+    public function storeVital(StoreVitalRanapRequest $request)
     {
-        $request->validate([
-            'no_rawat' => 'required',
-        ]);
-
         $nip = Auth::user()->decrypted_id ?? 'DOKTER';
-        $res = $this->vitalService->simpan($request->all(), $nip, session('role') === 'admin');
+        $res = $this->vitalService->simpan($request->validated(), $nip, session('role') === 'admin');
         $code = $res['code'] ?? 200;
         unset($res['code']);
 
@@ -300,16 +303,113 @@ class RanapController extends Controller
         return view('ranap.tabs.resume', $data);
     }
 
-    public function storeResumePasien(Request $request)
+    public function storeResumePasien(StoreResumeRanapRequest $request)
     {
-        $request->validate([
-            'no_rawat' => 'required',
-        ]);
-
         $defaultKdDokter = Auth::user()->decrypted_id ?? null;
-        $res = $this->resumeService->simpan($request->all(), $defaultKdDokter);
+        $res = $this->resumeService->simpan($request->validated(), $defaultKdDokter);
 
         return response()->json($res);
+    }
+
+    /**
+     * Cetak Lembar Resmi Resume Medis Pasien Rawat Inap (PDF)
+     */
+    public function pdfResume(string $no_rawat)
+    {
+        $no_rawat = str_replace('-', '/', $no_rawat);
+        $data = $this->resumeService->getResumeData($no_rawat);
+
+        if (empty($data['resume'])) {
+            return back()->with('error', 'Resume medis untuk pasien ini belum dibuat / disimpan.');
+        }
+
+        $pdf = Pdf::loadView('ranap.pdf.resume_pdf', $data)
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->stream('Resume_Medis_' . str_replace('/', '_', $no_rawat) . '.pdf');
+    }
+
+    // =========================================================================
+    // DECOUPLED RANAP ACTION HANDLERS
+    // =========================================================================
+
+    public function storeDiagnosa(StoreDiagnosaRequest $request)
+    {
+        return response()->json($this->diagnosaService->simpanDiagnosa(
+            $request->no_rawat,
+            $request->kd_penyakit
+        ));
+    }
+
+    public function storeProsedur(StoreProsedurRequest $request)
+    {
+        return response()->json($this->diagnosaService->simpanProsedur(
+            $request->no_rawat,
+            $request->kode,
+            $request->jumlah ?? []
+        ));
+    }
+
+    public function destroyDiagnosa(string $no_rawat, string $kd_penyakit)
+    {
+        return response()->json($this->diagnosaService->hapusDiagnosa(str_replace('-', '/', $no_rawat), $kd_penyakit));
+    }
+
+    public function destroyProsedur(string $no_rawat, string $kode)
+    {
+        return response()->json($this->diagnosaService->hapusProsedur(str_replace('-', '/', $no_rawat), $kode));
+    }
+
+    public function storeResepObat(Request $request)
+    {
+        return $this->resepController->storeResepObat($request);
+    }
+
+    public function storeResepRacikan(Request $request)
+    {
+        return $this->resepController->storeResepRacikan($request);
+    }
+
+    public function destroyResepObat(string $no_resep, string $kode_brng)
+    {
+        return $this->resepController->deleteResepObat($no_resep, $kode_brng);
+    }
+
+    public function destroyResepRacikan(string $no_resep, string $no_racik)
+    {
+        return $this->resepController->deleteResepRacikan($no_resep, $no_racik);
+    }
+
+    public function storePermintaanLab(StorePermintaanLabRequest $request)
+    {
+        return response()->json($this->labService->simpanPermintaan($request->all()));
+    }
+
+    public function destroyLab(Request $request)
+    {
+        $res = $this->labService->hapus($request->noorder, $request->kd_jenis_prw, $request->id_template);
+        $code = $res['code'] ?? 200;
+        unset($res['code']);
+
+        return response()->json($res, $code);
+    }
+
+    public function storePermintaanRadiologi(StorePermintaanRadiologiRequest $request)
+    {
+        $res = $this->radiologiService->simpanPermintaan($request->all());
+        $code = $res['code'] ?? 200;
+        unset($res['code']);
+
+        return response()->json($res, $code);
+    }
+
+    public function destroyRadiologi(Request $request)
+    {
+        $res = $this->radiologiService->hapus($request->noorder, $request->kd_jenis_prw);
+        $code = $res['code'] ?? 200;
+        unset($res['code']);
+
+        return response()->json($res, $code);
     }
 
     /**

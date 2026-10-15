@@ -85,6 +85,82 @@ function clearRemoteSelect(selector) {
     if (el && el.tomselect) el.tomselect.clear();
 }
 
+/* ===== LocalStorage Draft Auto-Save Helper ===== */
+function initAutoSaveDraft(formSelector, storageKey, alertContainerSelector, onRestoreCallback) {
+    var $form = $(formSelector);
+    if (!$form.length || !currentSafeNoRawat) return;
+
+    var fullKey = storageKey + '_' + currentSafeNoRawat;
+
+    // Cek apakah ada draft tersimpan
+    var savedDraft = localStorage.getItem(fullKey);
+    if (savedDraft) {
+        try {
+            var draftObj = JSON.parse(savedDraft);
+            if (draftObj && draftObj.data && draftObj.time) {
+                var alertHtml = '<div class="alert alert-info py-2 px-3 mb-3 d-flex justify-content-between align-items-center draft-alert" id="alert-' + fullKey + '">' +
+                    '<div><i class="fas fa-history me-1 text-primary"></i> <strong>Draf Lokal Ditemukan</strong> <small class="text-muted">(' + draftObj.time + ')</small></div>' +
+                    '<div class="d-flex gap-2">' +
+                    '<button type="button" class="btn btn-sm btn-primary btn-restore-draft"><i class="fas fa-undo me-1"></i> Pulihkan Draf</button>' +
+                    '<button type="button" class="btn btn-sm btn-outline-secondary btn-dismiss-draft"><i class="fas fa-times"></i> Abaikan</button>' +
+                    '</div></div>';
+
+                var $container = $(alertContainerSelector);
+                if ($container.length && !$('#alert-' + fullKey).length) {
+                    $container.prepend(alertHtml);
+
+                    $('#alert-' + fullKey + ' .btn-restore-draft').on('click', function() {
+                        if (typeof onRestoreCallback === 'function') {
+                            onRestoreCallback(draftObj.data);
+                        } else {
+                            $.each(draftObj.data, function(name, val) {
+                                var $field = $form.find('[name="' + name + '"]');
+                                if ($field.length && !$field.is(':hidden')) {
+                                    $field.val(val);
+                                }
+                            });
+                        }
+                        tampilkanSukses('Draf berhasil dipulihkan.');
+                        $('#alert-' + fullKey).remove();
+                    });
+
+                    $('#alert-' + fullKey + ' .btn-dismiss-draft').on('click', function() {
+                        localStorage.removeItem(fullKey);
+                        $('#alert-' + fullKey).remove();
+                    });
+                }
+            }
+        } catch (e) {
+            localStorage.removeItem(fullKey);
+        }
+    }
+
+    // Auto-save tiap kali ada ketikan (debounce 1.5 detik)
+    var autoSaveTimer = null;
+    $form.off('input.autosave change.autosave').on('input.autosave change.autosave', 'input, textarea, select', function() {
+        clearTimeout(autoSaveTimer);
+        autoSaveTimer = setTimeout(function() {
+            var rawArray = $form.serializeArray();
+            var dataObj = {};
+            rawArray.forEach(function(item) {
+                if (item.name !== '_token') {
+                    dataObj[item.name] = item.value;
+                }
+            });
+
+            var nowStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            localStorage.setItem(fullKey, JSON.stringify({ data: dataObj, time: nowStr }));
+        }, 1500);
+    });
+}
+
+function clearAutoSaveDraft(storageKey) {
+    if (!currentSafeNoRawat) return;
+    var fullKey = storageKey + '_' + currentSafeNoRawat;
+    localStorage.removeItem(fullKey);
+    $('#alert-' + fullKey).remove();
+}
+
 /* ===== Reload fragmen tabel riwayat (form tab & Tom Select tidak dimuat ulang) ===== */
 var ranapTables = {
     soap:      '#ranap-soap-table',
@@ -184,6 +260,8 @@ function loadSoap(forceReload = false) {
 }
 
 function initSoapHandlers() {
+    initAutoSaveDraft('#formSoapRanap', 'rme_draft_soap', '#content-soap .ralan-card-body');
+
     $('#formSoapRanap').off('submit').on('submit', function(e) {
         e.preventDefault();
         var $btn = $('#btnSimpanSoap');
@@ -196,6 +274,7 @@ function initSoapHandlers() {
             success: function(res) {
                 $btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan SOAP');
                 tampilkanSukses(res.message || 'Catatan SOAP berhasil disimpan.');
+                clearAutoSaveDraft('rme_draft_soap');
                 resetFormSoap();
                 reloadRanapTable('soap');
             },
@@ -620,7 +699,7 @@ function initDiagnosaHandlers() {
         }
 
         $.ajax({
-            url: ranapUrl('/ralan/store-diagnosa'),
+            url: ranapUrl('/ranap/store-diagnosa'),
             type: 'POST',
             data: {
                 _token: window.RANAP.csrfToken,
@@ -654,7 +733,7 @@ function initDiagnosaHandlers() {
         }
 
         $.ajax({
-            url: ranapUrl('/ralan/store-prosedur'),
+            url: ranapUrl('/ranap/store-prosedur'),
             type: 'POST',
             data: {
                 _token: window.RANAP.csrfToken,
@@ -685,7 +764,7 @@ function initDiagnosaHandlers() {
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: ranapUrl('/ralan/delete-diagnosa/' + currentSafeNoRawat + '/' + kd),
+                    url: ranapUrl('/ranap/delete-diagnosa/' + currentSafeNoRawat + '/' + kd),
                     type: 'DELETE',
                     data: { _token: window.RANAP.csrfToken },
                     success: function(res) {
@@ -709,7 +788,7 @@ function initDiagnosaHandlers() {
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: ranapUrl('/ralan/delete-prosedur/' + currentSafeNoRawat + '/' + kd),
+                    url: ranapUrl('/ranap/delete-prosedur/' + currentSafeNoRawat + '/' + kd),
                     type: 'DELETE',
                     data: { _token: window.RANAP.csrfToken },
                     success: function(res) {
@@ -818,7 +897,7 @@ function initResepHandlers() {
         $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...');
 
         $.ajax({
-            url: ranapUrl('/ralan/store-resep-obat'),
+            url: ranapUrl('/ranap/store-resep-obat'),
             type: 'POST',
             data: {
                 _token: window.RANAP.csrfToken,
@@ -909,7 +988,7 @@ function initResepHandlers() {
         $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...');
 
         $.ajax({
-            url: ranapUrl('/ralan/store-resep-racikan'),
+            url: ranapUrl('/ranap/store-resep-racikan'),
             type: 'POST',
             data: {
                 _token: window.RANAP.csrfToken,
@@ -948,7 +1027,7 @@ function initResepHandlers() {
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: ranapUrl('/ralan/delete-resep-obat/' + noResep + '/' + kodeBrng),
+                    url: ranapUrl('/ranap/delete-resep-obat/' + noResep + '/' + kodeBrng),
                     type: 'DELETE',
                     data: { _token: window.RANAP.csrfToken },
                     success: function(res) {
@@ -973,7 +1052,7 @@ function initResepHandlers() {
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: ranapUrl('/ralan/delete-resep-racikan/' + noResep + '/' + noRacik),
+                    url: ranapUrl('/ranap/delete-resep-racikan/' + noResep + '/' + noRacik),
                     type: 'DELETE',
                     data: { _token: window.RANAP.csrfToken },
                     success: function(res) {
@@ -1049,7 +1128,7 @@ function initLabHandlers() {
         var formData = $('#formPermintaanLabRanap form, #formPermintaanLabRanap').find('input, textarea, select').serialize();
 
         $.ajax({
-            url: ranapUrl('/ralan/store-permintaan-lab'),
+            url: ranapUrl('/ranap/store-permintaan-lab'),
             type: 'POST',
             data: formData,
             success: function(res) {
@@ -1080,7 +1159,7 @@ function initLabHandlers() {
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: ranapUrl('/ralan/delete-lab/' + noorder),
+                    url: ranapUrl('/ranap/delete-lab/' + noorder),
                     type: 'DELETE',
                     data: { _token: window.RANAP.csrfToken },
                     success: function(res) {
@@ -1146,7 +1225,7 @@ function initRadiologiHandlers() {
         };
 
         $.ajax({
-            url: ranapUrl('/ralan/store-permintaan-radiologi'),
+            url: ranapUrl('/ranap/store-permintaan-radiologi'),
             type: 'POST',
             data: payload,
             success: function(res) {
@@ -1175,7 +1254,7 @@ function initRadiologiHandlers() {
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: ranapUrl('/ralan/delete-radiologi/' + noorder),
+                    url: ranapUrl('/ranap/delete-radiologi/' + noorder),
                     type: 'DELETE',
                     data: { _token: window.RANAP.csrfToken },
                     success: function(res) {
@@ -1214,6 +1293,8 @@ function loadResume(forceReload = false) {
 }
 
 function initResumeHandlers() {
+    initAutoSaveDraft('#formResumePasienRanap', 'rme_draft_resume', '#formResumePasienRanap');
+
     // Toggle container input faskes rujukan & styling aktif card
     $('input.radio-kondisi-pulang').off('change').on('change', function() {
         var val = $(this).val();
@@ -1376,6 +1457,8 @@ function initResumeHandlers() {
             success: function(res) {
                 $btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan Resume Pasien');
                 tampilkanSukses(res.message || 'Resume medis berhasil disimpan.');
+                clearAutoSaveDraft('rme_draft_resume');
+                $('#btnCetakResumePdf').removeClass('disabled');
                 // Form sudah berisi nilai tersimpan; cukup perbarui status, tanpa reload tab (~20 query).
                 $('#badgeStatusResume')
                     .removeClass('bg-warning text-dark').addClass('bg-success')
@@ -1390,7 +1473,7 @@ function initResumeHandlers() {
     });
 }
 
-/* ===== Tab Navigation Event Listeners ===== */
+/* ===== Tab Navigation & Sticky Header Event Listeners ===== */
 $(document).ready(function() {
     $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
         var target = $(e.target).attr('href');
@@ -1410,6 +1493,17 @@ $(document).ready(function() {
             loadResume();
         }
     });
+
+    // Sticky Compact Bar Scroll Listener (jika elemen aktif di halaman)
+    if ($('#ranapStickyBar').length) {
+        $(window).on('scroll', function() {
+            if ($(this).scrollTop() > 180) {
+                $('#ranapStickyBar').removeClass('d-none');
+            } else {
+                $('#ranapStickyBar').addClass('d-none');
+            }
+        });
+    }
 
     // Hash check on load
     if (window.location.hash) {

@@ -108,6 +108,13 @@
                 @endif
             </div>
             <div class="d-flex align-items-center gap-2">
+                <a href="{{ route('ranap.resume-pdf', ['no_rawat' => str_replace('/', '-', $reg->no_rawat ?? '')]) }}" 
+                   target="_blank" 
+                   id="btnCetakResumePdf"
+                   class="btn btn-sm btn-outline-danger {{ $isSaved ? '' : 'disabled' }}" 
+                   title="Cetak Lembar Resmi Resume Medis Pasien (PDF)">
+                    <i class="fas fa-file-pdf me-1"></i> Cetak PDF
+                </a>
                 <button type="button" class="btn btn-sm btn-outline-secondary" id="btnTarikDataAutoResume"
                         data-auto="{{ $latestDataJson }}" title="Tarik otomatis data terbaru dari diagnosa, obat, dan SOAP">
                     <i class="fas fa-sync-alt me-1"></i> Tarik Data Rekam Medis

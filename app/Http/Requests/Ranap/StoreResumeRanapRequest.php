@@ -1,0 +1,40 @@
+<?php
+
+namespace App\Http\Requests\Ranap;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class StoreResumeRanapRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'no_rawat'              => 'required|string',
+            'jalannya_penyakit'     => 'nullable|string',
+            'pemeriksaan_fisik'     => 'nullable|string',
+            'pemeriksaan_penunjang' => 'nullable|string',
+            'diagnosa_utama'        => 'nullable|string|max:200',
+            'kd_diagnosa_utama'     => 'nullable|string|max:15',
+            'diagnosa_sekunder'     => 'nullable|string|max:200',
+            'kd_diagnosa_sekunder'  => 'nullable|string|max:15',
+            'diagnosa_sekunder2'    => 'nullable|string|max:200',
+            'kd_diagnosa_sekunder2' => 'nullable|string|max:15',
+            'diagnosa_sekunder3'    => 'nullable|string|max:200',
+            'kd_diagnosa_sekunder3' => 'nullable|string|max:15',
+            'diagnosa_sekunder4'    => 'nullable|string|max:200',
+            'kd_diagnosa_sekunder4' => 'nullable|string|max:15',
+            'tindakan_dan_operasi'  => 'nullable|string',
+            'kondisi_pulang'        => 'nullable|string|max:50',
+            'nama_rujukan'          => 'nullable|string|max:150',
+            'obat_pulang'           => 'nullable|string',
+            'edukasi'               => 'nullable|string',
+            'kontrol'               => 'nullable|string',
+            'kd_dokter'             => 'nullable|string|max:20',
+        ];
+    }
+}
