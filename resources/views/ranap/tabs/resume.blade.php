@@ -23,33 +23,48 @@
     $defaultRiwayatPenyakit = $isSaved ? $resume->jalannya_penyakit : ($latestKeluhan ?? ($soapTerakhir->keluhan ?? ''));
     $defaultPemeriksaanFisik = $isSaved ? $resume->pemeriksaan_fisik : ($latestPemeriksaan ?? ($soapTerakhir->pemeriksaan ?? ''));
 
-    // Diagnosa Primer
-    $defaultKdDiagnosaPrimer = $isSaved ? ($resume->kd_diagnosa_utama ?? '') : ($diagnosaList->first()->kd_penyakit ?? '');
-    $defaultDiagnosaPrimer = $isSaved ? ($resume->diagnosa_utama ?? '') : ($diagnosaList->first()->penyakit->nm_penyakit ?? $kamar->diagnosa_awal ?? '');
-
-    // Diagnosa Sekunder (List 1-4)
-    $sekunderItems = [];
+    // Diagnosa Pasien (Utama + Sekunder 1-4, format baris seperti Ralan)
     if ($isSaved) {
-        if (!empty($resume->kd_diagnosa_sekunder) || !empty($resume->diagnosa_sekunder)) {
-            $sekunderItems[] = ['kd' => $resume->kd_diagnosa_sekunder ?? '', 'nm' => $resume->diagnosa_sekunder ?? ''];
-        }
-        if (!empty($resume->kd_diagnosa_sekunder2) || !empty($resume->diagnosa_sekunder2)) {
-            $sekunderItems[] = ['kd' => $resume->kd_diagnosa_sekunder2 ?? '', 'nm' => $resume->diagnosa_sekunder2 ?? ''];
-        }
-        if (!empty($resume->kd_diagnosa_sekunder3) || !empty($resume->diagnosa_sekunder3)) {
-            $sekunderItems[] = ['kd' => $resume->kd_diagnosa_sekunder3 ?? '', 'nm' => $resume->diagnosa_sekunder3 ?? ''];
-        }
-        if (!empty($resume->kd_diagnosa_sekunder4) || !empty($resume->diagnosa_sekunder4)) {
-            $sekunderItems[] = ['kd' => $resume->kd_diagnosa_sekunder4 ?? '', 'nm' => $resume->diagnosa_sekunder4 ?? ''];
-        }
+        $savedDiag = array_values(array_filter([
+            $resume->diagnosa_utama ?? '',
+            $resume->diagnosa_sekunder ?? '',
+            $resume->diagnosa_sekunder2 ?? '',
+            $resume->diagnosa_sekunder3 ?? '',
+            $resume->diagnosa_sekunder4 ?? '',
+        ], 'strlen'));
+        $formDiagnosa = !empty($savedDiag) ? $savedDiag : [''];
     } else {
-        foreach ($diagnosaList->skip(1)->take(4) as $dSekunder) {
-            $sekunderItems[] = [
-                'kd' => $dSekunder->kd_penyakit ?? '',
-                'nm' => $dSekunder->penyakit->nm_penyakit ?? ''
-            ];
+        $pecahanSoap = !empty($latestPenilaian) ? \App\Support\DiagnosaSplitter::pecah($latestPenilaian) : null;
+        if ($pecahanSoap && (!empty($pecahanSoap['utama']) || !empty($pecahanSoap['sekunder']))) {
+            $formDiagnosa = array_values(array_filter(array_merge([$pecahanSoap['utama']], $pecahanSoap['sekunder']), 'strlen'));
+        } elseif ($diagnosaList->isNotEmpty()) {
+            $formDiagnosa = $diagnosaList->take(5)->map(fn($d) => $d->penyakit->nm_penyakit ?? $d->kd_penyakit)->filter()->values()->all();
+        } elseif (!empty($kamar->diagnosa_awal)) {
+            $formDiagnosa = [$kamar->diagnosa_awal];
+        } else {
+            $formDiagnosa = [''];
         }
     }
+
+    // Prosedur / Tindakan (Utama + Sekunder 1-3, format baris seperti Ralan)
+    if ($isSaved) {
+        $savedPros = array_values(array_filter([
+            $resume->prosedur_utama ?? '',
+            $resume->prosedur_sekunder ?? '',
+            $resume->prosedur_sekunder2 ?? '',
+            $resume->prosedur_sekunder3 ?? '',
+        ], 'strlen'));
+        $formProsedur = !empty($savedPros) ? $savedPros : [];
+    } else {
+        if ($prosedurList->isNotEmpty()) {
+            $formProsedur = $prosedurList->take(4)->map(fn($p) => $p->icd9->deskripsi_panjang ?? ($p->icd9->deskripsi_pendek ?? $p->kode))->filter()->values()->all();
+        } else {
+            $formProsedur = [];
+        }
+    }
+
+    // Usulan prosedur dari daftar tindakan ranap yang tercatat
+    $usulanProsedur = $prosedurList->map(fn($p) => $p->icd9->deskripsi_panjang ?? ($p->icd9->deskripsi_pendek ?? $p->kode))->filter()->unique()->values()->all();
 
     $defaultTindakan = $isSaved 
         ? $resume->tindakan_dan_operasi 
@@ -62,14 +77,15 @@
     $selectedDokter = $isSaved ? $resume->kd_dokter : ($dpjp->kd_dokter ?? $currentUserNip ?? '');
     $namaDokterDpjp = $isSaved ? ($resume->dokter->nm_dokter ?? ($dpjp->nm_dokter ?? $selectedDokter)) : ($dpjp->nm_dokter ?? (Auth::user()->dokter_data->nm_dokter ?? $selectedDokter));
 
-    // Siapkan list sekunder dari rekam medis untuk auto-pull
-    $autoSekunderItems = [];
-    foreach ($diagnosaList->skip(1)->take(4) as $dSekunder) {
-        $autoSekunderItems[] = [
-            'kd' => $dSekunder->kd_penyakit ?? '',
-            'nm' => $dSekunder->penyakit->nm_penyakit ?? ''
-        ];
-    }
+    // Data diagnosa & prosedur untuk auto-pull
+    $autoDiagPecah = !empty($latestPenilaian) ? \App\Support\DiagnosaSplitter::pecah($latestPenilaian) : null;
+    $autoDiagList = ($autoDiagPecah && (!empty($autoDiagPecah['utama']) || !empty($autoDiagPecah['sekunder'])))
+        ? array_values(array_filter(array_merge([$autoDiagPecah['utama']], $autoDiagPecah['sekunder']), 'strlen'))
+        : ($diagnosaList->isNotEmpty() ? $diagnosaList->take(5)->map(fn($d) => $d->penyakit->nm_penyakit ?? $d->kd_penyakit)->filter()->values()->all() : array_values(array_filter([$kamar->diagnosa_awal ?? ''])));
+
+    $autoProsedurList = $prosedurList->isNotEmpty()
+        ? $prosedurList->take(4)->map(fn($p) => $p->icd9->deskripsi_panjang ?? ($p->icd9->deskripsi_pendek ?? $p->kode))->filter()->values()->all()
+        : [];
 
     // Terapi / Tindakan terbaru dari Plan (RTL) SOAP, atau daftar tindakan/obat
     $latestPlanTerapi = $latestRtl ?? ($soapTerakhir->rtl ?? '');
@@ -86,9 +102,8 @@
         'riwayat_penyakit' => $latestKeluhan ?? ($soapTerakhir->keluhan ?? ''),
         'pemeriksaan_fisik' => $latestPemeriksaan ?? ($soapTerakhir->pemeriksaan ?? ''),
         'pemeriksaan_penunjang' => $ringkasanPenunjang ?? '',
-        'diagnosa_utama' => $diagnosaList->first()->penyakit->nm_penyakit ?? $kamar->diagnosa_awal ?? '',
-        'kd_diagnosa_utama' => $diagnosaList->first()->kd_penyakit ?? '',
-        'diagnosa_sekunder_items' => $autoSekunderItems,
+        'diagnosa_list' => $autoDiagList,
+        'prosedur_list' => $autoProsedurList,
         'tindakan' => $latestPlanTerapi,
         'edukasi' => $latestInstruksi ?? ($soapTerakhir->instruksi ?? ''),
     ]);
@@ -183,58 +198,63 @@
                     </div>
                 </div>
 
-                {{-- 4. Diagnosa Primer & 5. Diagnosa Sekunder --}}
+                {{-- 4. Diagnosis (Sistem Ralan: Input Teks Bebas + Urutan Utama/Sekunder) --}}
                 <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                        <div class="p-3 border rounded h-100 bg-white shadow-sm">
-                            <label class="form-label fw-bold text-dark d-flex align-items-center mb-1">
-                                <span class="badge bg-primary me-2">4</span> Diagnosa Primer / Utama
-                            </label>
-                            <small class="text-muted d-block mb-2">Cari berdasarkan kode atau nama ICD-10:</small>
-                            <select id="select-resume-icd10-primer" class="form-select form-select-sm" placeholder="Ketik kode / nama ICD-10 diagnosa utama...">
-                                @if(!empty($defaultKdDiagnosaPrimer))
-                                    <option value="{{ $defaultKdDiagnosaPrimer }}" selected>
-                                        {{ $defaultKdDiagnosaPrimer }} - {{ $defaultDiagnosaPrimer }}
-                                    </option>
-                                @endif
-                            </select>
-                            {{-- Hidden inputs untuk dikirim ke controller/DB --}}
-                            <input type="hidden" name="kd_diagnosa_utama" id="resume_kd_diagnosa_utama" value="{{ $defaultKdDiagnosaPrimer }}">
-                            <input type="hidden" name="diagnosa_utama" id="resume_diagnosa_utama" value="{{ $defaultDiagnosaPrimer }}">
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="p-3 border rounded h-100 bg-white shadow-sm">
+                    <div class="col-12">
+                        <div class="p-3 border rounded bg-white shadow-sm">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <label class="form-label fw-bold text-dark d-flex align-items-center mb-0">
-                                    <span class="badge bg-primary me-2">5</span> Diagnosa Sekunder (Maks. 4)
+                                    <span class="badge bg-primary me-2">4</span> Diagnosis Pasien
                                 </label>
-                                <span class="badge bg-light text-secondary border small">Tag Badges</span>
+                                <span class="badge bg-light text-muted border small">Maksimal 5 baris (1 Utama + 4 Sekunder)</span>
                             </div>
-                            <small class="text-muted d-block mb-2">Pilih diagnosa penyerta / komplikasi (maksimal 4):</small>
-                            <select id="select-resume-icd10-sekunder" class="form-select form-select-sm" multiple="multiple" placeholder="Ketik kode / nama ICD-10 sekunder...">
-                                @foreach($sekunderItems as $sItem)
-                                    @if(!empty($sItem['kd']))
-                                        <option value="{{ $sItem['kd'] }}" selected>
-                                            {{ $sItem['kd'] }} - {{ $sItem['nm'] }}
-                                        </option>
-                                    @endif
+                            <small class="text-muted d-block mb-2">Tuliskan diagnosis klinis dokter. Pengkodean ICD-10 dilakukan oleh tim rekam medis / casemix.</small>
+
+                            <div class="resume-daftar" id="resume-ranap-diagnosa" data-nama="diagnosa" data-maks="5">
+                                @foreach($formDiagnosa as $teks)
+                                    @include('ranap.tabs.partials.resume_baris', ['nama' => 'diagnosa', 'nilai' => $teks])
                                 @endforeach
-                            </select>
+                            </div>
+                            <button type="button" class="btn btn-link btn-sm resume-tambah px-0 mt-1" style="color: #0d7a4a; font-weight: 600; text-decoration: none;">
+                                <i class="fas fa-plus-circle me-1"></i> Tambah diagnosis
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-                            {{-- 4 pasang hidden input untuk DB resume_pasien_ranap --}}
-                            <input type="hidden" name="kd_diagnosa_sekunder" id="resume_kd_diagnosa_sekunder" value="{{ $sekunderItems[0]['kd'] ?? '' }}">
-                            <input type="hidden" name="diagnosa_sekunder" id="resume_diagnosa_sekunder" value="{{ $sekunderItems[0]['nm'] ?? '' }}">
+                {{-- 5. Prosedur / Tindakan (Sistem Ralan: Input Teks Bebas + Urutan Utama/Sekunder) --}}
+                <div class="row g-3 mb-3">
+                    <div class="col-12">
+                        <div class="p-3 border rounded bg-white shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label fw-bold text-dark d-flex align-items-center mb-0">
+                                    <span class="badge bg-primary me-2">5</span> Prosedur / Tindakan Medis
+                                </label>
+                                <span class="badge bg-light text-muted border small">Maksimal 4 baris (1 Utama + 3 Sekunder)</span>
+                            </div>
+                            <small class="text-muted d-block mb-2">Tuliskan prosedur, operasi, atau tindakan medis selama perawatan. Pengkodean ICD-9-CM dilakukan oleh tim rekam medis / casemix.</small>
 
-                            <input type="hidden" name="kd_diagnosa_sekunder2" id="resume_kd_diagnosa_sekunder2" value="{{ $sekunderItems[1]['kd'] ?? '' }}">
-                            <input type="hidden" name="diagnosa_sekunder2" id="resume_diagnosa_sekunder2" value="{{ $sekunderItems[1]['nm'] ?? '' }}">
+                            <div class="resume-daftar" id="resume-ranap-prosedur" data-nama="prosedur" data-maks="4">
+                                @forelse($formProsedur as $teks)
+                                    @include('ranap.tabs.partials.resume_baris', ['nama' => 'prosedur', 'nilai' => $teks])
+                                @empty
+                                    @include('ranap.tabs.partials.resume_baris', ['nama' => 'prosedur', 'nilai' => ''])
+                                @endforelse
+                            </div>
+                            <button type="button" class="btn btn-link btn-sm resume-tambah px-0 mt-1" style="color: #0d7a4a; font-weight: 600; text-decoration: none;">
+                                <i class="fas fa-plus-circle me-1"></i> Tambah prosedur
+                            </button>
 
-                            <input type="hidden" name="kd_diagnosa_sekunder3" id="resume_kd_diagnosa_sekunder3" value="{{ $sekunderItems[2]['kd'] ?? '' }}">
-                            <input type="hidden" name="diagnosa_sekunder3" id="resume_diagnosa_sekunder3" value="{{ $sekunderItems[2]['nm'] ?? '' }}">
-
-                            <input type="hidden" name="kd_diagnosa_sekunder4" id="resume_kd_diagnosa_sekunder4" value="{{ $sekunderItems[3]['kd'] ?? '' }}">
-                            <input type="hidden" name="diagnosa_sekunder4" id="resume_diagnosa_sekunder4" value="{{ $sekunderItems[3]['nm'] ?? '' }}">
+                            @if(!empty($usulanProsedur))
+                                <div class="mt-2 pt-2 border-top">
+                                    <span class="small text-muted d-block mb-1">Usulan dari tindakan yang tercatat di ranap:</span>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        @foreach($usulanProsedur as $usulan)
+                                            <button type="button" class="resume-chip btn btn-sm" data-teks="{{ $usulan }}">+ {{ $usulan }}</button>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
