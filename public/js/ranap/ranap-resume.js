@@ -231,6 +231,11 @@ function initResumeHandlers() {
         $form.trigger('input');
     });
 
+    // Enter di kotak isian satu baris tidak menyimpan; simpan hanya lewat tombol.
+    $form.off('keydown.resume').on('keydown.resume', 'input', function(e) {
+        if (e.key === 'Enter') e.preventDefault();
+    });
+
     // Simpan draf / tandai selesai
     $form.off('click', 'button[type="submit"]').on('click', 'button[type="submit"]', function() {
         $form.data('selesai', $(this).data('selesai'));
