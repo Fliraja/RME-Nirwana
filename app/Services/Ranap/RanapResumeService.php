@@ -325,12 +325,16 @@ class RanapResumeService
                 $keadaan = 'Meninggal';
                 $ketKeadaan = '< 48 jam';
                 $ketKeluar = 'Meninggal dunia < 48 jam';
+                $dilanjutkan = 'Lainnya';
+                $ketDilanjutkan = 'Meninggal dunia';
                 break;
             case 'meninggal_lebih_48':
                 $caraKeluar = 'Lainnya';
                 $keadaan = 'Meninggal';
                 $ketKeadaan = '> 48 jam';
                 $ketKeluar = 'Meninggal dunia > 48 jam';
+                $dilanjutkan = 'Lainnya';
+                $ketDilanjutkan = 'Meninggal dunia';
                 break;
             case 'dirujuk':
                 $namaRujukan = trim($data['nama_faskes_rujukan'] ?? '');
@@ -351,7 +355,7 @@ class RanapResumeService
 
         // Format tanggal kontrol jika ada
         $kontrol = null;
-        if (!empty($data['kontrol'])) {
+        if (!empty($data['kontrol']) && $keadaan !== 'Meninggal') {
             try {
                 $kontrol = Carbon::parse($data['kontrol'])->format('Y-m-d H:i:s');
             } catch (\Exception $e) {
