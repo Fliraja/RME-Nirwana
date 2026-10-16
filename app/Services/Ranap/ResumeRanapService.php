@@ -75,7 +75,10 @@ class ResumeRanapService
         }
 
         return DB::transaction(function () use ($noRawat, $data, $kdDokter, $selesai) {
-            $meta = RmeResumeRanap::with('pengubah')->lockForUpdate()->find($noRawat);
+            // Simpan pertama belum punya baris status untuk dikunci; kunci baris registrasi agar simpan
+            // bersamaan untuk pasien yang sama antre dan simpan kedua terkena cek konflik di bawah.
+            DB::table('reg_periksa')->where('no_rawat', $noRawat)->lockForUpdate()->value('no_rawat');
+            $meta = RmeResumeRanap::with('pengubah')->find($noRawat);
             if ($meta && array_key_exists('diubah_pada', $data)
                 && (string) $data['diubah_pada'] !== $meta->diubah_pada->format('Y-m-d H:i:s')) {
                 throw new KonflikResumeException($meta);
