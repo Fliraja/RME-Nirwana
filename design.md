@@ -8,6 +8,7 @@ Sumber: gaya yang sudah berjalan di aplikasi (`public/css/admin.css`, `resources
 - **Watak:** alat kerja klinis. Tenang, padat, mudah dipindai saat antrean pasien panjang. Data pasien adalah fokus; dekorasi tidak punya tempat.
 - **Dial:** ENERGY 1 / RHYTHM 1 / MOTION 1. Alasan: dokter mengerjakan puluhan pasien per sesi, jadi tata letak yang sama di setiap tab membuat tangan hafal posisi tombol. Keseragaman ini disengaja.
 - **Motif identitas:** kartu datar `ralan-card` (border tipis, tanpa bayangan) dengan kepala kartu berisi judul di kiri dan aksi di kanan; hijau RS hanya untuk aksi utama dan status "selesai".
+- **Form panjang (resume ranap):** dial tetap 1/1/1. Agar tidak terasa polos, form panjang memakai ikon isian berlatar hijau muda dan penanda progres. Alasan: dokter perlu tahu "sudah sampai mana" di form 10 isian, dan user meminta tampilan "tidak polos, tapi tidak bikin sakit mata".
 
 ## 2. Warna
 
@@ -25,6 +26,9 @@ Token di `:root` `admin.css`. Palet inti: hijau RS + slate. Kuning/merah/biru ha
 | status hijau | teks `#166534` di `#dcfce7` (6,49:1) | "diverifikasi", selesai |
 | status merah | teks `#be123c` di putih (6,29:1) | error, alergi, aksi hapus |
 | status biru | `--info` `#0ea5e9` latar lembut | info netral (banner "ada data baru") |
+| hijau muda ikon | teks `#0d7a4a` di `#dcfce7` (4,90:1) | kotak ikon isian resume ranap |
+| hijau sangat muda | `#f0fdf4`; teks `#334155` (9,89:1), `#166534` (6,81:1), `#64748b` (4,55:1) | latar kotak referensi |
+| isi bar progres | `#0d7a4a` di jalur `#e2e8f0` (4,37:1, batas komponen UI 3:1) | bar progres. `#15a362` di jalur ini hanya 2,64:1, jangan dipakai. |
 
 **Temuan yang harus diperbaiki saat menyentuh bagian terkait:**
 - Teks putih di atas `#15a362` hanya 3,26:1 (gagal AA untuk teks normal). Tombol aksi utama memakai `--primary-dark`.
@@ -53,6 +57,10 @@ Token di `:root` `admin.css`. Palet inti: hijau RS + slate. Kuning/merah/biru ha
 - **Pilihan tunggal (tindak lanjut):** kotak radio berbingkai; aktif = border hijau + latar `--primary-soft`. Terkunci = hanya pilihan aktif yang bisa dipilih, sisanya redup + teks sumber di bawahnya.
 - **Banner info:** latar biru lembut, satu kalimat + satu tombol aksi.
 - **Ringkasan salinan:** baris label (kiri, 150px) + isi 1–2 baris + tautan "ubah" yang membuka textarea di tempat.
+- **Kartu isian (`.resume-isian`, resume ranap):** satu kartu per isian, border tipis tanpa bayangan. Kepala: nomor + ikon Font Awesome yang relevan dalam kotak `.resume-isian-ikon` (28px, radius 7px, latar `#dcfce7`, ikon `#0d7a4a`), judul 600, lalu tanda di kanan `.resume-isian-tanda`: `.terisi` (ikon centang + "terisi", `#166534`) atau `.kosong` ("belum diisi", `#92400e`). Tanda selalu berisi teks, tidak hanya warna. Badan: isian, lalu kotak referensi.
+- **Kotak referensi (`.resume-ref`):** latar `#f0fdf4`, radius `--radius-sm`, tanpa border. Tiap item (`.resume-ref-item`) diawali badge sumber `.resume-ref-sumber` (latar putih, border `#d1fae5`, teks `#166534`, contoh "Asesmen IGD · keluhan", "Visite dr. A · 15/10 · O"). Catatan bukan dokter memakai `.resume-ref-sumber.non-dokter` (latar `#f1f5f9`, teks `#475569`, berisi "Bidan" atau "Perawat") dan selalu di bawah catatan dokter. Aksi: tombol kecil outline "Pakai", chip usulan untuk diagnosis/prosedur, "Pakai semua" untuk daftar obat.
+- **Bar progres (`.resume-progres`):** tinggi 6px, jalur `#e2e8f0`, isi `#0d7a4a`, didampingi teks "x dari 10 isian terisi" (`--gray-500`). Teks wajib ada; bar hanya penguat.
+- **Bilah simpan menempel (`.resume-bilah-simpan`):** `position: sticky; bottom: 0`, latar putih, border atas, berisi waktu simpan terakhir di kiri dan aksi di kanan (satu aksi utama, satu outline). Untuk form panjang agar tombol simpan selalu terjangkau.
 - **Notifikasi:** toast yang sudah ada (`tampilkanSukses`/`tampilkanError`) dan SweetAlert untuk konfirmasi hapus.
 
 ## 6. State
@@ -61,6 +69,7 @@ Setiap bagian yang memuat data punya:
 - **Memuat:** spinner + teks "Memuat …" di dalam area kartu (pola yang sudah ada di tab ralan/ranap).
 - **Kosong:** kalimat yang menyebut langkah berikutnya ("Isi Penilaian (A) di SOAP untuk menyusun resume.") + tautan ke tempatnya.
 - **Error:** kalimat penyebab + tombol "Coba lagi". Error validasi tampil di dekat kolomnya, isian tidak hilang.
+- **Referensi resume ranap:** memuat = spinner kecil di tiap kotak referensi; kosong = "Belum ada catatan untuk bagian ini."; gagal = "Referensi gagal dimuat." + "Coba lagi". Form tetap bisa diisi selama referensi memuat atau gagal.
 
 ## 7. Aksesibilitas
 
@@ -74,6 +83,7 @@ Setiap bagian yang memuat data punya:
 - Tab ralan sudah bergulir horizontal di layar sempit; isi tab tidak boleh membuat halaman bergulir horizontal.
 - Di bawah 768px: kartu bertumpuk satu kolom, label ringkasan pindah ke atas isinya, tombol kepala kartu turun ke baris sendiri.
 - Target sentuh minimal 44px untuk tombol dan pilihan radio.
+- Resume ranap: tablet tegak (768px) adalah acuan utama. Kartu isian satu kolom di semua lebar; di bawah 576px badge sumber referensi pindah ke baris sendiri di atas teksnya, dan bilah simpan menumpuk tombol selebar penuh.
 
 ## 9. Gerak
 
