@@ -152,4 +152,5 @@
     var currentNoRkmMedis = window.RANAP.noRkmMedis;
 </script>
 <script src="{{ asset('js/ranap/ranap-core.js') }}"></script>
+<script src="{{ asset('js/ranap/ranap-resume.js') }}"></script>
 @endpush

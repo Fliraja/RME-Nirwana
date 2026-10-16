@@ -13,6 +13,7 @@ use App\Services\Ranap\RanapPenunjangService;
 use App\Services\Ranap\RanapSoapService;
 use App\Services\Ranap\RanapVitalSignService;
 use App\Services\Ranap\RanapResumeService;
+use App\Services\Ranap\ResumeRanapReferensi;
 use App\Services\Ranap\ResumeRanapService;
 use App\Services\Ralan\LaboratoriumService;
 use App\Services\Ralan\RadiologiService;
@@ -281,14 +282,19 @@ class RanapController extends Controller
     /**
      * Tab Resume Pasien (Ringkasan Pulang Medis)
      */
-    public function getResumePasien($no_rawat)
+    public function getResumePasien(string $no_rawat, ResumeRanapService $resumeRanap)
     {
         $no_rawat = str_replace('-', '/', $no_rawat);
-        $data = $this->resumeService->getResumeData($no_rawat);
-        $data['currentUserNip'] = Auth::user()->decrypted_id ?? '';
-        $data['isAdmin'] = session('role') === 'admin';
+        abort_unless(DB::table('reg_periksa')->where('no_rawat', $no_rawat)->exists(), 404);
 
-        return view('ranap.tabs.resume', $data);
+        return view('ranap.tabs.resume', $resumeRanap->dataTab($no_rawat, Auth::user()->decrypted_id ?? null));
+    }
+
+    public function referensiResume(string $no_rawat, ResumeRanapReferensi $referensi)
+    {
+        $no_rawat = str_replace('-', '/', $no_rawat);
+
+        return view('ranap.tabs.partials.resume_referensi', ['ref' => $referensi->untuk($no_rawat)]);
     }
 
     public function storeResumePasien(StoreResumeRanapRequest $request, ResumeRanapService $resumeRanap)

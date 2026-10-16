@@ -42,6 +42,7 @@ Route::middleware(['multi.auth'])->group(function () {
     Route::delete('/ranap/delete-radiologi/{noorder}/{kd_jenis_prw?}', [RanapController::class, 'destroyRadiologi'])->name('ranap.delete-radiologi');
     Route::get('/ranap/get-resume-pasien/{no_rawat}', [RanapController::class, 'getResumePasien'])->name('ranap.get-resume');
     Route::post('/ranap/store-resume-pasien', [RanapController::class, 'storeResumePasien'])->name('ranap.store-resume');
+    Route::get('/ranap/resume/referensi/{no_rawat}', [RanapController::class, 'referensiResume'])->name('ranap.resume.referensi');
     Route::get('/ranap/resume/pdf/{no_rawat}', [RanapController::class, 'pdfResume'])->name('ranap.resume-pdf');
     Route::get('/ranap/table/{tabel}/{no_rawat}', [RanapController::class, 'getTable'])
         ->whereIn('tabel', ['soap', 'ttv', 'resep', 'lab', 'radiologi'])

@@ -103,7 +103,7 @@ try {
 function pulihkanDraf($form, data) {
     $.each(data, function(name, val) {
         var $field = $form.find('[name="' + name + '"]');
-        if (!$field.length) return;
+        if (!$field.length || Array.isArray(val)) return;
         if ($field.is(':radio, :checkbox')) {
             $field.filter(function() { return this.value === val; }).prop('checked', true).trigger('change');
         } else if (!$field.is(':hidden')) {
@@ -161,7 +161,11 @@ function initAutoSaveDraft(formSelector, storageKey, alertContainerSelector, onR
         autoSaveTimer = setTimeout(function() {
             var dataObj = {};
             $form.serializeArray().forEach(function(item) {
-                if (item.name !== '_token') {
+                if (item.name === '_token') return;
+                // Isian berganda (nama[]) disimpan sebagai array agar semua barisnya pulih.
+                if (item.name.slice(-2) === '[]') {
+                    (dataObj[item.name] = dataObj[item.name] || []).push(item.value);
+                } else {
                     dataObj[item.name] = item.value;
                 }
             });
@@ -1113,213 +1117,6 @@ function loadResume(forceReload = false) {
         if (!loadedTabs.resume) $('#content-resume').html('<div class="alert alert-danger">Gagal memuat resume medis (HTTP ' + xhr.status + ').</div>');
     }).always(function() {
         jalankanReloadTertunda('resume', loadResume);
-    });
-}
-
-function initResumeHandlers() {
-    initAutoSaveDraft('#formResumePasienRanap', 'rme_draft_resume', '#formResumePasienRanap');
-
-    // Toggle container input faskes rujukan & styling aktif card
-    $('input.radio-kondisi-pulang').off('change').on('change', function() {
-        var val = $(this).val();
-
-        // Update visual card active state
-        $('.kondisi-pulang-card').removeClass('border-success bg-success-subtle text-success-emphasis border-warning bg-warning-subtle text-warning-emphasis border-primary bg-primary-subtle text-primary-emphasis border-danger bg-danger-subtle text-danger-emphasis fw-bold shadow-sm')
-            .addClass('bg-light text-secondary');
-
-        var $card = $(this).closest('.kondisi-pulang-card');
-        $card.removeClass('bg-light text-secondary').addClass('fw-bold shadow-sm');
-
-        if (val === 'sembuh' || val === 'membaik') {
-            $card.addClass('border-success bg-success-subtle text-success-emphasis');
-        } else if (val === 'aps') {
-            $card.addClass('border-warning bg-warning-subtle text-warning-emphasis');
-        } else if (val === 'dirujuk') {
-            $card.addClass('border-primary bg-primary-subtle text-primary-emphasis');
-        } else {
-            $card.addClass('border-danger bg-danger-subtle text-danger-emphasis');
-        }
-
-        if (val === 'dirujuk') {
-            $('#containerNamaRujukan').removeClass('d-none');
-            $('#resume_nama_faskes_rujukan').focus();
-        } else {
-            $('#containerNamaRujukan').addClass('d-none');
-        }
-    });
-
-    // Baris Dinamis Diagnosa & Prosedur Resume Ranap (Sistem Ralan)
-    function barisResumeRanapHtml(nama, nilai) {
-        var placeholder = nama === 'diagnosa' ? 'Contoh: Dispepsia, GEA, Hipertensi...' : 'Contoh: Pasang Infus, EKG, Debridement...';
-        var $baris = $(
-            '<div class="resume-baris">' +
-            '<span class="resume-baris-label"></span>' +
-            '<input type="text" class="form-control form-control-sm" maxlength="80" placeholder="' + placeholder + '">' +
-            '<div class="btn-group btn-group-sm" role="group">' +
-            '<button type="button" class="btn btn-outline-secondary resume-naik" title="Naikkan urutan" aria-label="Naikkan">↑</button>' +
-            '<button type="button" class="btn btn-outline-secondary resume-turun" title="Turunkan urutan" aria-label="Turunkan">↓</button>' +
-            '<button type="button" class="btn btn-outline-danger resume-hapus" title="Hapus baris" aria-label="Hapus baris">✕</button>' +
-            '</div></div>'
-        );
-        $baris.find('input').attr('name', nama + '[]').val(nilai || '');
-        return $baris;
-    }
-
-    function nomoriBarisResumeRanap() {
-        $('#wrapperResumeRanap .resume-daftar').each(function() {
-            var $daftar = $(this);
-            var maks = parseInt($daftar.data('maks'), 10) || 5;
-            var $baris = $daftar.children('.resume-baris');
-            $baris.each(function(i) {
-                var label = i === 0 ? 'Utama' : 'Sekunder ' + i;
-                $(this).find('.resume-baris-label').text(label).toggleClass('utama', i === 0);
-            });
-            $daftar.nextAll('.resume-tambah').first().prop('disabled', $baris.length >= maks);
-        });
-    }
-
-    // Panggil penomoran baris saat inisialisasi tab resume
-    nomoriBarisResumeRanap();
-
-    // Event listeners untuk baris dinamis resume ranap
-    $(document).off('click', '#wrapperResumeRanap .resume-tambah').on('click', '#wrapperResumeRanap .resume-tambah', function() {
-        var $daftar = $(this).prevAll('.resume-daftar').first();
-        var maks = parseInt($daftar.data('maks'), 10) || 5;
-        if ($daftar.children('.resume-baris').length >= maks) {
-            tampilkanError('Maksimal ' + maks + ' baris.');
-            return;
-        }
-        $daftar.append(barisResumeRanapHtml($daftar.data('nama'), ''));
-        nomoriBarisResumeRanap();
-        $daftar.children('.resume-baris').last().find('input').trigger('focus');
-    });
-
-    $(document).off('click', '#wrapperResumeRanap .resume-naik').on('click', '#wrapperResumeRanap .resume-naik', function() {
-        var $baris = $(this).closest('.resume-baris');
-        $baris.prev('.resume-baris').before($baris);
-        nomoriBarisResumeRanap();
-        $baris.find('.resume-naik').trigger('focus');
-    });
-
-    $(document).off('click', '#wrapperResumeRanap .resume-turun').on('click', '#wrapperResumeRanap .resume-turun', function() {
-        var $baris = $(this).closest('.resume-baris');
-        $baris.next('.resume-baris').after($baris);
-        nomoriBarisResumeRanap();
-        $baris.find('.resume-turun').trigger('focus');
-    });
-
-    $(document).off('click', '#wrapperResumeRanap .resume-hapus').on('click', '#wrapperResumeRanap .resume-hapus', function() {
-        var $daftar = $(this).closest('.resume-daftar');
-        $(this).closest('.resume-baris').remove();
-        if ($daftar.children('.resume-baris').length === 0 && $daftar.data('nama') === 'diagnosa') {
-            $daftar.append(barisResumeRanapHtml('diagnosa', ''));
-        }
-        nomoriBarisResumeRanap();
-    });
-
-    $(document).off('click', '#wrapperResumeRanap .resume-chip').on('click', '#wrapperResumeRanap .resume-chip', function() {
-        var teks = $(this).data('teks');
-        var $daftar = $('#resume-ranap-prosedur');
-        var $kosong = $daftar.find('input').filter(function() { return !this.value.trim(); }).first();
-        if ($kosong.length) {
-            $kosong.val(teks);
-        } else if ($daftar.children('.resume-baris').length < parseInt($daftar.data('maks'), 10)) {
-            $daftar.append(barisResumeRanapHtml('prosedur', teks));
-        } else {
-            tampilkanError('Prosedur maksimal 4 baris.');
-            return;
-        }
-        $(this).remove();
-        nomoriBarisResumeRanap();
-    });
-
-    // Tombol Tarik Data Auto Resume (Ambil data terbaru dari SOAP, diagnosa, dan obat)
-    $('#btnTarikDataAutoResume').off('click').on('click', function() {
-        var rawData = $(this).attr('data-auto');
-        var autoData = {};
-        try {
-            autoData = rawData ? JSON.parse(rawData) : {};
-        } catch (e) {
-            autoData = {};
-        }
-
-        Swal.fire({
-            title: 'Tarik Data Rekam Medis Terbaru?',
-            text: 'Form akan diisi dengan data SOAP ranap terakhir, diagnosa klinis, obat, serta hasil Lab & Radiologi terbaru.',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Ya, Tarik Data Terbaru',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                if (autoData.riwayat_penyakit) $('#resume_riwayat_penyakit').val(autoData.riwayat_penyakit);
-                if (autoData.pemeriksaan_fisik) $('#resume_pemeriksaan_fisik').val(autoData.pemeriksaan_fisik);
-                if (autoData.pemeriksaan_penunjang) $('#resume_pemeriksaan_penunjang').val(autoData.pemeriksaan_penunjang);
-                if (autoData.tindakan) $('#resume_tindakan_operasi').val(autoData.tindakan);
-                if (autoData.edukasi) $('#resume_edukasi').val(autoData.edukasi);
-
-                // Tarik Diagnosa (Array)
-                var diagList = autoData.diagnosa_list || [];
-                if (diagList.length > 0) {
-                    var $daftarDiag = $('#resume-ranap-diagnosa');
-                    $daftarDiag.empty();
-                    diagList.slice(0, 5).forEach(function(d) {
-                        if (d && d.trim()) {
-                            $daftarDiag.append(barisResumeRanapHtml('diagnosa', d.trim()));
-                        }
-                    });
-                    if ($daftarDiag.children('.resume-baris').length === 0) {
-                        $daftarDiag.append(barisResumeRanapHtml('diagnosa', ''));
-                    }
-                    nomoriBarisResumeRanap();
-                }
-
-                // Tarik Prosedur (Array)
-                var prosList = autoData.prosedur_list || [];
-                if (prosList.length > 0) {
-                    var $daftarPros = $('#resume-ranap-prosedur');
-                    $daftarPros.empty();
-                    prosList.slice(0, 4).forEach(function(p) {
-                        if (p && p.trim()) {
-                            $daftarPros.append(barisResumeRanapHtml('prosedur', p.trim()));
-                        }
-                    });
-                    nomoriBarisResumeRanap();
-                }
-
-                tampilkanSukses('Data rekam medis terbaru berhasil ditarik ke form.');
-            }
-        });
-    });
-
-    // Submit Form Resume
-    $('#formResumePasienRanap').off('submit').on('submit', function(e) {
-        e.preventDefault();
-        var $btn = $('#btnSimpanResume');
-        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Menyimpan...');
-
-        var formData = $(this).serialize();
-
-        $.ajax({
-            url: ranapUrl('/ranap/store-resume-pasien'),
-            type: 'POST',
-            data: formData,
-            success: function(res) {
-                $btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan Resume Pasien');
-                tampilkanSukses(res.message || 'Resume medis berhasil disimpan.');
-                clearAutoSaveDraft('rme_draft_resume');
-                $('#btnCetakResumePdf').removeClass('disabled');
-                // Form sudah berisi nilai tersimpan; cukup perbarui status, tanpa reload tab (~20 query).
-                $('#badgeStatusResume')
-                    .removeClass('bg-warning text-dark').addClass('bg-success')
-                    .html('<i class="fas fa-check-circle me-1"></i>Sudah Tersimpan');
-            },
-            error: function(xhr) {
-                $btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan Resume Pasien');
-                var err = xhr.responseJSON ? xhr.responseJSON.message : 'Gagal menyimpan resume medis.';
-                tampilkanError(err);
-            }
-        });
     });
 }
 
