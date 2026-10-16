@@ -13,6 +13,8 @@ use App\Services\Ranap\RanapPenunjangService;
 use App\Services\Ranap\RanapSoapService;
 use App\Services\Ranap\RanapVitalSignService;
 use App\Services\Ranap\RanapResumeService;
+use App\Services\Ranap\ResumeRanapReferensi;
+use App\Services\Ranap\ResumeRanapService;
 use App\Services\Ralan\LaboratoriumService;
 use App\Services\Ralan\RadiologiService;
 use App\Http\Requests\Ranap\StoreSoapRanapRequest;
@@ -280,22 +282,37 @@ class RanapController extends Controller
     /**
      * Tab Resume Pasien (Ringkasan Pulang Medis)
      */
-    public function getResumePasien($no_rawat)
+    public function getResumePasien(string $no_rawat, ResumeRanapService $resumeRanap)
     {
         $no_rawat = str_replace('-', '/', $no_rawat);
-        $data = $this->resumeService->getResumeData($no_rawat);
-        $data['currentUserNip'] = Auth::user()->decrypted_id ?? '';
-        $data['isAdmin'] = session('role') === 'admin';
+        abort_unless(DB::table('reg_periksa')->where('no_rawat', $no_rawat)->exists(), 404);
 
-        return view('ranap.tabs.resume', $data);
+        return view('ranap.tabs.resume', $resumeRanap->dataTab($no_rawat, Auth::user()->decrypted_id ?? null));
     }
 
-    public function storeResumePasien(StoreResumeRanapRequest $request)
+    public function referensiResume(string $no_rawat, ResumeRanapReferensi $referensi)
     {
-        $defaultKdDokter = Auth::user()->decrypted_id ?? null;
-        $res = $this->resumeService->simpan($request->validated(), $defaultKdDokter);
+        $no_rawat = str_replace('-', '/', $no_rawat);
 
-        return response()->json($res);
+        return view('ranap.tabs.partials.resume_referensi', ['ref' => $referensi->untuk($no_rawat)]);
+    }
+
+    public function storeResumePasien(StoreResumeRanapRequest $request, ResumeRanapService $resumeRanap)
+    {
+        $selesai = $request->boolean('selesai');
+        $meta = $resumeRanap->simpan(
+            $request->no_rawat,
+            $request->validated(),
+            (string) (Auth::user()->decrypted_id ?? ''),
+            $selesai
+        );
+
+        return response()->json([
+            'status'        => 'success',
+            'message'       => $selesai ? 'Resume disimpan dan ditandai selesai.' : 'Draf resume disimpan.',
+            'status_resume' => $meta->status,
+            'diubah_pada'   => $meta->diubah_pada->format('Y-m-d H:i:s'),
+        ]);
     }
 
     /**

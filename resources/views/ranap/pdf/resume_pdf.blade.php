@@ -51,6 +51,8 @@
             color: #333;
         }
 
+        .label-draf { border: 1px solid #92400e; color: #92400e; text-align: center; font-weight: bold; padding: 4px; margin-bottom: 8px; }
+        .sub-label { font-weight: bold; }
         .doc-title {
             text-align: center;
             font-size: 11pt;
@@ -163,6 +165,9 @@
     </table>
 
     <div class="doc-title">RINGKASAN PULANG PASIEN RAWAT INAP (DISCHARGE SUMMARY)</div>
+    @unless($selesai)
+        <div class="label-draf">DRAF, BELUM DITANDAI SELESAI</div>
+    @endunless
 
     {{-- Identitas Pasien & Data Rawat --}}
     @php
@@ -172,8 +177,8 @@
             ? \Carbon\Carbon::parse($kamarAkhir->tgl_keluar)->format('d/m/Y') . ' ' . $kamarAkhir->jam_keluar
             : '-';
         $lamaRawat = $lamaRawat > 0 ? $lamaRawat . ' Hari' : '-';
-        $dokterTtd = $resume->dokter ?? $dpjp;
-        $namaDokterDpjp = $dokterTtd->nm_dokter ?? '-';
+        $namaDokterDpjp = $dpjp->nm_dokter ?? '-';
+        $teks = fn ($nilai) => nl2br(e(trim((string) $nilai) !== '' ? $nilai : '-'));
     @endphp
 
     <table class="info-table">
@@ -229,11 +234,15 @@
     {{-- Konten Ringkasan Medis --}}
     <table class="content-table">
         <tr>
-            <td colspan="2" class="section-header">1. Riwayat Perjalanan Penyakit & Keluhan Utama</td>
+            <td colspan="2" class="section-header">1. Keluhan Utama, Alasan Dirawat & Perjalanan Penyakit</td>
         </tr>
         <tr>
             <td colspan="2">
-                {!! nl2br(e($resume->jalannya_penyakit ?: ($resume->keluhan_utama ?: '-'))) !!}
+                <div><span class="sub-label">Keluhan utama:</span> {!! $teks($resume->keluhan_utama) !!}</div>
+                @if(trim((string) $resume->alasan) !== '')
+                    <div><span class="sub-label">Alasan dirawat:</span> {{ $resume->alasan }}</div>
+                @endif
+                <div style="margin-top: 3px;"><span class="sub-label">Perjalanan penyakit:</span><br>{!! $teks($resume->jalannya_penyakit) !!}</div>
             </td>
         </tr>
 
@@ -251,7 +260,8 @@
         </tr>
         <tr>
             <td colspan="2">
-                {!! nl2br(e($resume->pemeriksaan_penunjang ?: '-')) !!}
+                <div><span class="sub-label">Laboratorium:</span><br>{!! $teks($resume->hasil_laborat) !!}</div>
+                <div style="margin-top: 3px;"><span class="sub-label">Radiologi dan penunjang lain:</span><br>{!! $teks($resume->pemeriksaan_penunjang) !!}</div>
             </td>
         </tr>
 
@@ -325,7 +335,8 @@
         </tr>
         <tr>
             <td colspan="2">
-                {!! nl2br(e($resume->tindakan_dan_operasi ?: ($resume->obat_di_rs ?: '-'))) !!}
+                <div><span class="sub-label">Tindakan / operasi:</span><br>{!! $teks($resume->tindakan_dan_operasi) !!}</div>
+                <div style="margin-top: 3px;"><span class="sub-label">Terapi / obat selama dirawat:</span><br>{!! $teks($resume->obat_di_rs) !!}</div>
             </td>
         </tr>
 
@@ -335,7 +346,7 @@
         <tr>
             <td style="font-weight: bold; background-color: #fafafa;">Kondisi / Cara Keluar</td>
             <td>
-                <strong>{{ $resume->keadaan ?? 'Membaik' }}</strong>
+                <strong>{{ trim((string) $resume->keadaan) !== '' ? $resume->keadaan : 'Belum dipilih' }}</strong>
                 @if(!empty($resume->cara_keluar) && $resume->cara_keluar != '-')
                     &nbsp;|&nbsp; Cara Keluar: {{ $resume->cara_keluar }}
                 @endif
@@ -366,27 +377,35 @@
                         (Jam: {{ \Carbon\Carbon::parse($resume->kontrol)->format('H:i') }})
                     </div>
                 @endif
-                <div>{!! nl2br(e($resume->edukasi ?: '-')) !!}</div>
+                <div>{!! $teks($resume->edukasi) !!}</div>
+                @if(trim((string) $resume->diet) !== '')
+                    <div style="margin-top: 3px;"><span class="sub-label">Diet:</span> {!! $teks($resume->diet) !!}</div>
+                @endif
+                @if(trim((string) $resume->lab_belum) !== '')
+                    <div style="margin-top: 3px;"><span class="sub-label">Hasil lab yang belum keluar:</span> {!! $teks($resume->lab_belum) !!}</div>
+                @endif
             </td>
         </tr>
     </table>
 
-    {{-- Tanda Tangan Dokter DPJP --}}
+    {{-- Tanda tangan hanya untuk resume yang sudah ditandai selesai, oleh dokter yang menandainya. --}}
+    @if($selesai && $penanda)
     <table class="ttd-table">
         <tr>
             <td style="width: 60%;"></td>
             <td style="width: 40%; text-align: center;">
-                <div>Banjarbaru, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</div>
-                <div style="margin-top: 3px; font-weight: bold;">Dokter Penanggung Jawab Pelayanan (DPJP)</div>
+                <div>Banjarbaru, {{ $selesaiPada->translatedFormat('d F Y') }}</div>
+                <div style="margin-top: 3px; font-weight: bold;">Dokter yang menandai resume selesai</div>
                 <div style="margin-top: 45px; font-weight: bold; text-decoration: underline;">
-                    {{ $namaDokterDpjp }}
+                    {{ $penanda->nm_dokter }}
                 </div>
                 <div style="font-size: 7.5pt; color: #555;">
-                    {{ !empty($dokterTtd->no_ijn_praktek) ? 'SIP: ' . $dokterTtd->no_ijn_praktek : 'Kode Dokter: ' . ($dokterTtd->kd_dokter ?? '-') }}
+                    {{ !empty($penanda->no_ijn_praktek) ? 'SIP: ' . $penanda->no_ijn_praktek : 'Kode Dokter: ' . $penanda->kd_dokter }}
                 </div>
             </td>
         </tr>
     </table>
+    @endif
 
     <div class="footer-note">
         * Dokumen Rekam Medis Elektronik ini dicetak secara otomatis melalui Sistem RME RSU Nirwana.

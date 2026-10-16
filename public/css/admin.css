@@ -1468,3 +1468,49 @@ a:hover {
     .resume-aksi .btn { flex: 1; }
     .resume-input-pendek { max-width: none; }
 }
+
+/* Resume ranap: kartu per isian + referensi dari catatan yang sudah ada (design.md bagian 5). */
+#wrapperResumeRanap :focus-visible { outline: 2px solid #0d7a4a; outline-offset: 2px; }
+#wrapperResumeRanap fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+#wrapperResumeRanap .btn-link { color: #0d7a4a; font-weight: 600; text-decoration: none; }
+#wrapperResumeRanap .btn-link:hover { text-decoration: underline; }
+.resume-progres-jalur { height: 6px; background: var(--gray-200); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+.resume-progres-jalur span { display: block; height: 100%; background: #0d7a4a; transition: width 0.2s ease; }
+.resume-isian { background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius); margin-bottom: 0.75rem; }
+.resume-isian-kepala { display: flex; align-items: center; gap: 10px; padding: 0.7rem 1rem; border-bottom: 1px solid var(--gray-100); }
+.resume-isian-ikon { width: 28px; height: 28px; border-radius: 7px; background: #dcfce7; color: #0d7a4a; display: inline-grid; place-items: center; flex-shrink: 0; font-size: 0.8rem; }
+.resume-isian-judul { font-size: 0.9rem; font-weight: 600; color: var(--gray-700); margin: 0; }
+.resume-isian-tanda { margin-left: auto; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
+.resume-isian-tanda.terisi { color: #166534; }
+.resume-isian-tanda.kosong { color: #92400e; }
+.resume-isian-badan { padding: 1rem; }
+.resume-ref { background: #f0fdf4; border-radius: var(--radius-sm); padding: 8px 10px; margin-top: 8px; font-size: 0.82rem; color: var(--gray-700); }
+.resume-ref:empty { display: none; }
+.resume-ref-item { display: flex; gap: 8px; align-items: flex-start; padding: 6px 0; }
+.resume-ref-item + .resume-ref-item { border-top: 1px solid #dcfce7; }
+.resume-ref-sumber { display: inline-block; background: #fff; border: 1px solid #d1fae5; color: #166534; font-size: 0.72rem; font-weight: 600; padding: 1px 6px; border-radius: var(--radius-sm); white-space: nowrap; flex-shrink: 0; }
+.resume-ref-sumber.non-dokter { background: var(--gray-100); border-color: var(--gray-200); color: var(--gray-600); }
+.resume-ref-teks { flex: 1; min-width: 0; white-space: pre-line; overflow-wrap: anywhere; }
+.resume-ref .resume-pakai { flex-shrink: 0; min-height: 32px; background: #fff; }
+.resume-ref-kosong { color: var(--gray-500); }
+.resume-ref-lain > summary { cursor: pointer; color: #0d7a4a; font-weight: 600; padding: 4px 0; }
+.resume-ref-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.resume-ref-chips .resume-chip { margin: 0; }
+.resume-kondisi { display: flex; align-items: center; height: 100%; min-height: 44px; padding: 8px; border: 1px solid var(--gray-200); border-radius: var(--radius-sm); background: var(--gray-50); cursor: pointer; }
+.resume-kondisi.aktif { border-color: var(--primary); background: #f0fdf4; }
+.resume-bilah-simpan { position: sticky; bottom: 0; z-index: 5; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 0.6rem 1rem; }
+.resume-galat { color: #be123c; font-size: 0.8rem; margin-top: 4px; }
+/* Tablet adalah perangkat utama dokter bangsal: target sentuh 44px di layar sentuh, bukan hanya layar sempit. */
+@media (max-width: 767.98px), (pointer: coarse) {
+    #wrapperResumeRanap .btn, #wrapperResumeRanap .resume-chip { min-height: 44px; }
+    #wrapperResumeRanap .btn-link { display: inline-flex; align-items: center; }
+    #wrapperResumeRanap .resume-baris .btn { min-width: 44px; }
+}
+@media (max-width: 575.98px) {
+    .resume-ref-item { flex-wrap: wrap; }
+    .resume-ref-sumber { white-space: normal; }
+    .resume-ref .resume-pakai { min-height: 44px; }
+    .resume-bilah-simpan .resume-aksi { width: 100%; }
+    .resume-bilah-simpan .resume-aksi .btn { flex: 1; min-height: 44px; }
+    .resume-isian-kepala { flex-wrap: wrap; }
+}

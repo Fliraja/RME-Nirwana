@@ -125,6 +125,10 @@
                                                 RM: <strong>{{ $p->no_rkm_medis }}</strong> &nbsp;|&nbsp; 
                                                 {{ $p->jk == 'L' ? 'Laki-Laki' : 'Perempuan' }}, {{ $p->umur }}
                                             </small>
+                                            {{-- Pasien masih dirawat: "belum dibuat" adalah keadaan normal, jadi hanya draf/selesai yang ditandai. --}}
+                                            @if($p->status_resume !== 'belum')
+                                                @include('ranap.partials.badge_resume', ['status' => $p->status_resume])
+                                            @endif
                                         </td>
                                         <td>
                                             <span class="fw-semibold text-dark">{{ $p->nm_bangsal }}</span>
@@ -211,6 +215,7 @@
                                                 {{ $p->nm_pasien }}
                                             </a>
                                             <small class="d-block text-muted">{{ $p->jk == 'L' ? 'Laki-Laki' : 'Perempuan' }}, {{ $p->umur }}</small>
+                                            @include('ranap.partials.badge_resume', ['status' => $p->status_resume])
                                         </td>
                                         <td>{{ $p->no_rkm_medis }}</td>
                                         <td>{{ $p->nm_bangsal }} ({{ $p->kd_kamar }})</td>
