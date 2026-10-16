@@ -78,7 +78,7 @@ function sembunyikanChipTerpakai() {
         var nama = $(this).data('target');
         var ada = $('#resume-ranap-' + nama + ' input').toArray().map(function(el) { return el.value.trim().toLowerCase(); });
         $(this).find('.resume-chip').each(function() {
-            $(this).toggleClass('d-none', ada.indexOf(String($(this).data('teks')).toLowerCase()) !== -1);
+            $(this).toggleClass('d-none', ada.indexOf(String($(this).attr('data-teks')).toLowerCase()) !== -1);
         });
     });
 }
@@ -175,10 +175,10 @@ function initResumeHandlers() {
         if (!$field.length) return;
 
         if ($field.attr('type') === 'date') {
-            $field.val(String($btn.data('tanggal') || '').substring(0, 10));
+            $field.val(String($btn.attr('data-tanggal') || '').substring(0, 10));
         } else {
             var lama = $field.val().trim();
-            var teks = String($btn.data('teks'));
+            var teks = String($btn.attr('data-teks'));
             $field.val(lama ? lama + '\n' + teks : teks);
         }
         $field.trigger('input');
@@ -188,7 +188,7 @@ function initResumeHandlers() {
     $wrapper.off('click', '.resume-chip').on('click', '.resume-chip', function() {
         var nama = $(this).closest('.resume-ref').data('target');
         var $daftar = $('#resume-ranap-' + nama);
-        if (tambahKeDaftarResume($daftar, String($(this).data('teks')))) {
+        if (tambahKeDaftarResume($daftar, String($(this).attr('data-teks')))) {
             nomoriBarisResumeRanap();
             sembunyikanChipTerpakai();
             $form.trigger('input');
