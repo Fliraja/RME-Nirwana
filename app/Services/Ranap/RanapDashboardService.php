@@ -42,6 +42,7 @@ class RanapDashboardService
             ->selectSub($this->masukAwal('jam_masuk'), 'jam_masuk')
             ->selectSub($this->namaDpjp(), 'dpjp');
 
+        $this->statusResume($query);
         $this->filterDpjp($query, $kdDokter);
 
         if ($search) {
@@ -94,6 +95,7 @@ class RanapDashboardService
             )
             ->selectSub($this->namaDpjp(), 'dpjp');
 
+        $this->statusResume($query);
         $this->filterDpjp($query, $kdDokter);
 
         if ($search) {
@@ -166,6 +168,15 @@ class RanapDashboardService
             ->join('dokter as dk', 'dp.kd_dokter', '=', 'dk.kd_dokter')
             ->selectRaw("GROUP_CONCAT(dk.nm_dokter ORDER BY dk.nm_dokter SEPARATOR ', ')")
             ->whereColumn('dp.no_rawat', 'kamar_inap.no_rawat');
+    }
+
+    /** Status resume per pasien dalam query daftar yang sama: belum / draf / selesai. */
+    private function statusResume(Builder $query): void
+    {
+        $query->leftJoin('rme_resume_ranap as rr', 'rr.no_rawat', '=', 'reg_periksa.no_rawat')
+            ->leftJoin('resume_pasien_ranap as rp', 'rp.no_rawat', '=', 'reg_periksa.no_rawat')
+            // Resume yang dibuat dari Khanza desktop belum punya baris status: dianggap draf.
+            ->selectRaw("CASE WHEN rr.status IS NOT NULL THEN rr.status WHEN rp.no_rawat IS NOT NULL THEN 'draf' ELSE 'belum' END AS status_resume");
     }
 
     private function filterDpjp(Builder $query, ?string $kdDokter): void
