@@ -113,7 +113,7 @@
                             <tbody>
                                 @forelse($pasienAktif as $idx => $p)
                                     @php
-                                        $lamaHari = \Carbon\Carbon::parse($p->tgl_masuk)->diffInDays(\Carbon\Carbon::now());
+                                        $lamaHari = (int) \Carbon\Carbon::parse($p->tgl_masuk)->startOfDay()->diffInDays(\Carbon\Carbon::now()->startOfDay());
                                     @endphp
                                     <tr>
                                         <td>{{ $idx + 1 }}</td>
