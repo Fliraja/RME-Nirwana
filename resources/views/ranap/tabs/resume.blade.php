@@ -2,7 +2,8 @@
     $isSaved = !empty($resume);
 
     // Deteksi opsi kondisi pulang
-    $selectedKondisi = 'sembuh';
+    // Resume baru: dokter wajib memilih sendiri, tidak ada pilihan bawaan.
+    $selectedKondisi = null;
     $namaRujukan = '';
     if ($isSaved) {
         if ($resume->cara_keluar === 'Pulang Atas Permintaan Sendiri') {
@@ -14,8 +15,10 @@
         } elseif ($resume->cara_keluar === 'Pindah RS' || $resume->dilanjutkan === 'RS Lain') {
             $selectedKondisi = 'dirujuk';
             $namaRujukan = $resume->ket_keluar ?: $resume->ket_dilanjutkan;
-        } else {
+        } elseif ($resume->keadaan === 'Sembuh') {
             $selectedKondisi = 'sembuh';
+        } else {
+            $selectedKondisi = 'membaik';
         }
     }
 
@@ -283,19 +286,30 @@
                             <small class="text-muted d-block mb-3">Pilih salah satu status atau kondisi klinis saat pasien meninggalkan rumah sakit:</small>
 
                             <div class="row g-2">
-                                {{-- 1. Sembuh / Membaik --}}
-                                <div class="col-md">
+                                {{-- 1. Sembuh --}}
+                                <div class="col-6 col-lg-4 col-xxl-2">
                                     <label class="kondisi-pulang-card d-flex align-items-center p-2 rounded border cursor-pointer h-100 transition-all {{ $selectedKondisi == 'sembuh' ? 'border-success bg-success-subtle text-success-emphasis fw-bold shadow-sm' : 'bg-light text-secondary' }}" for="kondisi_sembuh">
                                         <input class="form-check-input radio-kondisi-pulang me-2" type="radio" name="kondisi_pulang_opsi" id="kondisi_sembuh" value="sembuh" {{ $selectedKondisi == 'sembuh' ? 'checked' : '' }}>
                                         <div>
-                                            <div class="small fw-semibold"><i class="fas fa-check-circle text-success me-1"></i> Sembuh / Membaik</div>
+                                            <div class="small fw-semibold"><i class="fas fa-check-circle text-success me-1"></i> Sembuh</div>
                                             <div class="text-muted" style="font-size: 0.72rem;">Izin dokter</div>
                                         </div>
                                     </label>
                                 </div>
 
-                                {{-- 2. APS --}}
-                                <div class="col-md">
+                                {{-- 2. Membaik --}}
+                                <div class="col-6 col-lg-4 col-xxl-2">
+                                    <label class="kondisi-pulang-card d-flex align-items-center p-2 rounded border cursor-pointer h-100 transition-all {{ $selectedKondisi == 'membaik' ? 'border-success bg-success-subtle text-success-emphasis fw-bold shadow-sm' : 'bg-light text-secondary' }}" for="kondisi_membaik">
+                                        <input class="form-check-input radio-kondisi-pulang me-2" type="radio" name="kondisi_pulang_opsi" id="kondisi_membaik" value="membaik" {{ $selectedKondisi == 'membaik' ? 'checked' : '' }}>
+                                        <div>
+                                            <div class="small fw-semibold"><i class="fas fa-arrow-trend-up text-success me-1"></i> Membaik</div>
+                                            <div class="text-muted" style="font-size: 0.72rem;">Izin dokter</div>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                {{-- 3. APS --}}
+                                <div class="col-6 col-lg-4 col-xxl-2">
                                     <label class="kondisi-pulang-card d-flex align-items-center p-2 rounded border cursor-pointer h-100 transition-all {{ $selectedKondisi == 'aps' ? 'border-warning bg-warning-subtle text-warning-emphasis fw-bold shadow-sm' : 'bg-light text-secondary' }}" for="kondisi_aps">
                                         <input class="form-check-input radio-kondisi-pulang me-2" type="radio" name="kondisi_pulang_opsi" id="kondisi_aps" value="aps" {{ $selectedKondisi == 'aps' ? 'checked' : '' }}>
                                         <div>
@@ -305,8 +319,8 @@
                                     </label>
                                 </div>
 
-                                {{-- 3. Dirujuk --}}
-                                <div class="col-md">
+                                {{-- 4. Dirujuk --}}
+                                <div class="col-6 col-lg-4 col-xxl-2">
                                     <label class="kondisi-pulang-card d-flex align-items-center p-2 rounded border cursor-pointer h-100 transition-all {{ $selectedKondisi == 'dirujuk' ? 'border-primary bg-primary-subtle text-primary-emphasis fw-bold shadow-sm' : 'bg-light text-secondary' }}" for="kondisi_dirujuk">
                                         <input class="form-check-input radio-kondisi-pulang me-2" type="radio" name="kondisi_pulang_opsi" id="kondisi_dirujuk" value="dirujuk" {{ $selectedKondisi == 'dirujuk' ? 'checked' : '' }}>
                                         <div>
@@ -316,8 +330,8 @@
                                     </label>
                                 </div>
 
-                                {{-- 4. Meninggal < 48 Jam --}}
-                                <div class="col-md">
+                                {{-- 5. Meninggal < 48 Jam --}}
+                                <div class="col-6 col-lg-4 col-xxl-2">
                                     <label class="kondisi-pulang-card d-flex align-items-center p-2 rounded border cursor-pointer h-100 transition-all {{ $selectedKondisi == 'meninggal_kurang_48' ? 'border-danger bg-danger-subtle text-danger-emphasis fw-bold shadow-sm' : 'bg-light text-secondary' }}" for="kondisi_meninggal_48_kurang">
                                         <input class="form-check-input radio-kondisi-pulang me-2" type="radio" name="kondisi_pulang_opsi" id="kondisi_meninggal_48_kurang" value="meninggal_kurang_48" {{ $selectedKondisi == 'meninggal_kurang_48' ? 'checked' : '' }}>
                                         <div>
@@ -327,8 +341,8 @@
                                     </label>
                                 </div>
 
-                                {{-- 5. Meninggal > 48 Jam --}}
-                                <div class="col-md">
+                                {{-- 6. Meninggal > 48 Jam --}}
+                                <div class="col-6 col-lg-4 col-xxl-2">
                                     <label class="kondisi-pulang-card d-flex align-items-center p-2 rounded border cursor-pointer h-100 transition-all {{ $selectedKondisi == 'meninggal_lebih_48' ? 'border-danger bg-danger-subtle text-danger-emphasis fw-bold shadow-sm' : 'bg-light text-secondary' }}" for="kondisi_meninggal_48_lebih">
                                         <input class="form-check-input radio-kondisi-pulang me-2" type="radio" name="kondisi_pulang_opsi" id="kondisi_meninggal_48_lebih" value="meninggal_lebih_48" {{ $selectedKondisi == 'meninggal_lebih_48' ? 'checked' : '' }}>
                                         <div>

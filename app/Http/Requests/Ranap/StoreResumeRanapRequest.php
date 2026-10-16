@@ -33,7 +33,7 @@ class StoreResumeRanapRequest extends FormRequest
             'prosedur_sekunder2'    => 'nullable|string|max:200',
             'prosedur_sekunder3'    => 'nullable|string|max:200',
             'tindakan_dan_operasi'  => 'nullable|string',
-            'kondisi_pulang_opsi'   => 'required|in:sembuh,aps,dirujuk,meninggal_kurang_48,meninggal_lebih_48',
+            'kondisi_pulang_opsi'   => 'required|in:sembuh,membaik,aps,dirujuk,meninggal_kurang_48,meninggal_lebih_48',
             'nama_faskes_rujukan'   => 'nullable|required_if:kondisi_pulang_opsi,dirujuk|string|max:50',
             'obat_pulang'           => 'nullable|string',
             'edukasi'               => 'nullable|string',

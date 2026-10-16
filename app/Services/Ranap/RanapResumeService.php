@@ -310,8 +310,9 @@ class RanapResumeService
 
         switch ($kondisiOpsi) {
             case 'sembuh':
+            case 'membaik':
                 $caraKeluar = 'Atas Izin Dokter';
-                $keadaan = 'Membaik';
+                $keadaan = $kondisiOpsi === 'sembuh' ? 'Sembuh' : 'Membaik';
                 $dilanjutkan = 'Kembali Ke RS';
                 break;
             case 'aps':
