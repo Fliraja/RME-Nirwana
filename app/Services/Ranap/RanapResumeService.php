@@ -359,19 +359,20 @@ class RanapResumeService
             }
         }
 
+        // Kolom yang tidak ada di form dipertahankan dari resume tersimpan.
         $existing = ResumePasienRanap::find($noRawat);
 
         $payload = [
             'kd_dokter'              => $kdDokter,
             'diagnosa_awal'          => $data['diagnosa_awal'] ?? '',
-            'alasan'                 => $data['alasan'] ?? '',
-            'keluhan_utama'          => $data['keluhan_utama'] ?? '',
+            'alasan'                 => $existing->alasan ?? '',
+            'keluhan_utama'          => $existing->keluhan_utama ?? '',
             'pemeriksaan_fisik'      => $data['pemeriksaan_fisik'] ?? '',
             'jalannya_penyakit'      => $data['jalannya_penyakit'] ?? '',
             'pemeriksaan_penunjang'  => $data['pemeriksaan_penunjang'] ?? '',
-            'hasil_laborat'          => $data['hasil_laborat'] ?? '',
+            'hasil_laborat'          => $existing->hasil_laborat ?? '',
             'tindakan_dan_operasi'   => $data['tindakan_dan_operasi'] ?? '',
-            'obat_di_rs'             => $data['obat_di_rs'] ?? '',
+            'obat_di_rs'             => $existing->obat_di_rs ?? '',
             'diagnosa_utama'         => $data['diagnosa_utama'] ?? '',
             'kd_diagnosa_utama'      => $data['kd_diagnosa_utama'] ?? ($existing->kd_diagnosa_utama ?? ''),
             'diagnosa_sekunder'      => $data['diagnosa_sekunder'] ?? '',
@@ -390,9 +391,9 @@ class RanapResumeService
             'kd_prosedur_sekunder2'  => $data['kd_prosedur_sekunder2'] ?? ($existing->kd_prosedur_sekunder2 ?? ''),
             'prosedur_sekunder3'     => $data['prosedur_sekunder3'] ?? '',
             'kd_prosedur_sekunder3'  => $data['kd_prosedur_sekunder3'] ?? ($existing->kd_prosedur_sekunder3 ?? ''),
-            'alergi'                 => $data['alergi'] ?? '',
-            'diet'                   => $data['diet'] ?? '',
-            'lab_belum'              => $data['lab_belum'] ?? '',
+            'alergi'                 => $existing->alergi ?? '',
+            'diet'                   => $existing->diet ?? '',
+            'lab_belum'              => $existing->lab_belum ?? '',
             'edukasi'                => $data['edukasi'] ?? '',
             'cara_keluar'            => $caraKeluar,
             'ket_keluar'             => $ketKeluar,
