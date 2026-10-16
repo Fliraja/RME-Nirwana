@@ -124,6 +124,9 @@ function bersihkanGalatResume() {
 function pulihkanDrafResume(data) {
     var $form = $('#formResumePasienRanap');
     pulihkanDraf($form, data);
+    // Draf membawa waktu ubah resume saat draf dibuat; kalau sejak itu ada yang menyimpan, server menolak (409)
+    // alih-alih menimpa simpanan tersebut dengan isi draf.
+    if (data.diubah_pada !== undefined) $form.find('[name="diubah_pada"]').val(data.diubah_pada);
     ['diagnosa', 'prosedur'].forEach(function(nama) {
         var nilai = data[nama + '[]'];
         if (nilai === undefined) return;
@@ -226,6 +229,11 @@ function initResumeHandlers() {
         nomoriBarisResumeRanap();
         sembunyikanChipTerpakai();
         $form.trigger('input');
+    });
+
+    // Enter di kotak isian satu baris tidak menyimpan; simpan hanya lewat tombol.
+    $form.off('keydown.resume').on('keydown.resume', 'input', function(e) {
+        if (e.key === 'Enter') e.preventDefault();
     });
 
     // Simpan draf / tandai selesai
