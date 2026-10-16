@@ -103,6 +103,15 @@ class RanapResumeService
             ->orderBy('jam_rawat', 'desc')
             ->value('instruksi') ?? '';
 
+        $latestPenilaian = DB::table('pemeriksaan_ranap')
+            ->where('no_rawat', $noRawat)
+            ->whereNotNull('penilaian')
+            ->where('penilaian', '!=', '')
+            ->where('penilaian', '!=', '-')
+            ->orderBy('tgl_perawatan', 'desc')
+            ->orderBy('jam_rawat', 'desc')
+            ->value('penilaian') ?? '';
+
         // Baris SOAP CPPT terakhir (yang memiliki keluhan / pemeriksaan / rtl / instruksi)
         $soapTerakhir = DB::table('pemeriksaan_ranap')
             ->where('no_rawat', $noRawat)
@@ -178,6 +187,7 @@ class RanapResumeService
             'latestPemeriksaan',
             'latestRtl',
             'latestInstruksi',
+            'latestPenilaian',
             'obatRsList',
             'ringkasanPenunjang'
         );
@@ -210,6 +220,8 @@ class RanapResumeService
             'lamaRawat'    => (int) $kamarList->sum('lama'),
             'dpjp'         => $reg?->dpjpRanap->first()?->dokter ?? $reg?->dokter,
             'alergiPasien' => Alergi::terakhirRanap($noRawat),
+            'kodeDiagnosa' => DB::table('diagnosa_pasien')->where('no_rawat', $noRawat)->where('status', 'Ranap')->orderBy('prioritas')->pluck('kd_penyakit')->all(),
+            'kodeProsedur' => DB::table('prosedur_pasien')->where('no_rawat', $noRawat)->where('status', 'Ranap')->orderBy('prioritas')->pluck('kode')->all(),
         ];
     }
 
@@ -347,6 +359,8 @@ class RanapResumeService
             }
         }
 
+        $existing = ResumePasienRanap::find($noRawat);
+
         $payload = [
             'kd_dokter'              => $kdDokter,
             'diagnosa_awal'          => $data['diagnosa_awal'] ?? '',
@@ -359,23 +373,23 @@ class RanapResumeService
             'tindakan_dan_operasi'   => $data['tindakan_dan_operasi'] ?? '',
             'obat_di_rs'             => $data['obat_di_rs'] ?? '',
             'diagnosa_utama'         => $data['diagnosa_utama'] ?? '',
-            'kd_diagnosa_utama'      => $data['kd_diagnosa_utama'] ?? '',
+            'kd_diagnosa_utama'      => $data['kd_diagnosa_utama'] ?? ($existing->kd_diagnosa_utama ?? ''),
             'diagnosa_sekunder'      => $data['diagnosa_sekunder'] ?? '',
-            'kd_diagnosa_sekunder'   => $data['kd_diagnosa_sekunder'] ?? '',
+            'kd_diagnosa_sekunder'   => $data['kd_diagnosa_sekunder'] ?? ($existing->kd_diagnosa_sekunder ?? ''),
             'diagnosa_sekunder2'     => $data['diagnosa_sekunder2'] ?? '',
-            'kd_diagnosa_sekunder2'  => $data['kd_diagnosa_sekunder2'] ?? '',
+            'kd_diagnosa_sekunder2'  => $data['kd_diagnosa_sekunder2'] ?? ($existing->kd_diagnosa_sekunder2 ?? ''),
             'diagnosa_sekunder3'     => $data['diagnosa_sekunder3'] ?? '',
-            'kd_diagnosa_sekunder3'  => $data['kd_diagnosa_sekunder3'] ?? '',
+            'kd_diagnosa_sekunder3'  => $data['kd_diagnosa_sekunder3'] ?? ($existing->kd_diagnosa_sekunder3 ?? ''),
             'diagnosa_sekunder4'     => $data['diagnosa_sekunder4'] ?? '',
-            'kd_diagnosa_sekunder4'  => $data['kd_diagnosa_sekunder4'] ?? '',
+            'kd_diagnosa_sekunder4'  => $data['kd_diagnosa_sekunder4'] ?? ($existing->kd_diagnosa_sekunder4 ?? ''),
             'prosedur_utama'         => $data['prosedur_utama'] ?? '',
-            'kd_prosedur_utama'      => $data['kd_prosedur_utama'] ?? '',
+            'kd_prosedur_utama'      => $data['kd_prosedur_utama'] ?? ($existing->kd_prosedur_utama ?? ''),
             'prosedur_sekunder'      => $data['prosedur_sekunder'] ?? '',
-            'kd_prosedur_sekunder'   => $data['kd_prosedur_sekunder'] ?? '',
+            'kd_prosedur_sekunder'   => $data['kd_prosedur_sekunder'] ?? ($existing->kd_prosedur_sekunder ?? ''),
             'prosedur_sekunder2'     => $data['prosedur_sekunder2'] ?? '',
-            'kd_prosedur_sekunder2'  => $data['kd_prosedur_sekunder2'] ?? '',
+            'kd_prosedur_sekunder2'  => $data['kd_prosedur_sekunder2'] ?? ($existing->kd_prosedur_sekunder2 ?? ''),
             'prosedur_sekunder3'     => $data['prosedur_sekunder3'] ?? '',
-            'kd_prosedur_sekunder3'  => $data['kd_prosedur_sekunder3'] ?? '',
+            'kd_prosedur_sekunder3'  => $data['kd_prosedur_sekunder3'] ?? ($existing->kd_prosedur_sekunder3 ?? ''),
             'alergi'                 => $data['alergi'] ?? '',
             'diet'                   => $data['diet'] ?? '',
             'lab_belum'              => $data['lab_belum'] ?? '',
@@ -389,6 +403,24 @@ class RanapResumeService
             'kontrol'                => $kontrol,
             'obat_pulang'            => $data['obat_pulang'] ?? '',
         ];
+
+        // Jika diagnosa dikirim sebagai array (format Ralan), petakan ke 5 kolom diagnosa
+        if (isset($data['diagnosa']) && is_array($data['diagnosa'])) {
+            $diagItems = array_values(array_filter(array_map('trim', $data['diagnosa']), 'strlen'));
+            $diagCols = ['diagnosa_utama', 'diagnosa_sekunder', 'diagnosa_sekunder2', 'diagnosa_sekunder3', 'diagnosa_sekunder4'];
+            foreach ($diagCols as $i => $col) {
+                $payload[$col] = $diagItems[$i] ?? '';
+            }
+        }
+
+        // Jika prosedur dikirim sebagai array (format Ralan), petakan ke 4 kolom prosedur
+        if (isset($data['prosedur']) && is_array($data['prosedur'])) {
+            $prosItems = array_values(array_filter(array_map('trim', $data['prosedur']), 'strlen'));
+            $prosCols = ['prosedur_utama', 'prosedur_sekunder', 'prosedur_sekunder2', 'prosedur_sekunder3'];
+            foreach ($prosCols as $i => $col) {
+                $payload[$col] = $prosItems[$i] ?? '';
+            }
+        }
 
         ResumePasienRanap::updateOrCreate(
             ['no_rawat' => $noRawat],

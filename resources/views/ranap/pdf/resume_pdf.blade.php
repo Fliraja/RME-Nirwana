@@ -259,47 +259,69 @@
             <td colspan="2" class="section-header">4. Diagnosa Akhir</td>
         </tr>
         <tr>
-            <td style="width: 25%; font-weight: bold; background-color: #fafafa;">Diagnosa Primer (Utama)</td>
-            <td style="width: 75%;">
-                <strong>{{ $resume->diagnosa_utama ?: '-' }}</strong>
-                @if(!empty($resume->kd_diagnosa_utama))
-                    <span class="badge-code">ICD-10: {{ $resume->kd_diagnosa_utama }}</span>
-                @endif
-            </td>
-        </tr>
-        <tr>
-            <td style="font-weight: bold; background-color: #fafafa;">Diagnosa Sekunder (Penyerta)</td>
-            <td>
+            <td colspan="2">
                 @php
-                    $sekunderList = [];
-                    if (!empty($resume->diagnosa_sekunder) || !empty($resume->kd_diagnosa_sekunder)) {
-                        $sekunderList[] = ($resume->diagnosa_sekunder ?? '') . (!empty($resume->kd_diagnosa_sekunder) ? ' (ICD-10: ' . $resume->kd_diagnosa_sekunder . ')' : '');
-                    }
-                    if (!empty($resume->diagnosa_sekunder2) || !empty($resume->kd_diagnosa_sekunder2)) {
-                        $sekunderList[] = ($resume->diagnosa_sekunder2 ?? '') . (!empty($resume->kd_diagnosa_sekunder2) ? ' (ICD-10: ' . $resume->kd_diagnosa_sekunder2 . ')' : '');
-                    }
-                    if (!empty($resume->diagnosa_sekunder3) || !empty($resume->kd_diagnosa_sekunder3)) {
-                        $sekunderList[] = ($resume->diagnosa_sekunder3 ?? '') . (!empty($resume->kd_diagnosa_sekunder3) ? ' (ICD-10: ' . $resume->kd_diagnosa_sekunder3 . ')' : '');
-                    }
-                    if (!empty($resume->diagnosa_sekunder4) || !empty($resume->kd_diagnosa_sekunder4)) {
-                        $sekunderList[] = ($resume->diagnosa_sekunder4 ?? '') . (!empty($resume->kd_diagnosa_sekunder4) ? ' (ICD-10: ' . $resume->kd_diagnosa_sekunder4 . ')' : '');
-                    }
-                @endphp
+                    $diagPdf = array_values(array_filter([
+                        $resume->diagnosa_utama,
+                        $resume->diagnosa_sekunder,
+                        $resume->diagnosa_sekunder2,
+                        $resume->diagnosa_sekunder3,
+                        $resume->diagnosa_sekunder4,
+                    ], 'strlen'));
 
-                @if(count($sekunderList) > 0)
-                    <ol style="margin: 0; padding-left: 15px;">
-                        @foreach($sekunderList as $sItem)
-                            <li>{{ $sItem }}</li>
-                        @endforeach
-                    </ol>
-                @else
-                    <span>-</span>
+                    $semuaKodeDiag = array_values(array_filter(array_unique(array_merge(
+                        [$resume->kd_diagnosa_utama, $resume->kd_diagnosa_sekunder, $resume->kd_diagnosa_sekunder2, $resume->kd_diagnosa_sekunder3, $resume->kd_diagnosa_sekunder4],
+                        $kodeDiagnosa ?? []
+                    ))));
+                @endphp
+                @forelse($diagPdf as $i => $d)
+                    <div style="margin-bottom: 2px;"><strong>{{ $i === 0 ? 'Utama' : 'Sekunder ' . $i }}:</strong> {{ $d }}</div>
+                @empty
+                    <div>-</div>
+                @endforelse
+
+                @if(!empty($semuaKodeDiag))
+                    <div style="font-size: 7.5pt; color: #444; margin-top: 4px; padding-top: 3px; border-top: 1px dashed #ccc;">
+                        <strong>Kode ICD-10 (casemix):</strong> {{ implode(', ', $semuaKodeDiag) }}
+                    </div>
                 @endif
             </td>
         </tr>
 
         <tr>
-            <td colspan="2" class="section-header">5. Tindakan, Terapi & Operasi Selama di Rumah Sakit</td>
+            <td colspan="2" class="section-header">5. Prosedur & Tindakan</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                @php
+                    $prosPdf = array_values(array_filter([
+                        $resume->prosedur_utama,
+                        $resume->prosedur_sekunder,
+                        $resume->prosedur_sekunder2,
+                        $resume->prosedur_sekunder3,
+                    ], 'strlen'));
+
+                    $semuaKodePros = array_values(array_filter(array_unique(array_merge(
+                        [$resume->kd_prosedur_utama, $resume->kd_prosedur_sekunder, $resume->kd_prosedur_sekunder2, $resume->kd_prosedur_sekunder3],
+                        $kodeProsedur ?? []
+                    ))));
+                @endphp
+                @forelse($prosPdf as $i => $p)
+                    <div style="margin-bottom: 2px;"><strong>{{ $i === 0 ? 'Utama' : 'Sekunder ' . $i }}:</strong> {{ $p }}</div>
+                @empty
+                    <div>-</div>
+                @endforelse
+
+                @if(!empty($semuaKodePros))
+                    <div style="font-size: 7.5pt; color: #444; margin-top: 4px; padding-top: 3px; border-top: 1px dashed #ccc;">
+                        <strong>Kode ICD-9-CM (casemix):</strong> {{ implode(', ', $semuaKodePros) }}
+                    </div>
+                @endif
+            </td>
+        </tr>
+
+        <tr>
+            <td colspan="2" class="section-header">6. Tindakan, Terapi & Operasi Selama di Rumah Sakit</td>
         </tr>
         <tr>
             <td colspan="2">
@@ -308,7 +330,7 @@
         </tr>
 
         <tr>
-            <td colspan="2" class="section-header">6. Kondisi Saat Pulang & Keadaan Keluar</td>
+            <td colspan="2" class="section-header">7. Kondisi Saat Pulang & Keadaan Keluar</td>
         </tr>
         <tr>
             <td style="font-weight: bold; background-color: #fafafa;">Kondisi / Cara Keluar</td>
@@ -324,7 +346,7 @@
         </tr>
 
         <tr>
-            <td colspan="2" class="section-header">7. Terapi Obat Pulang</td>
+            <td colspan="2" class="section-header">8. Terapi Obat Pulang</td>
         </tr>
         <tr>
             <td colspan="2">
@@ -333,7 +355,7 @@
         </tr>
 
         <tr>
-            <td colspan="2" class="section-header">8. Instruksi Tindak Lanjut, Edukasi & Jadwal Kontrol</td>
+            <td colspan="2" class="section-header">9. Instruksi Tindak Lanjut, Edukasi & Jadwal Kontrol</td>
         </tr>
         <tr>
             <td colspan="2">

@@ -1148,58 +1148,89 @@ function initResumeHandlers() {
         }
     });
 
-    // TomSelect Diagnosa Primer (Single)
-    var tsResumePrimer = initRemoteSelect('#select-resume-icd10-primer', {
-        url: ranapUrl('/ralan/search-icd10'),
-        placeholder: 'Ketik kode / nama ICD-10 diagnosa utama...',
-        onItemAdd: function(item, ts) {
-            var parts = (item.text || '').split(' - ');
-            var kode = parts[0] || item.id;
-            var nama = parts.slice(1).join(' - ') || kode;
-            $('#resume_kd_diagnosa_utama').val(kode);
-            $('#resume_diagnosa_utama').val(nama);
-        },
-        onChange: function(value, ts) {
-            if (!value) {
-                $('#resume_kd_diagnosa_utama').val('');
-                $('#resume_diagnosa_utama').val('');
-            }
-        }
-    });
-
-    // Helper sinkronisasi 4 pasang hidden input diagnosa sekunder
-    function syncResumeSekunderHidden(tsInstance) {
-        var values = tsInstance ? tsInstance.getValue() : [];
-        if (!Array.isArray(values)) {
-            values = values ? [values] : [];
-        }
-
-        for (var i = 1; i <= 4; i++) {
-            var suffix = i === 1 ? '' : i;
-            var val = values[i - 1];
-            if (val && tsInstance.options[val]) {
-                var item = tsInstance.options[val];
-                var parts = (item.text || '').split(' - ');
-                var kode = parts[0] || item.id;
-                var nama = parts.slice(1).join(' - ') || kode;
-                $('#resume_kd_diagnosa_sekunder' + suffix).val(kode);
-                $('#resume_diagnosa_sekunder' + suffix).val(nama);
-            } else {
-                $('#resume_kd_diagnosa_sekunder' + suffix).val('');
-                $('#resume_diagnosa_sekunder' + suffix).val('');
-            }
-        }
+    // Baris Dinamis Diagnosa & Prosedur Resume Ranap (Sistem Ralan)
+    function barisResumeRanapHtml(nama, nilai) {
+        var placeholder = nama === 'diagnosa' ? 'Contoh: Dispepsia, GEA, Hipertensi...' : 'Contoh: Pasang Infus, EKG, Debridement...';
+        var $baris = $(
+            '<div class="resume-baris">' +
+            '<span class="resume-baris-label"></span>' +
+            '<input type="text" class="form-control form-control-sm" maxlength="80" placeholder="' + placeholder + '">' +
+            '<div class="btn-group btn-group-sm" role="group">' +
+            '<button type="button" class="btn btn-outline-secondary resume-naik" title="Naikkan urutan" aria-label="Naikkan">↑</button>' +
+            '<button type="button" class="btn btn-outline-secondary resume-turun" title="Turunkan urutan" aria-label="Turunkan">↓</button>' +
+            '<button type="button" class="btn btn-outline-danger resume-hapus" title="Hapus baris" aria-label="Hapus baris">✕</button>' +
+            '</div></div>'
+        );
+        $baris.find('input').attr('name', nama + '[]').val(nilai || '');
+        return $baris;
     }
 
-    // TomSelect Diagnosa Sekunder (Multiple, max 4 items)
-    var tsResumeSekunder = initRemoteSelect('#select-resume-icd10-sekunder', {
-        url: ranapUrl('/ralan/search-icd10'),
-        placeholder: 'Ketik kode / nama ICD-10 sekunder (maks. 4)...',
-        multiple: true,
-        maxItems: 4,
-        onChange: function(value, ts) {
-            syncResumeSekunderHidden(ts);
+    function nomoriBarisResumeRanap() {
+        $('#wrapperResumeRanap .resume-daftar').each(function() {
+            var $daftar = $(this);
+            var maks = parseInt($daftar.data('maks'), 10) || 5;
+            var $baris = $daftar.children('.resume-baris');
+            $baris.each(function(i) {
+                var label = i === 0 ? 'Utama' : 'Sekunder ' + i;
+                $(this).find('.resume-baris-label').text(label).toggleClass('utama', i === 0);
+            });
+            $daftar.nextAll('.resume-tambah').first().prop('disabled', $baris.length >= maks);
+        });
+    }
+
+    // Panggil penomoran baris saat inisialisasi tab resume
+    nomoriBarisResumeRanap();
+
+    // Event listeners untuk baris dinamis resume ranap
+    $(document).off('click', '#wrapperResumeRanap .resume-tambah').on('click', '#wrapperResumeRanap .resume-tambah', function() {
+        var $daftar = $(this).prevAll('.resume-daftar').first();
+        var maks = parseInt($daftar.data('maks'), 10) || 5;
+        if ($daftar.children('.resume-baris').length >= maks) {
+            tampilkanError('Maksimal ' + maks + ' baris.');
+            return;
         }
+        $daftar.append(barisResumeRanapHtml($daftar.data('nama'), ''));
+        nomoriBarisResumeRanap();
+        $daftar.children('.resume-baris').last().find('input').trigger('focus');
+    });
+
+    $(document).off('click', '#wrapperResumeRanap .resume-naik').on('click', '#wrapperResumeRanap .resume-naik', function() {
+        var $baris = $(this).closest('.resume-baris');
+        $baris.prev('.resume-baris').before($baris);
+        nomoriBarisResumeRanap();
+        $baris.find('.resume-naik').trigger('focus');
+    });
+
+    $(document).off('click', '#wrapperResumeRanap .resume-turun').on('click', '#wrapperResumeRanap .resume-turun', function() {
+        var $baris = $(this).closest('.resume-baris');
+        $baris.next('.resume-baris').after($baris);
+        nomoriBarisResumeRanap();
+        $baris.find('.resume-turun').trigger('focus');
+    });
+
+    $(document).off('click', '#wrapperResumeRanap .resume-hapus').on('click', '#wrapperResumeRanap .resume-hapus', function() {
+        var $daftar = $(this).closest('.resume-daftar');
+        $(this).closest('.resume-baris').remove();
+        if ($daftar.children('.resume-baris').length === 0 && $daftar.data('nama') === 'diagnosa') {
+            $daftar.append(barisResumeRanapHtml('diagnosa', ''));
+        }
+        nomoriBarisResumeRanap();
+    });
+
+    $(document).off('click', '#wrapperResumeRanap .resume-chip').on('click', '#wrapperResumeRanap .resume-chip', function() {
+        var teks = $(this).data('teks');
+        var $daftar = $('#resume-ranap-prosedur');
+        var $kosong = $daftar.find('input').filter(function() { return !this.value.trim(); }).first();
+        if ($kosong.length) {
+            $kosong.val(teks);
+        } else if ($daftar.children('.resume-baris').length < parseInt($daftar.data('maks'), 10)) {
+            $daftar.append(barisResumeRanapHtml('prosedur', teks));
+        } else {
+            tampilkanError('Prosedur maksimal 4 baris.');
+            return;
+        }
+        $(this).remove();
+        nomoriBarisResumeRanap();
     });
 
     // Tombol Tarik Data Auto Resume (Ambil data terbaru dari SOAP, diagnosa, dan obat)
@@ -1214,7 +1245,7 @@ function initResumeHandlers() {
 
         Swal.fire({
             title: 'Tarik Data Rekam Medis Terbaru?',
-            text: 'Form akan diisi dengan data SOAP ranap terakhir, diagnosa ICD, obat, serta hasil Lab & Radiologi terbaru.',
+            text: 'Form akan diisi dengan data SOAP ranap terakhir, diagnosa klinis, obat, serta hasil Lab & Radiologi terbaru.',
             icon: 'question',
             showCancelButton: true,
             confirmButtonText: 'Ya, Tarik Data Terbaru',
@@ -1227,38 +1258,33 @@ function initResumeHandlers() {
                 if (autoData.tindakan) $('#resume_tindakan_operasi').val(autoData.tindakan);
                 if (autoData.edukasi) $('#resume_edukasi').val(autoData.edukasi);
 
-                // Set Diagnosa Primer
-                if (tsResumePrimer) {
-                    tsResumePrimer.clear(true);
-                    if (autoData.kd_diagnosa_utama) {
-                        var kdPrim = autoData.kd_diagnosa_utama;
-                        var nmPrim = autoData.diagnosa_utama || kdPrim;
-                        tsResumePrimer.addOption({ id: kdPrim, text: kdPrim + ' - ' + nmPrim });
-                        tsResumePrimer.setValue(kdPrim);
-                    } else {
-                        $('#resume_kd_diagnosa_utama').val('');
-                        $('#resume_diagnosa_utama').val('');
-                    }
-                }
-
-                // Set Diagnosa Sekunder (Maks 4 items)
-                if (tsResumeSekunder) {
-                    tsResumeSekunder.clear(true);
-                    var sekunderList = autoData.diagnosa_sekunder_items || [];
-                    var sekunderValues = [];
-                    sekunderList.slice(0, 4).forEach(function(item) {
-                        if (item.kd) {
-                            var kdSek = item.kd;
-                            var nmSek = item.nm || kdSek;
-                            tsResumeSekunder.addOption({ id: kdSek, text: kdSek + ' - ' + nmSek });
-                            sekunderValues.push(kdSek);
+                // Tarik Diagnosa (Array)
+                var diagList = autoData.diagnosa_list || [];
+                if (diagList.length > 0) {
+                    var $daftarDiag = $('#resume-ranap-diagnosa');
+                    $daftarDiag.empty();
+                    diagList.slice(0, 5).forEach(function(d) {
+                        if (d && d.trim()) {
+                            $daftarDiag.append(barisResumeRanapHtml('diagnosa', d.trim()));
                         }
                     });
-                    if (sekunderValues.length > 0) {
-                        tsResumeSekunder.setValue(sekunderValues);
-                    } else {
-                        syncResumeSekunderHidden(tsResumeSekunder);
+                    if ($daftarDiag.children('.resume-baris').length === 0) {
+                        $daftarDiag.append(barisResumeRanapHtml('diagnosa', ''));
                     }
+                    nomoriBarisResumeRanap();
+                }
+
+                // Tarik Prosedur (Array)
+                var prosList = autoData.prosedur_list || [];
+                if (prosList.length > 0) {
+                    var $daftarPros = $('#resume-ranap-prosedur');
+                    $daftarPros.empty();
+                    prosList.slice(0, 4).forEach(function(p) {
+                        if (p && p.trim()) {
+                            $daftarPros.append(barisResumeRanapHtml('prosedur', p.trim()));
+                        }
+                    });
+                    nomoriBarisResumeRanap();
                 }
 
                 tampilkanSukses('Data rekam medis terbaru berhasil ditarik ke form.');
