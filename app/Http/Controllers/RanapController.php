@@ -13,6 +13,7 @@ use App\Services\Ranap\RanapPenunjangService;
 use App\Services\Ranap\RanapSoapService;
 use App\Services\Ranap\RanapVitalSignService;
 use App\Services\Ranap\RanapResumeService;
+use App\Services\Ranap\ResumeRanapService;
 use App\Services\Ralan\LaboratoriumService;
 use App\Services\Ralan\RadiologiService;
 use App\Http\Requests\Ranap\StoreSoapRanapRequest;
@@ -290,12 +291,22 @@ class RanapController extends Controller
         return view('ranap.tabs.resume', $data);
     }
 
-    public function storeResumePasien(StoreResumeRanapRequest $request)
+    public function storeResumePasien(StoreResumeRanapRequest $request, ResumeRanapService $resumeRanap)
     {
-        $defaultKdDokter = Auth::user()->decrypted_id ?? null;
-        $res = $this->resumeService->simpan($request->validated(), $defaultKdDokter);
+        $selesai = $request->boolean('selesai');
+        $meta = $resumeRanap->simpan(
+            $request->no_rawat,
+            $request->validated(),
+            (string) (Auth::user()->decrypted_id ?? ''),
+            $selesai
+        );
 
-        return response()->json($res);
+        return response()->json([
+            'status'        => 'success',
+            'message'       => $selesai ? 'Resume disimpan dan ditandai selesai.' : 'Draf resume disimpan.',
+            'status_resume' => $meta->status,
+            'diubah_pada'   => $meta->diubah_pada->format('Y-m-d H:i:s'),
+        ]);
     }
 
     /**
