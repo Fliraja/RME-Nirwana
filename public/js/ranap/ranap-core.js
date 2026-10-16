@@ -1130,7 +1130,7 @@ function initResumeHandlers() {
         var $card = $(this).closest('.kondisi-pulang-card');
         $card.removeClass('bg-light text-secondary').addClass('fw-bold shadow-sm');
 
-        if (val === 'sembuh') {
+        if (val === 'sembuh' || val === 'membaik') {
             $card.addClass('border-success bg-success-subtle text-success-emphasis');
         } else if (val === 'aps') {
             $card.addClass('border-warning bg-warning-subtle text-warning-emphasis');

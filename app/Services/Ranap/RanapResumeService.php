@@ -310,8 +310,9 @@ class RanapResumeService
 
         switch ($kondisiOpsi) {
             case 'sembuh':
+            case 'membaik':
                 $caraKeluar = 'Atas Izin Dokter';
-                $keadaan = 'Membaik';
+                $keadaan = $kondisiOpsi === 'sembuh' ? 'Sembuh' : 'Membaik';
                 $dilanjutkan = 'Kembali Ke RS';
                 break;
             case 'aps':
@@ -325,12 +326,16 @@ class RanapResumeService
                 $keadaan = 'Meninggal';
                 $ketKeadaan = '< 48 jam';
                 $ketKeluar = 'Meninggal dunia < 48 jam';
+                $dilanjutkan = 'Lainnya';
+                $ketDilanjutkan = 'Meninggal dunia';
                 break;
             case 'meninggal_lebih_48':
                 $caraKeluar = 'Lainnya';
                 $keadaan = 'Meninggal';
                 $ketKeadaan = '> 48 jam';
                 $ketKeluar = 'Meninggal dunia > 48 jam';
+                $dilanjutkan = 'Lainnya';
+                $ketDilanjutkan = 'Meninggal dunia';
                 break;
             case 'dirujuk':
                 $namaRujukan = trim($data['nama_faskes_rujukan'] ?? '');
@@ -351,7 +356,7 @@ class RanapResumeService
 
         // Format tanggal kontrol jika ada
         $kontrol = null;
-        if (!empty($data['kontrol'])) {
+        if (!empty($data['kontrol']) && $keadaan !== 'Meninggal') {
             try {
                 $kontrol = Carbon::parse($data['kontrol'])->format('Y-m-d H:i:s');
             } catch (\Exception $e) {
@@ -359,40 +364,42 @@ class RanapResumeService
             }
         }
 
+        // Kolom yang tidak ada di form dipertahankan dari resume tersimpan.
         $existing = ResumePasienRanap::find($noRawat);
 
         $payload = [
             'kd_dokter'              => $kdDokter,
             'diagnosa_awal'          => $data['diagnosa_awal'] ?? '',
-            'alasan'                 => $data['alasan'] ?? '',
-            'keluhan_utama'          => $data['keluhan_utama'] ?? '',
+            'alasan'                 => $existing->alasan ?? '',
+            'keluhan_utama'          => $existing->keluhan_utama ?? '',
             'pemeriksaan_fisik'      => $data['pemeriksaan_fisik'] ?? '',
             'jalannya_penyakit'      => $data['jalannya_penyakit'] ?? '',
             'pemeriksaan_penunjang'  => $data['pemeriksaan_penunjang'] ?? '',
-            'hasil_laborat'          => $data['hasil_laborat'] ?? '',
+            'hasil_laborat'          => $existing->hasil_laborat ?? '',
             'tindakan_dan_operasi'   => $data['tindakan_dan_operasi'] ?? '',
-            'obat_di_rs'             => $data['obat_di_rs'] ?? '',
+            'obat_di_rs'             => $existing->obat_di_rs ?? '',
+            // kd_* selalu kosong: kode ICD diisi casemix di diagnosa_pasien/prosedur_pasien.
             'diagnosa_utama'         => $data['diagnosa_utama'] ?? '',
-            'kd_diagnosa_utama'      => $data['kd_diagnosa_utama'] ?? ($existing->kd_diagnosa_utama ?? ''),
+            'kd_diagnosa_utama'      => '',
             'diagnosa_sekunder'      => $data['diagnosa_sekunder'] ?? '',
-            'kd_diagnosa_sekunder'   => $data['kd_diagnosa_sekunder'] ?? ($existing->kd_diagnosa_sekunder ?? ''),
+            'kd_diagnosa_sekunder'   => '',
             'diagnosa_sekunder2'     => $data['diagnosa_sekunder2'] ?? '',
-            'kd_diagnosa_sekunder2'  => $data['kd_diagnosa_sekunder2'] ?? ($existing->kd_diagnosa_sekunder2 ?? ''),
+            'kd_diagnosa_sekunder2'  => '',
             'diagnosa_sekunder3'     => $data['diagnosa_sekunder3'] ?? '',
-            'kd_diagnosa_sekunder3'  => $data['kd_diagnosa_sekunder3'] ?? ($existing->kd_diagnosa_sekunder3 ?? ''),
+            'kd_diagnosa_sekunder3'  => '',
             'diagnosa_sekunder4'     => $data['diagnosa_sekunder4'] ?? '',
-            'kd_diagnosa_sekunder4'  => $data['kd_diagnosa_sekunder4'] ?? ($existing->kd_diagnosa_sekunder4 ?? ''),
+            'kd_diagnosa_sekunder4'  => '',
             'prosedur_utama'         => $data['prosedur_utama'] ?? '',
-            'kd_prosedur_utama'      => $data['kd_prosedur_utama'] ?? ($existing->kd_prosedur_utama ?? ''),
+            'kd_prosedur_utama'      => '',
             'prosedur_sekunder'      => $data['prosedur_sekunder'] ?? '',
-            'kd_prosedur_sekunder'   => $data['kd_prosedur_sekunder'] ?? ($existing->kd_prosedur_sekunder ?? ''),
+            'kd_prosedur_sekunder'   => '',
             'prosedur_sekunder2'     => $data['prosedur_sekunder2'] ?? '',
-            'kd_prosedur_sekunder2'  => $data['kd_prosedur_sekunder2'] ?? ($existing->kd_prosedur_sekunder2 ?? ''),
+            'kd_prosedur_sekunder2'  => '',
             'prosedur_sekunder3'     => $data['prosedur_sekunder3'] ?? '',
-            'kd_prosedur_sekunder3'  => $data['kd_prosedur_sekunder3'] ?? ($existing->kd_prosedur_sekunder3 ?? ''),
-            'alergi'                 => $data['alergi'] ?? '',
-            'diet'                   => $data['diet'] ?? '',
-            'lab_belum'              => $data['lab_belum'] ?? '',
+            'kd_prosedur_sekunder3'  => '',
+            'alergi'                 => $existing->alergi ?? '',
+            'diet'                   => $existing->diet ?? '',
+            'lab_belum'              => $existing->lab_belum ?? '',
             'edukasi'                => $data['edukasi'] ?? '',
             'cara_keluar'            => $caraKeluar,
             'ket_keluar'             => $ketKeluar,
