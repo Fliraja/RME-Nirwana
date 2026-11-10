@@ -4,6 +4,7 @@ namespace App\Services\Igd;
 
 use App\Exceptions\AsesmenUsang;
 use App\Models\Dokter;
+use App\Models\RegPeriksa;
 use App\Models\RmeAsesmenIgd;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -46,6 +47,21 @@ class AsesmenIgdService
             'sidik'   => $asesmen ? $this->sidik($asesmen) : null,
             'penulis' => $penulis,
             'jejak'   => $asesmen ? $this->jejak($asesmen, $meta, $penulis) : null,
+        ];
+    }
+
+    /** Data cetak asesmen; null bila asesmen belum pernah ditulis. Tanda tangan = dokter penulis (kd_dokter). */
+    public function dataPdf(string $noRawat): ?array
+    {
+        $asesmen = DB::table('penilaian_medis_igd')->where('no_rawat', $noRawat)->first();
+        if (!$asesmen) {
+            return null;
+        }
+
+        return [
+            'asesmen' => $asesmen,
+            'reg'     => RegPeriksa::with(['pasien', 'penjab'])->where('no_rawat', $noRawat)->first(),
+            'dokter'  => Dokter::find($asesmen->kd_dokter),
         ];
     }
 

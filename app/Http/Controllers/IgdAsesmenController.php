@@ -8,6 +8,7 @@ use App\Services\Igd\AsesmenIgdReferensi;
 use App\Services\Igd\AsesmenIgdService;
 use App\Services\Igd\IgdOrderService;
 use App\Support\Alergi;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 /** Tab Asesmen di halaman pasien IGD. Boleh diubah dokter IGD mana pun, juga setelah pasien rawat inap. */
 class IgdAsesmenController extends Controller
@@ -28,6 +29,17 @@ class IgdAsesmenController extends Controller
         $this->pastikanIgd($noRawat);
 
         return response()->json($referensi->untuk($noRawat));
+    }
+
+    public function pdf(string $no_rawat)
+    {
+        $noRawat = IgdController::noRawat($no_rawat);
+        $this->pastikanIgd($noRawat);
+        $data = $this->asesmen->dataPdf($noRawat);
+        abort_unless($data, 404, 'Asesmen belum ditulis. Simpan asesmen dulu sebelum mencetak.');
+
+        return Pdf::loadView('igd.pdf.asesmen_pdf', $data)->setPaper('a4', 'portrait')
+            ->stream('Asesmen_IGD_' . str_replace('/', '_', $noRawat) . '.pdf');
     }
 
     public function simpan(StoreAsesmenIgdRequest $request)

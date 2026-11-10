@@ -211,7 +211,7 @@
     .igd-pilih-organ .igd-pilih-opsi { padding: 4px 8px; }
     .igd-hubungan { max-width: none; }
     .igd-asesmen-bilah .resume-aksi { width: 100%; }
-    .igd-asesmen-bilah .resume-aksi .btn { flex: 1; min-height: 44px; }
+    .igd-asesmen-bilah .resume-aksi .btn { flex: 1; min-height: 44px; white-space: nowrap; padding-left: 8px; padding-right: 8px; }
 }
 @media (pointer: coarse) {
     .igd-pilih-opsi, .igd-pilih-organ .igd-pilih-opsi { min-height: 44px; }

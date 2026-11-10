@@ -174,6 +174,12 @@
             <div class="igd-asesmen-pesan" data-pesan role="alert"></div>
         </div>
         <div class="resume-aksi d-flex gap-2">
+            {{-- Cetak memakai asesmen tersimpan terakhir; sebelum pernah disimpan belum ada yang bisa dicetak. --}}
+            <a class="btn igd-btn-garis" data-cetak href="{{ route('igd.asesmen.pdf', str_replace('/', '-', $noRawat)) }}" target="_blank" rel="noopener"
+               @unless($asesmen) hidden @endunless>Cetak PDF</a>
+            <button type="button" class="btn igd-btn-garis" data-cetak-nonaktif disabled aria-describedby="igd-cetak-ket"
+                    @if($asesmen) hidden @endif>Cetak PDF</button>
+            <span class="visually-hidden" id="igd-cetak-ket">Simpan asesmen dulu sebelum mencetak.</span>
             <button type="submit" class="btn igd-btn-utama" data-simpan>Simpan asesmen</button>
         </div>
     </div>

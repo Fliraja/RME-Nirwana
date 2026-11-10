@@ -157,6 +157,8 @@
                     var jam = new Date();
                     info.textContent = 'Tersimpan ' + String(jam.getHours()).padStart(2, '0') + '.' + String(jam.getMinutes()).padStart(2, '0');
                     perbaruiKepala(r.json.alergi);
+                    form.querySelector('[data-cetak]').hidden = false;
+                    form.querySelector('[data-cetak-nonaktif]').hidden = true;
                     toast('success', 'Asesmen tersimpan.');
                 } else if (r.status === 422 && r.json.errors) {
                     var n = Object.keys(r.json.errors).length;
