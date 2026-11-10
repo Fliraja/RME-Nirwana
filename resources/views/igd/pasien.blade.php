@@ -22,10 +22,11 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="asesmen-tab" data-bs-toggle="tab" data-bs-target="#tab-asesmen" type="button" role="tab" aria-controls="tab-asesmen" aria-selected="false">
+            <button class="nav-link" id="asesmen-tab" data-bs-toggle="tab" data-bs-target="#tab-asesmen" type="button" role="tab" aria-controls="tab-asesmen" aria-selected="false"
+                    data-src="{{ route('igd.asesmen', $noRawatUrl) }}" data-label="asesmen">
                 <i class="fas fa-notes-medical" aria-hidden="true"></i> Asesmen
                 @unless($kepala['ada_asesmen'])
-                    <span class="igd-tab-tanda igd-tab-tanda-belum">belum</span>
+                    <span class="igd-tab-tanda igd-tab-tanda-belum" data-tanda-belum>belum</span>
                 @endunless
             </button>
         </li>
@@ -42,7 +43,7 @@
             <div class="igd-isi-tab"></div>
         </div>
         <div class="tab-pane fade" id="tab-asesmen" role="tabpanel" aria-labelledby="asesmen-tab" tabindex="0">
-            <div class="ralan-card"><div class="ralan-card-body igd-kosong">Form asesmen medis IGD sedang disiapkan.</div></div>
+            <div class="igd-isi-tab"></div>
         </div>
         <div class="tab-pane fade" id="tab-riwayat" role="tabpanel" aria-labelledby="riwayat-tab" tabindex="0">
             <div class="ralan-card"><div class="ralan-card-body igd-isi-tab"></div></div>
@@ -66,9 +67,11 @@
                 simpanObat: @json(route('igd.order.resep.obat')),
                 simpanRacikan: @json(route('igd.order.resep.racikan')),
                 hapusResep: @json(url('/igd/order/resep')),
+                simpanAsesmen: @json(route('igd.asesmen.simpan')),
             },
         };
     </script>
     <script src="{{ asset('js/igd/igd-order.js') }}"></script>
+    <script src="{{ asset('js/igd/igd-asesmen.js') }}"></script>
     <script src="{{ asset('js/igd/igd-core.js') }}"></script>
 @endpush
