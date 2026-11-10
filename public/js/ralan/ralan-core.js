@@ -40,6 +40,16 @@ function tampilkanSukses(message) {
 }
 
 /* ===== Tom Select helpers (pengganti Select2) ===== */
+/* Opsi barang dari /ralan/search-obat membawa tingkat stok apotek; barang habis tidak bisa dipilih (disabled). */
+function renderOpsiBarang(data, escape) {
+    if (!data.tingkat) return '<div>' + escape(data.text) + '</div>';
+    var ikon = { aman: 'fa-circle-check', tipis: 'fa-triangle-exclamation', habis: 'fa-ban' }[data.tingkat] || '';
+    return '<div class="opsi-barang">' +
+        '<span class="opsi-barang-nama">' + escape(data.text) + '</span>' +
+        '<span class="stok-badge stok-' + escape(data.tingkat) + '"><i class="fas ' + ikon + '" aria-hidden="true"></i> ' + escape(data.label) + '</span>' +
+        '</div>';
+}
+
 function initRemoteSelect(selector, opts) {
     var el = document.querySelector(selector);
     if (!el) return null;
@@ -49,6 +59,8 @@ function initRemoteSelect(selector, opts) {
         valueField: 'id',
         labelField: 'text',
         searchField: 'text',
+        sortField: [{ field: 'urut', direction: 'asc' }, { field: '$score' }],
+        render: { option: renderOpsiBarang },
         maxItems: opts.multiple ? null : 1,
         maxOptions: 50,
         loadThrottle: 200,

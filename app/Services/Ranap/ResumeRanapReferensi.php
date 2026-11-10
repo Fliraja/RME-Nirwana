@@ -2,7 +2,9 @@
 
 namespace App\Services\Ranap;
 
+use App\Services\Obat\ObatDiberikan;
 use App\Support\DiagnosaSplitter;
+use App\Support\LabDiLuarRujukan;
 use App\Support\ResumeFormat;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -14,6 +16,8 @@ use Illuminate\Support\Facades\DB;
  */
 class ResumeRanapReferensi
 {
+    public function __construct(private ObatDiberikan $obatDiberikan) {}
+
     public const KUNCI = ['keluhan', 'perjalanan', 'pemeriksaan', 'lab', 'penunjang', 'diagnosis',
         'tindakan', 'terapi', 'kondisi', 'obat_pulang', 'instruksi', 'kontrol'];
 
@@ -164,27 +168,9 @@ class ResumeRanapReferensi
     /** Lab per paket, hanya nilai di luar rujukan. */
     private function lab(string $noRawat, ?object $igd): array
     {
-        $item = DB::table('detail_periksa_lab as d')
-            ->join('template_laboratorium as t', function ($j) {
-                $j->on('t.id_template', '=', 'd.id_template')->on('t.kd_jenis_prw', '=', 'd.kd_jenis_prw');
-            })
-            ->join('jns_perawatan_lab as j', 'j.kd_jenis_prw', '=', 'd.kd_jenis_prw')
-            ->where('d.no_rawat', $noRawat)
-            ->orderBy('d.tgl_periksa')->orderBy('d.jam')->orderBy('t.urut')
-            ->get(['d.kd_jenis_prw', 'd.tgl_periksa', 'd.jam', 'j.nm_perawatan', 't.Pemeriksaan', 'd.nilai', 't.satuan', 'd.nilai_rujukan'])
-            ->map(function ($r) {
-                $r->flag = ResumeFormat::flagLab((string) $r->nilai, (string) $r->nilai_rujukan);
-                return $r;
-            })
-            ->filter(fn ($r) => $r->flag !== '')
-            ->groupBy(fn ($r) => "{$r->kd_jenis_prw}|{$r->tgl_periksa}|{$r->jam}")
-            ->map(fn ($baris) => self::item(
-                $baris->map(fn ($r) => ResumeFormat::barisLab((string) $r->Pemeriksaan, (string) $r->nilai, (string) $r->satuan, (string) $r->nilai_rujukan))->implode("\n"),
-                'Lab ' . trim($baris->first()->nm_perawatan) . ' · ' . self::tgl($baris->first()->tgl_periksa),
-                'sistem',
-                $baris->first()->tgl_periksa
-            ))
-            ->values()->all();
+        $item = LabDiLuarRujukan::perPaket($noRawat)
+            ->map(fn ($p) => self::item(implode("\n", $p['baris']), 'Lab ' . $p['paket'] . ' · ' . self::tgl($p['tanggal']), 'sistem', $p['tanggal']))
+            ->all();
 
         if ($igd && self::isi($igd->lab) !== '') {
             $item[] = self::item(self::isi($igd->lab), 'Asesmen IGD · lab', 'dokter', substr($igd->tanggal, 0, 10));
@@ -263,21 +249,22 @@ class ResumeRanapReferensi
     /** @return array{0: list<array>, 1: list<array>} [obat selama dirawat, obat pada tanggal pemberian terakhir] */
     private function obat(string $noRawat): array
     {
-        $diberikan = DB::table('detail_pemberian_obat as d')->join('databarang as b', 'b.kode_brng', '=', 'd.kode_brng')
-            ->leftJoin('golongan_barang as g', 'g.kode', '=', 'b.kode_golongan')
-            ->where('d.no_rawat', $noRawat)->where(fn ($q) => $q->whereNull('g.nama')->orWhere('g.nama', '<>', 'ALKES'))
-            ->select('b.nama_brng as nama', 'd.tgl_perawatan as tanggal')
-            ->unionAll(DB::table('obat_racikan')->where('no_rawat', $noRawat)->select('nama_racik as nama', 'tgl_perawatan as tanggal'))
-            ->get()
-            ->filter(fn ($r) => self::isi($r->nama) !== '' && !preg_match(self::BUKAN_OBAT, $r->nama));
+        // Racikan diwakili namanya; komponen racikan tidak dicantumkan sendiri.
+        $diberikan = $this->obatDiberikan->untukKunjungan($noRawat)
+            ->map(fn ($r) => $r['racikan']
+                ? ['nama' => (string) $r['nama_racik'], 'tanggal' => $r['tgl_perawatan'], 'aturan' => $r['aturan'], 'bhp' => false]
+                : ['nama' => $r['nama_brng'], 'tanggal' => $r['tgl_perawatan'], 'aturan' => $r['aturan'], 'bhp' => $r['golongan'] === 'ALKES'])
+            ->filter(fn ($r) => !$r['bhp'] && self::isi($r['nama']) !== '' && !preg_match(self::BUKAN_OBAT, $r['nama']));
 
         if ($diberikan->isEmpty()) {
             return [[], []];
         }
 
-        $semua = $diberikan->pluck('nama')->map(fn ($n) => trim($n))->unique()->sort()->values();
+        $semua = $diberikan->pluck('nama')->unique()->sort()->values();
         $terakhir = $diberikan->max('tanggal');
-        $hariTerakhir = $diberikan->where('tanggal', $terakhir)->pluck('nama')->map(fn ($n) => trim($n))->unique()->sort()->values();
+        $hariTerakhir = $diberikan->where('tanggal', $terakhir)
+            ->map(fn ($r) => $r['aturan'] ? "{$r['nama']} ({$r['aturan']})" : $r['nama'])
+            ->unique()->sort()->values();
 
         return [
             [self::item($semua->implode(', '), 'Obat yang diberikan apotek selama dirawat')],

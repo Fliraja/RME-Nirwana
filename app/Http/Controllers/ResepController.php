@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\ResepObat;
-use App\Models\DataBarang;
 use App\Models\RegPeriksa;
+use App\Services\Obat\StokObatService;
 use App\Models\ResepDokter;
+use App\Exceptions\ResepTerkunci;
+use App\Services\Resep\ResepService;
 use Illuminate\Http\Request;
 use App\Models\MasterAturanPakai;
 use App\Support\NomorUrut;
@@ -14,6 +16,8 @@ use Illuminate\Support\Facades\Auth;
 
 class ResepController extends Controller
 {
+    public function __construct(private ResepService $resep) {}
+
     public function getResepPasien($no_rawat)
     {
         $no_rawat = str_replace('-', '/', $no_rawat);
@@ -60,55 +64,14 @@ class ResepController extends Controller
             'obat.*.aturan_pakai' => 'required|string',
         ]);
 
-        return NomorUrut::denganRetry(function () use ($request) {
-            $tgl_sekarang = date('Y-m-d');
-            $jam_sekarang = date('H:i:s');
+        return $this->jalankan(function () use ($request) {
+            $hasil = $this->resep->tambahObat($request->no_rawat, $request->obat, Auth::user()->decrypted_id);
 
-            $resep = ResepObat::where('no_rawat', $request->no_rawat)
-                ->where('tgl_peresepan', $tgl_sekarang)
-                ->first();
-
-            if (!$resep) {
-                $nextNoResep = $this->nextNoResep();
-
-                $kd_dokter = Auth::user()->decrypted_id;
-
-                $reg = RegPeriksa::where('no_rawat', $request->no_rawat)->first();
-                $statusResep = ($reg && strtolower($reg->status_lanjut) === 'ranap') ? 'ranap' : 'ralan';
-
-                $resep = ResepObat::create([
-                    'no_resep'       => $nextNoResep,
-                    'tgl_perawatan'  => $tgl_sekarang,
-                    'jam'            => $jam_sekarang,
-                    'no_rawat'       => $request->no_rawat,
-                    'kd_dokter'      => $kd_dokter,
-                    'tgl_peresepan'  => $tgl_sekarang,
-                    'jam_peresepan'  => $jam_sekarang,
-                    'status'         => $statusResep,
-                    'tgl_penyerahan' => null,
-                    'jam_penyerahan' => null,
-                ]);
-            }
-
-            foreach ($request->obat as $item) {
-                $this->ensureAturan($item['aturan_pakai']);
-
-                ResepDokter::updateOrCreate(
-                    [
-                        'no_resep'  => $resep->no_resep,
-                        'kode_brng' => $item['kode_obat'],
-                    ],
-                    [
-                        'jml'          => $item['jumlah'],
-                        'aturan_pakai' => $item['aturan_pakai'],
-                    ]
-                );
-            }
-
-            return response()->json([
-                'status'  => 'success-obat',
-                'message' => count($request->obat) . ' obat berhasil disimpan ke resep',
-            ]);
+            return [
+                'status'   => 'success-obat',
+                'message'  => count($request->obat) . ' obat berhasil disimpan ke resep',
+                'no_resep' => $hasil['no_resep'],
+            ];
         });
     }
 
@@ -122,187 +85,65 @@ class ResepController extends Controller
             'aturan_racik' => 'required',
             'detail_obat'   => 'required|array|min:1',
             'detail_obat.*.kode_brng' => 'required',
-            'detail_obat.*.p1'        => 'required|numeric', 
-            'detail_obat.*.p2'        => 'required|numeric', 
-            'detail_obat.*.kandungan' => 'required',        
+            'detail_obat.*.p1'        => 'required|numeric',
+            'detail_obat.*.p2'        => 'required|numeric',
+            'detail_obat.*.kandungan' => 'required',
             'detail_obat.*.jml'       => 'required|numeric',
         ]);
 
-        return NomorUrut::denganRetry(function () use ($request) {
-            $tgl_sekarang = date('Y-m-d');
-            $jam_sekarang = date('H:i:s');
+        $aturanRacik = $request->aturan_racik === 'lainnya'
+            ? ($request->aturan_racik_lainnya ?? '')
+            : $request->aturan_racik;
 
-            $resep = ResepObat::where('no_rawat', $request->no_rawat)
-                ->where('tgl_peresepan', $tgl_sekarang)
-                ->first();
-
-            if (!$resep) {
-                $nextNoResep = $this->nextNoResep();
-
-                $kd_dokter = Auth::user()->decrypted_id;
-
-                $reg = RegPeriksa::where('no_rawat', $request->no_rawat)->first();
-                $statusResep = ($reg && strtolower($reg->status_lanjut) === 'ranap') ? 'ranap' : 'ralan';
-
-                $resep = ResepObat::create([
-                    'no_resep'      => $nextNoResep,
-                    'tgl_perawatan' => $tgl_sekarang,
-                    'jam' => $jam_sekarang,
-                    'no_rawat'      => $request->no_rawat,
-                    'kd_dokter'     => $kd_dokter, 
-                    'tgl_peresepan' => $tgl_sekarang,
-                    'jam_peresepan' => $jam_sekarang,
-                    'status'        => $statusResep,
-                    'tgl_penyerahan'        => null,
-                    'jam_penyerahan'        => null,
-                ]);
-            }
-
-            $aturanRacik = $request->aturan_racik === 'lainnya'
-                ? ($request->aturan_racik_lainnya ?? '')
-                : $request->aturan_racik;
-            $this->ensureAturan($aturanRacik);
-
-            $no_racik = DB::table('resep_dokter_racikan')
-                ->where('no_resep', $resep->no_resep)
-                ->max('no_racik') ?? 0;
-            $new_no_racik = $no_racik + 1;
-
-            DB::table('resep_dokter_racikan')->insert([
-                'no_resep'     => $resep->no_resep,
-                'no_racik'     => $no_racik + 1,
+        return $this->jalankan(function () use ($request, $aturanRacik) {
+            $hasil = $this->resep->tambahRacikan($request->no_rawat, [
                 'nama_racik'   => $request->nama_racik,
                 'kd_racik'     => $request->kd_racik,
                 'jml_dr'       => $request->jml_dr,
                 'aturan_pakai' => $aturanRacik,
                 'keterangan'   => $request->keterangan ?? '-',
-            ]);
+                'detail'       => $request->detail_obat,
+            ], Auth::user()->decrypted_id);
 
-            foreach ($request->detail_obat as $obat) {
-                DB::table('resep_dokter_racikan_detail')->insert([
-                    'no_resep'  => $resep->no_resep,
-                    'no_racik'  => $new_no_racik,
-                    'kode_brng' => $obat['kode_brng'],
-                    'p1'        => $obat['p1'],
-                    'p2'        => $obat['p2'],
-                    'kandungan' => $obat['kandungan'],
-                    'jml'       => $obat['jml'] 
-                ]);
-            }
-
-            return response()->json([
-                'status' => 'success-racik',
-                'message' => 'Resep racikan berhasil ditambahkan',
-                'no_resep' => $resep->no_resep,
-                'no_racik' => $no_racik + 1
-            ]);
+            return [
+                'status'   => 'success-racik',
+                'message'  => 'Resep racikan berhasil ditambahkan',
+                'no_resep' => $hasil['no_resep'],
+                'no_racik' => $hasil['no_racik'],
+            ];
         });
     }
 
     public function deleteResepObat($no_resep, $kode_brng)
     {
-        return DB::transaction(function () use ($no_resep, $kode_brng) {
-            try {
-                DB::table('resep_dokter')
-                    ->where('no_resep', $no_resep)
-                    ->where('kode_brng', $kode_brng)
-                    ->delete();
+        return $this->jalankan(function () use ($no_resep, $kode_brng) {
+            $this->resep->hapusObat($no_resep, $kode_brng);
 
-                $countObat = DB::table('resep_dokter')->where('no_resep', $no_resep)->count();
-                $countRacik = DB::table('resep_dokter_racikan')->where('no_resep', $no_resep)->count();
-
-                if ($countObat == 0 && $countRacik == 0) {
-                    DB::table('resep_obat')->where('no_resep', $no_resep)->delete();
-                }
-
-                return response()->json([
-                    'status' => 'success-hapus-obat',
-                    'message' => 'Item resep berhasil dihapus'
-                ]);
-            } catch (\Exception $e) {
-                return response()->json([
-                    'status' => 'error-obat',
-                    'message' => 'Gagal menghapus item: ' . $e->getMessage()
-                ], 500);
-            }
+            return ['status' => 'success-hapus-obat', 'message' => 'Item resep berhasil dihapus'];
         });
     }
 
     public function deleteResepRacikan($no_resep, $no_racik)
     {
-        return DB::transaction(function () use ($no_resep, $no_racik) {
-            try {
-                DB::table('resep_dokter_racikan_detail')
-                    ->where('no_resep', $no_resep)
-                    ->where('no_racik', $no_racik)
-                    ->delete();
+        return $this->jalankan(function () use ($no_resep, $no_racik) {
+            $this->resep->hapusRacikan($no_resep, (int) $no_racik);
 
-                DB::table('resep_dokter_racikan')
-                    ->where('no_resep', $no_resep)
-                    ->where('no_racik', $no_racik)
-                    ->delete();
-
-                $countObat = DB::table('resep_dokter')->where('no_resep', $no_resep)->count();
-                $countRacik = DB::table('resep_dokter_racikan')->where('no_resep', $no_resep)->count();
-
-                if ($countObat == 0 && $countRacik == 0) {
-                    DB::table('resep_obat')->where('no_resep', $no_resep)->delete();
-                }
-
-                return response()->json([
-                    'status' => 'success-hapus-racikan',
-                    'message' => 'Satu kelompok racikan berhasil dihapus'
-                ]);
-            } catch (\Exception $e) {
-                return response()->json([
-                    'status' => 'error-racikan',
-                    'message' => 'Gagal menghapus racikan: ' . $e->getMessage()
-                ], 500);
-            }
+            return ['status' => 'success-hapus-racikan', 'message' => 'Satu kelompok racikan berhasil dihapus'];
         });
     }
 
-    /** Format Khanza: Ymd + 4 digit, contoh 202610140001. */
-    private function nextNoResep(): string
+    /** Penolakan yang bisa dibaca dokter (sudah divalidasi apotek, stok habis) dikirim sebagai 409. */
+    private function jalankan(callable $aksi)
     {
-        $prefix = date('Ymd');
-
-        return $prefix . sprintf('%04d', NomorUrut::berikutnya('resep_obat', 'no_resep', $prefix, 4));
-    }
-
-    /** Simpan aturan pakai baru ke master bila belum ada. */
-    private function ensureAturan(?string $aturan): void
-    {
-        $aturan = trim((string) $aturan);
-        if ($aturan === '' || $aturan === '-' || mb_strlen($aturan) > 40) {
-            return;
-        }
-        if (! DB::table('master_aturan_pakai')->where('aturan', $aturan)->exists()) {
-            DB::table('master_aturan_pakai')->insert(['aturan' => $aturan]);
+        try {
+            return response()->json($aksi());
+        } catch (ResepTerkunci $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 409);
         }
     }
 
     public function getObat(Request $request)
     {
-        $search = $request->search;
-
-        $obat = DataBarang::select('kode_brng', 'nama_brng')
-            ->where(function($query) use ($search) {
-                $query->where('nama_brng', 'LIKE', "%$search%")
-                    ->orWhere('kode_brng', 'LIKE', "%$search%");
-            })
-            ->where('status', '1') 
-            ->limit(20)            
-            ->get();
-
-        $response = [];
-        foreach($obat as $item){
-            $response[] = [
-                'id'    => $item->kode_brng,
-                'text'  => $item->nama_brng
-            ];
-        }
-
-        return response()->json($response);
+        return response()->json(app(StokObatService::class)->cari((string) $request->search));
     }
 }

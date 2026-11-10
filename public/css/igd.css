@@ -1,0 +1,242 @@
+/* Modul IGD. Token warna mengikuti design.md. */
+
+/* Anak flex dengan min-width auto ikut melebar mengikuti tabel; tanpa ini seluruh halaman bergulir horizontal di layar sempit. */
+.wrapper > .main-content { min-width: 0; }
+
+.igd-daftar-head { flex-wrap: wrap; gap: 0.5rem; justify-content: space-between; }
+.igd-jumlah { font-weight: 400; font-size: 0.8rem; color: var(--gray-500); margin-left: 0.5rem; }
+
+.igd-filter { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; font-weight: 400; }
+.igd-filter .form-control { width: auto; min-height: 36px; }
+.igd-filter .igd-cari { width: 230px; max-width: 100%; }
+@media (max-width: 575.98px) {
+    .igd-filter { width: 100%; }
+    .igd-filter .igd-cari { width: 100%; }
+}
+.igd-filter-label { font-size: 0.8rem; color: var(--gray-500); margin: 0; }
+
+.igd-btn-utama { background: #0d7a4a; border-color: #0d7a4a; color: #fff; min-height: 36px; }
+.igd-btn-utama:hover, .igd-btn-utama:focus-visible { background: #0a6440; border-color: #0a6440; color: #fff; }
+
+.igd-tabel th { font-size: 0.75rem; font-weight: 600; color: var(--gray-500); white-space: nowrap; }
+.igd-tabel td { font-size: 0.875rem; }
+
+.igd-link-pasien { color: #0d7a4a; font-weight: 600; text-decoration: none; display: inline-block; padding: 2px 0; }
+.igd-link-pasien:hover { text-decoration: underline; }
+.igd-link-pasien:focus-visible,
+.igd-btn-utama:focus-visible { outline: 2px solid #0d7a4a; outline-offset: 2px; }
+
+.igd-status-list { display: flex; flex-wrap: wrap; gap: 4px; }
+.igd-status-ranap { background: #f1f5f9; color: #475569; }
+
+/* Halaman pasien */
+.igd-kembali { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #0d7a4a; text-decoration: none; margin-bottom: 0.6rem; min-height: 32px; }
+.igd-kembali:hover { text-decoration: underline; }
+.igd-kembali:focus-visible { outline: 2px solid #0d7a4a; outline-offset: 2px; }
+
+.igd-kepala { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap;
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.8rem 1rem; margin-bottom: 0.9rem; }
+.igd-kepala-nama { font-size: 1.05rem; font-weight: 600; color: #1e293b; margin: 0; }
+.igd-kepala-rm { display: inline-block; font-size: 0.8rem; font-weight: 400; color: var(--gray-500); margin-left: 6px; }
+.igd-chips { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; padding: 0; margin: 6px 0 0; }
+.igd-chip { font-size: 0.78rem; padding: 2px 8px; border-radius: var(--radius-sm); background: #f1f5f9; color: #475569; }
+.igd-chip-alergi { background: #fff1f2; color: #be123c; font-weight: 600; }
+.igd-kepala-waktu { text-align: right; }
+.igd-kepala-label { font-size: 0.78rem; color: var(--gray-500); }
+.igd-kepala-lama { font-size: 1.15rem; font-weight: 600; color: #1e293b; line-height: 1.3; }
+
+.igd-tabs .nav-link { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; }
+/* Tab aktif dan hover memakai hijau RS, bukan biru bawaan Bootstrap (design.md: temuan hover tab biru). */
+.igd-tabs.nav-tabs .nav-link:hover { color: #0d7a4a; }
+.igd-tabs.nav-tabs .nav-link.active { color: #0d7a4a; border-bottom: 2px solid #15a362; font-weight: 600; }
+.igd-tabs .nav-link:focus-visible { outline: 2px solid #0d7a4a; outline-offset: 2px; }
+.igd-tab-tanda { font-size: 0.7rem; font-weight: 600; padding: 0 6px; border-radius: 4px; }
+.igd-tab-tanda-belum { background: #fef3c7; color: #92400e; }
+
+.igd-kosong { color: var(--gray-500); font-size: 0.875rem; }
+.igd-state { display: flex; align-items: center; gap: 8px; color: var(--gray-500); font-size: 0.875rem; flex-wrap: wrap; }
+.igd-state-gagal { color: #be123c; }
+
+@media (max-width: 575.98px) {
+    .igd-kepala-waktu { text-align: left; }
+    .igd-kepala-rm { display: block; margin-left: 0; }
+}
+
+@media (pointer: coarse) {
+    .igd-tabs .nav-link, .igd-kembali { min-height: 44px; }
+    .igd-link-pasien { min-height: 44px; display: inline-flex; align-items: center; }
+    .igd-filter .form-control, .igd-btn-utama { min-height: 44px; }
+}
+
+/* Tab Permintaan: kartu lab/radiologi/resep (pola kartu isian resume ranap, design.md bagian 5 dan 12) */
+.igd-kartu { margin-bottom: 0.9rem; }
+.igd-kartu-kepala { display: flex; align-items: center; gap: 10px; padding: 0.6rem 1rem; border-bottom: 1px solid #eef0f2; flex-wrap: wrap; }
+.igd-ikon { width: 28px; height: 28px; border-radius: 7px; background: #dcfce7; color: #0d7a4a; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; flex: none; }
+.igd-kartu-judul { flex: 1; margin: 0; font-size: 0.9rem; font-weight: 600; color: #334155; }
+.igd-kartu-judul small { font-weight: 400; color: var(--gray-500); margin-left: 6px; font-size: 0.78rem; }
+.igd-kartu-badan { padding: 0.4rem 1rem 0.7rem; }
+.igd-btn-garis { background: #fff; color: #334155; border: 1px solid #cbd5e1; min-height: 36px; }
+.igd-btn-garis:hover { border-color: #0d7a4a; color: #0d7a4a; }
+.igd-btn-garis:focus-visible, .igd-btn-hapus:focus-visible { outline: 2px solid #0d7a4a; outline-offset: 2px; }
+
+.igd-form { border-bottom: 1px solid #eef0f2; background: #f8fafc; }
+.igd-form-isi { padding: 0.8rem 1rem; }
+.igd-label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--gray-500); margin-bottom: 2px; }
+.igd-form-aksi { display: flex; justify-content: flex-end; gap: 8px; margin-top: 0.7rem; flex-wrap: wrap; }
+.igd-template { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+.igd-template-grup { border: 1px solid #e2e8f0; border-radius: var(--radius-sm); background: #fff; margin: 0; padding: 0.5rem 0.75rem 0.6rem; min-width: 0; }
+.igd-template-judul { float: left; width: 100%; font-size: 0.82rem; font-weight: 600; color: #166534; margin-bottom: 4px; }
+.igd-template-hitung { font-weight: 400; color: var(--gray-500); margin-left: 6px; }
+.igd-template-kosong .igd-template-hitung { color: #be123c; font-weight: 600; }
+.igd-template-aksi { clear: both; display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+.igd-template-aksi .btn { min-height: 32px; font-size: 0.78rem; padding: 2px 10px; }
+/* Paling banyak --baris baris ke bawah, sisanya mengalir ke kolom berikutnya; kolom yang tidak muat bergulir di dalam kotak ini saja. */
+.igd-template-daftar { display: grid; grid-auto-flow: column; grid-template-rows: repeat(var(--baris, 8), auto); grid-auto-columns: minmax(170px, max-content); gap: 2px 20px; overflow-x: auto; padding-bottom: 2px; }
+.igd-template-grup .form-check { padding-left: 1.75rem; margin: 0; min-height: 28px; display: flex; align-items: center; }
+.igd-template-grup .form-check-input { margin-left: -1.75rem; margin-top: 0; }
+.igd-template-grup .form-check-label { font-size: 0.82rem; padding-left: 6px; cursor: pointer; }
+
+.igd-order { padding: 0.55rem 0; border-bottom: 1px solid #f1f5f9; }
+.igd-order:last-child { border-bottom: 0; }
+.igd-order-kepala { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.igd-order-meta { font-size: 0.78rem; color: var(--gray-500); }
+.igd-order-isi { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 2px; font-size: 0.875rem; color: #334155; flex-wrap: wrap; }
+.igd-btn-hapus { color: #be123c; background: transparent; border: 1px solid transparent; padding: 2px 8px; font-size: 0.8rem; }
+.igd-btn-hapus:hover { border-color: #fecdd3; background: #fff1f2; color: #be123c; }
+
+.igd-st { font-size: 0.72rem; font-weight: 600; padding: 2px 7px; border-radius: 4px; white-space: nowrap; }
+.igd-st-tunggu { background: #f1f5f9; color: #475569; }
+.igd-st-proses { background: #e0f2fe; color: #075985; }
+.igd-st-hasil { background: #dcfce7; color: #166534; }
+.igd-st-flag { background: #fef3c7; color: #92400e; }
+
+.igd-terkunci { display: flex; align-items: center; gap: 8px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: var(--radius-sm); padding: 0.6rem 0.8rem; margin-bottom: 0.9rem; font-size: 0.85rem; color: #475569; }
+.igd-tab-jumlah { background: #e2e8f0; color: #334155; }
+.igd-tabs.nav-tabs .nav-link.active .igd-tab-jumlah { background: #dcfce7; color: #166534; }
+
+@media (pointer: coarse) {
+    .igd-btn-garis, .igd-btn-hapus, .igd-form-aksi .btn, .igd-template-aksi .btn { min-height: 44px; }
+    .igd-template-grup .form-check { min-height: 40px; }
+}
+
+/* Kartu resep: daftar tunggu dan racikan */
+.igd-bantu { font-size: 0.8rem; color: var(--gray-500); margin: 0 0 6px; }
+.igd-resep-baris { display: grid; grid-template-columns: minmax(0, 2fr) 90px minmax(0, 1.4fr); gap: 8px; align-items: end; }
+.igd-chip-baris { display: flex; align-items: center; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+.igd-chip-isi { border: 1px dashed #15a362; color: #0d7a4a; background: #fff; border-radius: 999px; font-size: 0.78rem; padding: 2px 10px; min-height: 30px; }
+.igd-chip-isi:hover { background: #f0fdf4; }
+.igd-chip-isi:focus-visible { outline: 2px solid #0d7a4a; outline-offset: 2px; }
+.igd-stok-peringatan { font-size: 0.78rem; color: #92400e; margin-top: 4px; min-height: 1em; }
+.igd-daftar-tunggu { margin-top: 8px; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); background: #fff; padding: 6px 10px; }
+.igd-tunggu-list, .igd-item-list, .igd-bahan-list { list-style: none; margin: 0; padding: 0; }
+.igd-item { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 0.8fr) auto; gap: 4px 12px; align-items: center; padding: 4px 0; font-size: 0.85rem; border-bottom: 1px dashed #f1f5f9; }
+.igd-item:last-child { border-bottom: 0; }
+.igd-item-nama small { color: var(--gray-500); }
+.igd-item-jml { color: #334155; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.igd-item-aturan { color: var(--gray-500); }
+.igd-resep-sumber { font-size: 0.72rem; font-weight: 600; color: #166534; margin-top: 4px; }
+.igd-bahan { display: grid; grid-template-columns: minmax(0, 1fr) 80px auto auto; gap: 8px; align-items: center; margin-bottom: 6px; }
+.igd-bahan-hasil { font-size: 0.8rem; color: var(--gray-500); white-space: nowrap; min-width: 60px; }
+
+@media (max-width: 575.98px) {
+    .igd-resep-baris { grid-template-columns: 90px minmax(0, 1fr); }
+    .igd-resep-obat { grid-column: 1 / -1; }
+    .igd-item { grid-template-columns: minmax(0, 1fr) auto auto; }
+    .igd-item-aturan { grid-column: 1 / 3; grid-row: 2; }
+    .igd-bahan { grid-template-columns: minmax(0, 1fr) 70px auto; }
+    .igd-bahan-hasil { grid-column: 1 / -1; }
+}
+@media (pointer: coarse) {
+    .igd-chip-isi { min-height: 44px; }
+}
+
+/* Tab Asesmen: kartu isian resume ranap (admin.css) + tombol pilihan berjajar (design.md bagian 12). */
+.igd-asesmen :focus-visible { outline: 2px solid #0d7a4a; outline-offset: 2px; }
+.igd-asesmen-jejak { font-size: 0.85rem; color: #475569; margin: 0 0 0.6rem; }
+.igd-asesmen-jejak .fa-user-doctor { color: #0d7a4a; margin-right: 2px; }
+.igd-wajib { font-weight: 400; color: var(--gray-500); margin-left: 4px; }
+.igd-subjudul { font-size: 0.82rem; font-weight: 600; color: #334155; margin: 0.9rem 0 0.4rem; }
+.igd-galat { color: #be123c; font-size: 0.78rem; margin-top: 2px; }
+.igd-galat:empty { display: none; }
+.igd-asesmen-baris { display: flex; flex-wrap: wrap; gap: 0 16px; align-items: flex-start; }
+.igd-hubungan { flex: 1 1 220px; max-width: 320px; margin-bottom: 0.6rem; }
+
+.igd-pilih { border: 0; margin: 0 0 0.6rem; padding: 0; min-width: 0; }
+.igd-pilih > legend { float: none; width: auto; padding: 0; }
+.igd-pilih-daftar { display: flex; flex-wrap: wrap; gap: 6px; }
+/* Radio asli disembunyikan secara visual tapi tetap bisa difokus: Tab masuk grup, panah memilih, spasi memilih yang difokus. */
+.igd-pilih-opsi { position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 6px 12px;
+    border: 1px solid #cbd5e1; border-radius: var(--radius-sm); background: #fff; color: #334155; font-size: 0.85rem; cursor: pointer; margin: 0; }
+.igd-pilih-opsi input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.igd-pilih-opsi:hover { border-color: #0d7a4a; }
+.igd-pilih-opsi:has(input:focus-visible) { outline: 2px solid #0d7a4a; outline-offset: 2px; }
+.igd-pilih-centang { display: none; font-size: 0.75rem; }
+.igd-pilih-opsi:has(input:checked) { border-color: #15a362; background: #f0fdf4; color: #166534; font-weight: 600; }
+.igd-pilih-opsi:has(input:checked) .igd-pilih-centang { display: inline; }
+/* Organ: Abnormal kuning dan Tidak diperiksa abu supaya temuan menonjol saat dipindai; teks pilihan tetap terbaca tanpa warna. */
+.igd-pilih-opsi.opsi-abnormal:has(input:checked) { border-color: #d97706; background: #fef3c7; color: #92400e; }
+.igd-pilih-opsi.opsi-tidak:has(input:checked) { border-color: #64748b; background: #f1f5f9; color: #334155; }
+.igd-pilih-galat .igd-pilih-opsi { border-color: #be123c; }
+
+.igd-vital { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px 12px; }
+.igd-vital .input-group-text { font-size: 0.75rem; color: #475569; background: #f8fafc; }
+.igd-vital .form-control { font-variant-numeric: tabular-nums; }
+
+.igd-organ-kepala { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0.9rem 0 0.5rem; }
+.igd-organ { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); gap: 2px 24px; }
+.igd-pilih-organ { display: grid; grid-template-columns: 110px minmax(0, 1fr); align-items: center; gap: 4px 8px; margin-bottom: 4px; }
+.igd-pilih-organ > legend { float: left; grid-column: 1; margin: 0; font-size: 0.82rem; color: #334155; }
+.igd-pilih-organ .igd-pilih-daftar { grid-column: 2; }
+.igd-pilih-organ .igd-galat { grid-column: 2; }
+.igd-pilih-organ .igd-pilih-opsi { min-height: 36px; padding: 4px 10px; font-size: 0.8rem; }
+.igd-ingat { margin: 6px 0 0; font-size: 0.8rem; color: #92400e; background: #fef3c7; border-radius: var(--radius-sm); padding: 4px 8px; }
+
+.igd-lokalis { display: grid; grid-template-columns: minmax(0, 506px) minmax(0, 1fr); gap: 12px 16px; align-items: start; }
+.igd-lokalis-gambar { margin: 0; }
+.igd-lokalis-gambar img { width: 100%; height: auto; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); background: #fff; }
+.igd-lokalis-gambar figcaption { font-size: 0.78rem; color: var(--gray-500); margin-top: 4px; }
+
+.igd-asesmen-bilah { margin-top: 0.25rem; }
+.igd-asesmen-status { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 260px; }
+.igd-asesmen-pesan { color: #be123c; font-size: 0.82rem; }
+.igd-asesmen-pesan:empty { display: none; }
+
+@media (max-width: 991.98px) {
+    .igd-lokalis { grid-template-columns: minmax(0, 1fr); }
+    .igd-lokalis-gambar { max-width: 506px; }
+}
+@media (max-width: 575.98px) {
+    .igd-pilih-organ { grid-template-columns: minmax(0, 1fr); }
+    .igd-pilih-organ > legend, .igd-pilih-organ .igd-pilih-daftar, .igd-pilih-organ .igd-galat { grid-column: 1; }
+    .igd-pilih-organ .igd-pilih-opsi { padding: 4px 8px; }
+    .igd-hubungan { max-width: none; }
+    .igd-asesmen-bilah .resume-aksi { width: 100%; }
+    .igd-asesmen-bilah .resume-aksi .btn { flex: 1; min-height: 44px; white-space: nowrap; padding-left: 8px; padding-right: 8px; }
+}
+@media (pointer: coarse) {
+    .igd-pilih-opsi, .igd-pilih-organ .igd-pilih-opsi { min-height: 44px; }
+}
+
+/* Referensi asesmen (pola .resume-ref resume ranap, design.md bagian 5 dan 6). */
+.igd-penunjang { display: flex; flex-direction: column; gap: 10px; }
+.igd-asesmen .resume-ref .igd-state { font-size: 0.82rem; }
+.igd-asesmen .btn-link { color: #0d7a4a; font-weight: 600; text-decoration: none; }
+.igd-asesmen .btn-link:hover { text-decoration: underline; }
+.igd-ref-semua { display: flex; justify-content: flex-end; padding-top: 6px; border-top: 1px solid #dcfce7; }
+.igd-ref-semua .resume-pakai[hidden] { display: none; }
+.igd-ref-semua:has(.resume-pakai[hidden]) { display: none; }
+@media (pointer: coarse) {
+    .igd-asesmen .resume-ref .resume-pakai, .igd-asesmen .btn-link { min-height: 44px; }
+}
+/* Di ponsel badge sumber naik ke baris sendiri supaya teks referensi mendapat lebar penuh (design.md bagian 8). */
+@media (max-width: 575.98px) {
+    .igd-asesmen .resume-ref-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 8px; }
+    .igd-asesmen .resume-ref-sumber { grid-column: 1 / -1; justify-self: start; }
+}
+
+/* Tautan ke resume ranap di kepala pasien yang sudah rawat inap. */
+.igd-link-ranap { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; min-height: 32px; font-size: 0.82rem; font-weight: 600; color: #0d7a4a; text-decoration: none; }
+.igd-link-ranap:hover { text-decoration: underline; }
+.igd-link-ranap:focus-visible { outline: 2px solid #0d7a4a; outline-offset: 2px; }
+@media (pointer: coarse) { .igd-link-ranap { min-height: 44px; } }
+.igd-resep-tidak { color: #92400e; }

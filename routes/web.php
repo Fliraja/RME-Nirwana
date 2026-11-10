@@ -12,6 +12,9 @@ use App\Http\Controllers\DiagnosaProsedurController;
 use App\Http\Controllers\ResumeRalanController;
 
 use App\Http\Controllers\RanapController;
+use App\Http\Controllers\IgdAsesmenController;
+use App\Http\Controllers\IgdController;
+use App\Http\Controllers\IgdOrderController;
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
@@ -19,6 +22,26 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::middleware(['multi.auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    //IGD Routes
+    Route::middleware('dokter.igd')->prefix('igd')->name('igd.')->group(function () {
+        Route::get('/', [IgdController::class, 'index'])->name('index');
+        Route::post('/order/lab', [IgdOrderController::class, 'simpanLab'])->name('order.lab');
+        Route::delete('/order/lab/{noorder}', [IgdOrderController::class, 'hapusLab'])->name('order.lab.hapus');
+        Route::post('/order/radiologi', [IgdOrderController::class, 'simpanRadiologi'])->name('order.radiologi');
+        Route::delete('/order/radiologi/{noorder}', [IgdOrderController::class, 'hapusRadiologi'])->name('order.radiologi.hapus');
+        Route::post('/order/resep/obat', [IgdOrderController::class, 'simpanObat'])->name('order.resep.obat');
+        Route::post('/order/resep/racikan', [IgdOrderController::class, 'simpanRacikan'])->name('order.resep.racikan');
+        Route::delete('/order/resep/{no_resep}/obat/{kode_brng}', [IgdOrderController::class, 'hapusObat'])->name('order.resep.obat.hapus');
+        Route::delete('/order/resep/{no_resep}/racikan/{no_racik}', [IgdOrderController::class, 'hapusRacikan'])->name('order.resep.racikan.hapus');
+        Route::post('/asesmen', [IgdAsesmenController::class, 'simpan'])->name('asesmen.simpan');
+        Route::get('/{no_rawat}/order', [IgdOrderController::class, 'fragmen'])->where('no_rawat', '[0-9A-Za-z-]+')->name('order');
+        Route::get('/{no_rawat}/asesmen', [IgdAsesmenController::class, 'fragmen'])->where('no_rawat', '[0-9A-Za-z-]+')->name('asesmen');
+        Route::get('/{no_rawat}/asesmen/pdf', [IgdAsesmenController::class, 'pdf'])->where('no_rawat', '[0-9A-Za-z-]+')->name('asesmen.pdf');
+        Route::get('/{no_rawat}/asesmen/referensi',[IgdAsesmenController::class, 'referensi'])->where('no_rawat', '[0-9A-Za-z-]+')->name('asesmen.referensi');
+        Route::get('/{no_rawat}', [IgdController::class, 'pasien'])->where('no_rawat', '[0-9A-Za-z-]+')->name('pasien');
+        Route::get('/{no_rawat}/riwayat', [IgdController::class, 'riwayat'])->where('no_rawat', '[0-9A-Za-z-]+')->name('riwayat');
+    });
 
     //Ranap Routes
     Route::match(['GET', 'POST'], '/ranap', [RanapController::class, 'index'])->name('ranap.index');

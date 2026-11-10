@@ -115,8 +115,12 @@ class LaboratoriumService
                 ->where('stts_bayar', 'Sudah')
                 ->exists();
 
-            if ($isProcessed) {
-                return ['status' => 'error', 'message' => 'Data sudah diproses lab!', 'code' => 403];
+            // Ambil sampel hanya mengisi tgl_sampel; stts_bayar baru berubah saat hasil diinput.
+            $sampelDiambil = DB::table('permintaan_lab')->where('noorder', $noorder)
+                ->whereNotNull('tgl_sampel')->where('tgl_sampel', '<>', '0000-00-00')->exists();
+
+            if ($isProcessed || $sampelDiambil) {
+                return ['status' => 'error', 'message' => 'Sampel sudah diambil lab, permintaan tidak bisa dibatalkan.', 'code' => 403];
             }
 
             if ($noorder && $kdJenis && $idTemplate) {

@@ -108,8 +108,12 @@ class RadiologiService
                 ->where('stts_bayar', 'Sudah')
                 ->exists();
 
-            if ($isProcessed) {
-                return ['status' => 'error', 'message' => 'Gagal! Data sudah diproses.', 'code' => 403];
+            // Pola sama dengan lab: proses di radiologi mengisi tgl_sampel lebih dulu.
+            $sampelDiambil = DB::table('permintaan_radiologi')->where('noorder', $noorder)
+                ->whereNotNull('tgl_sampel')->where('tgl_sampel', '<>', '0000-00-00')->exists();
+
+            if ($isProcessed || $sampelDiambil) {
+                return ['status' => 'error', 'message' => 'Permintaan sudah diproses radiologi dan tidak bisa dibatalkan.', 'code' => 403];
             }
 
             if ($kdJenisPrw) {
