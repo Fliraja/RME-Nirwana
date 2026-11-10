@@ -101,7 +101,7 @@ Hanya terang, sama dengan aplikasi sekarang. Mode gelap belum diminta; bila nant
 
 ## 12. Modul IGD
 
-Mockup acuan: susunan B (tab Order | Asesmen | Riwayat), disetujui user 2026-11-10 dengan catatan "jangan sepolos itu". Dial tetap 1/1/1; kehidupan datang dari ikon isian hijau muda, status berupa teks, dan kepala pasien yang padat informasi, bukan dari dekorasi.
+Mockup acuan: susunan B (tab Permintaan | Asesmen | Riwayat; label tab "Order" diganti "Permintaan" atas permintaan user), disetujui user 2026-11-10 dengan catatan "jangan sepolos itu". Dial tetap 1/1/1; kehidupan datang dari ikon isian hijau muda, status berupa teks, dan kepala pasien yang padat informasi, bukan dari dekorasi.
 
 - **Daftar pasien IGD:** kartu `ralan-card` berisi filter (cari nama/no. RM/no. rawat, rentang tanggal, tombol "Tampilkan" `#0d7a4a`) dan tabel. Status per baris berupa badge teks: "Rawat inap" (abu `#475569` di `#f1f5f9`), "Asesmen terisi" (status hijau), "Asesmen belum" (status kuning). Nama pasien adalah tautan hijau `#0d7a4a`.
 - **Kepala pasien (`.igd-kepala`):** nama 1.05rem/600 + "RM · no. rawat" abu; chip identitas abu (`#475569` di `#f1f5f9`); chip alergi merah `#be123c` di `#fff1f2` (5,72:1) dengan ikon segitiga, hanya bila alergi benar-benar ada. Chip abu `#475569` di `#f1f5f9` 6,92:1. Di kanan: "Di IGD sejak HH.MM" dan lama di IGD dalam angka besar (1.15rem/600), atau "Rawat inap sejak dd/mm HH.MM" + "di IGD x j y m" setelah pasien naik bangsal. Di bawah 576px blok waktu pindah ke kiri di bawah identitas.

@@ -16,7 +16,7 @@
     <ul class="nav nav-tabs ralan-tabs igd-tabs" id="igdTab" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="order-tab" data-bs-toggle="tab" data-bs-target="#tab-order" type="button" role="tab" aria-controls="tab-order" aria-selected="true">
-                <i class="fas fa-list-check" aria-hidden="true"></i> Order
+                <i class="fas fa-list-check" aria-hidden="true"></i> Permintaan
             </button>
         </li>
         <li class="nav-item" role="presentation">
