@@ -6,6 +6,7 @@ use App\Exceptions\KonflikResumeException;
 use App\Models\ResumePasienRanap;
 use App\Models\RmeResumeRanap;
 use App\Support\Alergi;
+use App\Support\DokterIgd;
 use Carbon\Carbon;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
@@ -26,7 +27,7 @@ class ResumeRanapService
         'instruksi'   => ['edukasi', 'kontrol'],
     ];
 
-    public const PESAN_TIDAK_BERHAK = 'Hanya dokter IGD penerima dan DPJP pasien ini yang dapat mengubah resume.';
+    public const PESAN_TIDAK_BERHAK = 'Hanya dokter IGD dan DPJP pasien ini yang dapat mengubah resume.';
 
     private const TEKS = ['keluhan_utama', 'alasan', 'diagnosa_awal', 'jalannya_penyakit', 'pemeriksaan_fisik',
         'hasil_laborat', 'pemeriksaan_penunjang', 'obat_di_rs', 'obat_pulang', 'edukasi', 'diet', 'lab_belum'];
@@ -41,7 +42,10 @@ class ResumeRanapService
         }
 
         return DB::table('reg_periksa')->where('no_rawat', $noRawat)->where('kd_dokter', $kdDokter)->exists()
-            || DB::table('dpjp_ranap')->where('no_rawat', $noRawat)->where('kd_dokter', $kdDokter)->exists();
+            || DB::table('dpjp_ranap')->where('no_rawat', $noRawat)->where('kd_dokter', $kdDokter)->exists()
+            // Dokter IGD mana pun boleh menulis resume pasien yang masuk lewat IGD (pergantian jaga).
+            || (DokterIgd::adalah($kdDokter)
+                && DB::table('reg_periksa')->where('no_rawat', $noRawat)->where('kd_poli', config('rme.igd.kd_poli'))->exists());
     }
 
     public function dataTab(string $noRawat, ?string $kdDokter): array

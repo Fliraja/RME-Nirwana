@@ -21,6 +21,10 @@
         @if($kepala['rawat_inap_sejak'])
             <div class="igd-kepala-label">Rawat inap sejak {{ $kepala['rawat_inap_sejak']->format('d/m H.i') }}</div>
             <div class="igd-kepala-lama">di IGD {{ $teksLama }}</div>
+            {{-- Daftar ranap hanya memuat pasien DPJP; dari sini dokter IGD membuka resume ranap pasien ini. --}}
+            <a class="igd-link-ranap" href="{{ route('ranap.index', ['action' => 'view', 'no_rawat' => $reg->no_rawat]) }}#resume">
+                <i class="fas fa-file-medical" aria-hidden="true"></i> Tulis resume ranap
+            </a>
         @else
             <div class="igd-kepala-label">Di IGD sejak {{ $kepala['datang']->format('H.i') }}</div>
             <div class="igd-kepala-lama">{{ $teksLama }}</div>

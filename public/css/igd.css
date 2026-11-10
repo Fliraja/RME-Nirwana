@@ -233,3 +233,9 @@
     .igd-asesmen .resume-ref-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 8px; }
     .igd-asesmen .resume-ref-sumber { grid-column: 1 / -1; justify-self: start; }
 }
+
+/* Tautan ke resume ranap di kepala pasien yang sudah rawat inap. */
+.igd-link-ranap { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; min-height: 32px; font-size: 0.82rem; font-weight: 600; color: #0d7a4a; text-decoration: none; }
+.igd-link-ranap:hover { text-decoration: underline; }
+.igd-link-ranap:focus-visible { outline: 2px solid #0d7a4a; outline-offset: 2px; }
+@media (pointer: coarse) { .igd-link-ranap { min-height: 44px; } }
