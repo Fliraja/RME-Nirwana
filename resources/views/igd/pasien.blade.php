@@ -62,6 +62,10 @@
                 simpanLab: @json(route('igd.order.lab')),
                 simpanRadiologi: @json(route('igd.order.radiologi')),
                 hapus: @json(url('/igd/order')),
+                cariObat: @json(route('ralan.search-obat')),
+                simpanObat: @json(route('igd.order.resep.obat')),
+                simpanRacikan: @json(route('igd.order.resep.racikan')),
+                hapusResep: @json(url('/igd/order/resep')),
             },
         };
     </script>

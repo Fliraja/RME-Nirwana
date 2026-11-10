@@ -29,6 +29,10 @@ Route::middleware(['multi.auth'])->group(function () {
         Route::delete('/order/lab/{noorder}', [IgdOrderController::class, 'hapusLab'])->name('order.lab.hapus');
         Route::post('/order/radiologi', [IgdOrderController::class, 'simpanRadiologi'])->name('order.radiologi');
         Route::delete('/order/radiologi/{noorder}', [IgdOrderController::class, 'hapusRadiologi'])->name('order.radiologi.hapus');
+        Route::post('/order/resep/obat', [IgdOrderController::class, 'simpanObat'])->name('order.resep.obat');
+        Route::post('/order/resep/racikan', [IgdOrderController::class, 'simpanRacikan'])->name('order.resep.racikan');
+        Route::delete('/order/resep/{no_resep}/obat/{kode_brng}', [IgdOrderController::class, 'hapusObat'])->name('order.resep.obat.hapus');
+        Route::delete('/order/resep/{no_resep}/racikan/{no_racik}', [IgdOrderController::class, 'hapusRacikan'])->name('order.resep.racikan.hapus');
         Route::get('/{no_rawat}/order', [IgdOrderController::class, 'fragmen'])->where('no_rawat', '[0-9A-Za-z-]+')->name('order');
         Route::get('/{no_rawat}', [IgdController::class, 'pasien'])->where('no_rawat', '[0-9A-Za-z-]+')->name('pasien');
         Route::get('/{no_rawat}/riwayat', [IgdController::class, 'riwayat'])->where('no_rawat', '[0-9A-Za-z-]+')->name('riwayat');

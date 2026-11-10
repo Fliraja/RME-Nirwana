@@ -118,3 +118,34 @@
     .igd-btn-garis, .igd-btn-hapus, .igd-form-aksi .btn, .igd-template-aksi .btn { min-height: 44px; }
     .igd-template-grup .form-check { min-height: 40px; }
 }
+
+/* Kartu resep: daftar tunggu dan racikan */
+.igd-bantu { font-size: 0.8rem; color: var(--gray-500); margin: 0 0 6px; }
+.igd-resep-baris { display: grid; grid-template-columns: minmax(0, 2fr) 90px minmax(0, 1.4fr); gap: 8px; align-items: end; }
+.igd-chip-baris { display: flex; align-items: center; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+.igd-chip-isi { border: 1px dashed #15a362; color: #0d7a4a; background: #fff; border-radius: 999px; font-size: 0.78rem; padding: 2px 10px; min-height: 30px; }
+.igd-chip-isi:hover { background: #f0fdf4; }
+.igd-chip-isi:focus-visible { outline: 2px solid #0d7a4a; outline-offset: 2px; }
+.igd-stok-peringatan { font-size: 0.78rem; color: #92400e; margin-top: 4px; min-height: 1em; }
+.igd-daftar-tunggu { margin-top: 8px; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); background: #fff; padding: 6px 10px; }
+.igd-tunggu-list, .igd-item-list, .igd-bahan-list { list-style: none; margin: 0; padding: 0; }
+.igd-item { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 0.8fr) auto; gap: 4px 12px; align-items: center; padding: 4px 0; font-size: 0.85rem; border-bottom: 1px dashed #f1f5f9; }
+.igd-item:last-child { border-bottom: 0; }
+.igd-item-nama small { color: var(--gray-500); }
+.igd-item-jml { color: #334155; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.igd-item-aturan { color: var(--gray-500); }
+.igd-resep-sumber { font-size: 0.72rem; font-weight: 600; color: #166534; margin-top: 4px; }
+.igd-bahan { display: grid; grid-template-columns: minmax(0, 1fr) 80px auto auto; gap: 8px; align-items: center; margin-bottom: 6px; }
+.igd-bahan-hasil { font-size: 0.8rem; color: var(--gray-500); white-space: nowrap; min-width: 60px; }
+
+@media (max-width: 575.98px) {
+    .igd-resep-baris { grid-template-columns: 90px minmax(0, 1fr); }
+    .igd-resep-obat { grid-column: 1 / -1; }
+    .igd-item { grid-template-columns: minmax(0, 1fr) auto auto; }
+    .igd-item-aturan { grid-column: 1 / 3; grid-row: 2; }
+    .igd-bahan { grid-template-columns: minmax(0, 1fr) 70px auto; }
+    .igd-bahan-hasil { grid-column: 1 / -1; }
+}
+@media (pointer: coarse) {
+    .igd-chip-isi { min-height: 44px; }
+}

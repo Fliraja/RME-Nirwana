@@ -3,13 +3,19 @@
 namespace App\Services\Igd;
 
 use App\Exceptions\OrderIgdTerkunci;
+use App\Services\Obat\ObatDiberikan;
+use App\Services\Resep\ResepService;
 use App\Support\ResumeFormat;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class IgdOrderService
 {
-    public function __construct(private IgdPasienService $pasien) {}
+    public function __construct(
+        private IgdPasienService $pasien,
+        private ResepService $resep,
+        private ObatDiberikan $obatDiberikan,
+    ) {}
 
     /** Permintaan baru hanya untuk pasien IGD yang belum rawat inap. */
     public function pastikanBolehOrder(string $noRawat): void
@@ -79,6 +85,24 @@ class IgdOrderService
 
             return $o;
         });
+    }
+
+    /** Semua resep kunjungan; setelah divalidasi, yang tampil adalah obat yang benar-benar diberikan apotek. */
+    public function daftarResep(string $noRawat): Collection
+    {
+        return $this->resep->resepKunjungan($noRawat)->map(function ($r) {
+            $r->boleh_hapus = !$r->divalidasi;
+            $r->diberikan = $this->obatDiberikan->untukResep($r);
+
+            return $r;
+        });
+    }
+
+    public function pastikanResepMilik(string $noResep, string $noRawat): void
+    {
+        if (!DB::table('resep_obat')->where('no_resep', $noResep)->where('no_rawat', $noRawat)->exists()) {
+            throw new OrderIgdTerkunci('Resep tidak ditemukan pada kunjungan ini.', 404);
+        }
     }
 
     public function usulanDiagnosaKlinis(string $noRawat): ?string

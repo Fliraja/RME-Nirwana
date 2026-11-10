@@ -85,4 +85,6 @@
             @include('igd.tabs.partials.daftar_order', ['daftar' => $radiologi, 'jenis' => 'radiologi'])
         </div>
     </section>
+
+    @include('igd.tabs.partials.kartu_resep')
 </div>
