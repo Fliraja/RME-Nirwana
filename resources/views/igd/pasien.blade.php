@@ -15,8 +15,10 @@
 
     <ul class="nav nav-tabs ralan-tabs igd-tabs" id="igdTab" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="order-tab" data-bs-toggle="tab" data-bs-target="#tab-order" type="button" role="tab" aria-controls="tab-order" aria-selected="true">
+            <button class="nav-link active" id="order-tab" data-bs-toggle="tab" data-bs-target="#tab-order" type="button" role="tab" aria-controls="tab-order" aria-selected="true"
+                    data-src="{{ route('igd.order', $noRawatUrl) }}" data-label="permintaan">
                 <i class="fas fa-list-check" aria-hidden="true"></i> Permintaan
+                <span class="igd-tab-tanda igd-tab-jumlah d-none" data-jumlah-tab></span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -37,7 +39,7 @@
 
     <div class="tab-content">
         <div class="tab-pane fade show active" id="tab-order" role="tabpanel" aria-labelledby="order-tab" tabindex="0">
-            <div class="ralan-card"><div class="ralan-card-body igd-kosong">Permintaan lab, radiologi, dan resep IGD sedang disiapkan.</div></div>
+            <div class="igd-isi-tab"></div>
         </div>
         <div class="tab-pane fade" id="tab-asesmen" role="tabpanel" aria-labelledby="asesmen-tab" tabindex="0">
             <div class="ralan-card"><div class="ralan-card-body igd-kosong">Form asesmen medis IGD sedang disiapkan.</div></div>
@@ -50,5 +52,19 @@
 @endsection
 
 @push('scripts')
+    <script>
+        window.IGD = {
+            noRawat: @json($kepala['reg']->no_rawat),
+            routes: {
+                cariLab: @json(route('ralan.search-lab')),
+                templateLab: @json(url('/ralan/get-templates-lab')),
+                cariRadiologi: @json(route('ralan.search-radiologi')),
+                simpanLab: @json(route('igd.order.lab')),
+                simpanRadiologi: @json(route('igd.order.radiologi')),
+                hapus: @json(url('/igd/order')),
+            },
+        };
+    </script>
+    <script src="{{ asset('js/igd/igd-order.js') }}"></script>
     <script src="{{ asset('js/igd/igd-core.js') }}"></script>
 @endpush

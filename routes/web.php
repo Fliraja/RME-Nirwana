@@ -13,6 +13,7 @@ use App\Http\Controllers\ResumeRalanController;
 
 use App\Http\Controllers\RanapController;
 use App\Http\Controllers\IgdController;
+use App\Http\Controllers\IgdOrderController;
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
@@ -24,6 +25,11 @@ Route::middleware(['multi.auth'])->group(function () {
     //IGD Routes
     Route::middleware('dokter.igd')->prefix('igd')->name('igd.')->group(function () {
         Route::get('/', [IgdController::class, 'index'])->name('index');
+        Route::post('/order/lab', [IgdOrderController::class, 'simpanLab'])->name('order.lab');
+        Route::delete('/order/lab/{noorder}', [IgdOrderController::class, 'hapusLab'])->name('order.lab.hapus');
+        Route::post('/order/radiologi', [IgdOrderController::class, 'simpanRadiologi'])->name('order.radiologi');
+        Route::delete('/order/radiologi/{noorder}', [IgdOrderController::class, 'hapusRadiologi'])->name('order.radiologi.hapus');
+        Route::get('/{no_rawat}/order', [IgdOrderController::class, 'fragmen'])->where('no_rawat', '[0-9A-Za-z-]+')->name('order');
         Route::get('/{no_rawat}', [IgdController::class, 'pasien'])->where('no_rawat', '[0-9A-Za-z-]+')->name('pasien');
         Route::get('/{no_rawat}/riwayat', [IgdController::class, 'riwayat'])->where('no_rawat', '[0-9A-Za-z-]+')->name('riwayat');
     });
