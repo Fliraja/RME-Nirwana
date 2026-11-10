@@ -2,7 +2,7 @@
     $a = $asesmen;
     $pasien = $reg->pasien;
     $teks = fn ($s) => trim((string) $s) !== '' ? nl2br(e(trim($s))) : '-';
-    $nilai = fn ($s, $satuan = '') => trim((string) $s) !== '' ? e(trim($s)) . ($satuan ? ' ' . $satuan : '') : '-';
+    $nilai = fn ($s, $satuan = '') => preg_match('/^[\s-]*$/', (string) $s) ? '-' : e(trim($s)) . ($satuan ? ' ' . $satuan : '');
     $tanggal = \Carbon\Carbon::parse($a->tanggal);
     $anamnesis = $a->anamnesis === 'Alloanamnesis' && trim($a->hubungan) !== ''
         ? 'Alloanamnesis (' . trim($a->hubungan) . ')' : $a->anamnesis;

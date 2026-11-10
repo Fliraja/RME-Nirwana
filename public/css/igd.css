@@ -239,3 +239,4 @@
 .igd-link-ranap:hover { text-decoration: underline; }
 .igd-link-ranap:focus-visible { outline: 2px solid #0d7a4a; outline-offset: 2px; }
 @media (pointer: coarse) { .igd-link-ranap { min-height: 44px; } }
+.igd-resep-tidak { color: #92400e; }

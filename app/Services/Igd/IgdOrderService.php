@@ -93,9 +93,26 @@ class IgdOrderService
         return $this->resep->resepKunjungan($noRawat)->map(function ($r) {
             $r->boleh_hapus = !$r->divalidasi;
             $r->diberikan = $this->obatDiberikan->untukResep($r);
+            $r->tidak_diberikan = $r->diberikan->isEmpty() ? collect() : self::tidakDiberikan($r);
 
             return $r;
         });
+    }
+
+    /**
+     * Item resep dokter yang tidak ada di pemberian apotek (mis. ditambahkan saat apotek sedang memvalidasi,
+     * atau diganti apotek), supaya tidak hilang dari pandangan dokter. Obat dicocokkan per kode barang;
+     * racikan hanya bila apotek tidak memberikan racikan sama sekali, karena nama racikan bisa diubah apotek.
+     */
+    private static function tidakDiberikan(object $r): Collection
+    {
+        $kodeDiberikan = $r->diberikan->where('racikan', false)->pluck('kode_brng')->all();
+        $obat = $r->items->reject(fn ($it) => in_array($it->kode_brng, $kodeDiberikan, true))
+            ->map(fn ($it) => (object) ['nama' => trim($it->nama_brng), 'jml' => $it->jml, 'satuan' => $it->kode_sat, 'aturan' => $it->aturan_pakai]);
+        $racikan = $r->diberikan->contains('racikan', true) ? collect() : $r->racikan
+            ->map(fn ($rk) => (object) ['nama' => trim($rk->nama_racik), 'jml' => $rk->jml_dr, 'satuan' => $rk->nm_racik ?? '', 'aturan' => $rk->aturan_pakai]);
+
+        return $obat->concat($racikan)->values();
     }
 
     public function pastikanResepMilik(string $noResep, string $noRawat): void

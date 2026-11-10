@@ -28,15 +28,19 @@ class StoreAsesmenIgdRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        // Asesmen dari Khanza desktop sering berisi "-" di tanda vital (35% sejak 2025) dan "98%" di SpO2.
+        // Keduanya diartikan kosong / angka saja, supaya dokter yang hanya mengubah isian lain tidak tertahan 422.
+        $bersih = fn (string $v) => preg_match('/^-+$/', $v) ? '' : $v;
         $ganti = [];
         foreach (array_keys(self::BATAS_VITAL) as $k) {
             if (is_string($this->input($k))) {
-                $ganti[$k] = str_replace(',', '.', trim($this->input($k)));
+                $v = str_replace(',', '.', trim($this->input($k)));
+                $ganti[$k] = $bersih($k === 'spo' ? rtrim($v, '% ') : $v);
             }
         }
         foreach (['td', 'gcs'] as $k) {
             if (is_string($this->input($k))) {
-                $ganti[$k] = preg_replace('/\s+/', '', $this->input($k));
+                $ganti[$k] = $bersih(preg_replace('/\s+/', '', $this->input($k)));
             }
         }
         $this->merge($ganti);

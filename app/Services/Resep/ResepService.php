@@ -25,17 +25,24 @@ class ResepService
     /** @param array<int, array{kode_obat: string, jumlah: int|float, aturan_pakai: string}> $items */
     public function tambahObat(string $noRawat, array $items, string $kdDokter): array
     {
-        $this->pastikanAdaStok(array_column($items, 'kode_obat'));
+        $kode = array_column($items, 'kode_obat');
+        $ganda = array_unique(array_diff_assoc($kode, array_unique($kode)));
+        if ($ganda) {
+            $nama = DB::table('databarang')->whereIn('kode_brng', $ganda)->pluck('nama_brng')->map(fn ($n) => trim($n))->implode(', ');
+            throw new ResepTerkunci("{$nama} ada lebih dari sekali di daftar. Gabungkan jumlahnya menjadi satu baris.");
+        }
+        $this->pastikanAdaStok($kode);
 
-        return NomorUrut::denganRetry(function () use ($noRawat, $items, $kdDokter) {
+        return NomorUrut::denganRetry(function () use ($noRawat, $items, $kdDokter, $kode) {
             $noResep = $this->resepTerbuka($noRawat, $kdDokter);
+            $this->pastikanBelumAdaDiResep($noResep, $kode);
 
             foreach ($items as $item) {
                 $this->simpanAturan($item['aturan_pakai']);
-                DB::table('resep_dokter')->updateOrInsert(
-                    ['no_resep' => $noResep, 'kode_brng' => $item['kode_obat']],
-                    ['jml' => $item['jumlah'], 'aturan_pakai' => $item['aturan_pakai']]
-                );
+                DB::table('resep_dokter')->insert([
+                    'no_resep' => $noResep, 'kode_brng' => $item['kode_obat'],
+                    'jml' => $item['jumlah'], 'aturan_pakai' => $item['aturan_pakai'],
+                ]);
             }
 
             return ['no_resep' => $noResep];
@@ -80,6 +87,28 @@ class ResepService
 
             return ['no_resep' => $noResep, 'no_racik' => $noRacik];
         });
+    }
+
+    /**
+     * Resep terbuka dipakai bersama semua dokter selama pasien di IGD; obat yang sama dari dokter lain
+     * tidak boleh menimpa jumlah dan aturan order sebelumnya (mis. "1 di IGD" tertimpa "10, 3x1").
+     */
+    private function pastikanBelumAdaDiResep(string $noResep, array $kode): void
+    {
+        $ada = DB::table('resep_dokter as rd')
+            ->join('databarang as b', 'b.kode_brng', '=', 'rd.kode_brng')
+            ->where('rd.no_resep', $noResep)->whereIn('rd.kode_brng', $kode)
+            ->get(['b.nama_brng', 'rd.jml', 'b.kode_sat', 'rd.aturan_pakai']);
+        if ($ada->isEmpty()) {
+            return;
+        }
+
+        $daftar = $ada->map(function ($r) {
+            $jml = rtrim(rtrim(number_format((float) $r->jml, 2, ',', '.'), '0'), ',');
+            return trim($r->nama_brng) . " ({$jml} {$r->kode_sat}" . (trim($r->aturan_pakai) !== '' ? ', ' . trim($r->aturan_pakai) : '') . ')';
+        })->implode('; ');
+
+        throw new ResepTerkunci("Sudah ada di resep yang menunggu apotek: {$daftar}. Hapus item itu dulu bila jumlah atau aturannya perlu diubah.");
     }
 
     public function hapusObat(string $noResep, string $kodeBrng): void

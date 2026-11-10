@@ -119,6 +119,18 @@
                             </li>
                         @endforeach
                     </ul>
+                    @if($r->tidak_diberikan->isNotEmpty())
+                        <div class="igd-resep-sumber igd-resep-tidak"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> tidak diberikan apotek, tanyakan ke apotek atau minta ulang</div>
+                        <ul class="igd-item-list">
+                            @foreach($r->tidak_diberikan as $t)
+                                <li class="igd-item">
+                                    <span class="igd-item-nama">{{ $t->nama }}</span>
+                                    <span class="igd-item-jml">{{ $angka($t->jml) }} {{ $t->satuan }}</span>
+                                    <span class="igd-item-aturan">{{ $t->aturan }}</span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
                 @else
                     <ul class="igd-item-list">
                         @foreach($r->items as $it)
