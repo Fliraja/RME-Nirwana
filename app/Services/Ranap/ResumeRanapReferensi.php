@@ -2,6 +2,7 @@
 
 namespace App\Services\Ranap;
 
+use App\Services\Obat\ObatDiberikan;
 use App\Support\DiagnosaSplitter;
 use App\Support\ResumeFormat;
 use Carbon\Carbon;
@@ -14,6 +15,8 @@ use Illuminate\Support\Facades\DB;
  */
 class ResumeRanapReferensi
 {
+    public function __construct(private ObatDiberikan $obatDiberikan) {}
+
     public const KUNCI = ['keluhan', 'perjalanan', 'pemeriksaan', 'lab', 'penunjang', 'diagnosis',
         'tindakan', 'terapi', 'kondisi', 'obat_pulang', 'instruksi', 'kontrol'];
 
@@ -263,21 +266,22 @@ class ResumeRanapReferensi
     /** @return array{0: list<array>, 1: list<array>} [obat selama dirawat, obat pada tanggal pemberian terakhir] */
     private function obat(string $noRawat): array
     {
-        $diberikan = DB::table('detail_pemberian_obat as d')->join('databarang as b', 'b.kode_brng', '=', 'd.kode_brng')
-            ->leftJoin('golongan_barang as g', 'g.kode', '=', 'b.kode_golongan')
-            ->where('d.no_rawat', $noRawat)->where(fn ($q) => $q->whereNull('g.nama')->orWhere('g.nama', '<>', 'ALKES'))
-            ->select('b.nama_brng as nama', 'd.tgl_perawatan as tanggal')
-            ->unionAll(DB::table('obat_racikan')->where('no_rawat', $noRawat)->select('nama_racik as nama', 'tgl_perawatan as tanggal'))
-            ->get()
-            ->filter(fn ($r) => self::isi($r->nama) !== '' && !preg_match(self::BUKAN_OBAT, $r->nama));
+        // Racikan diwakili namanya; komponen racikan tidak dicantumkan sendiri.
+        $diberikan = $this->obatDiberikan->untukKunjungan($noRawat)
+            ->map(fn ($r) => $r['racikan']
+                ? ['nama' => (string) $r['nama_racik'], 'tanggal' => $r['tgl_perawatan'], 'aturan' => $r['aturan'], 'bhp' => false]
+                : ['nama' => $r['nama_brng'], 'tanggal' => $r['tgl_perawatan'], 'aturan' => $r['aturan'], 'bhp' => $r['golongan'] === 'ALKES'])
+            ->filter(fn ($r) => !$r['bhp'] && self::isi($r['nama']) !== '' && !preg_match(self::BUKAN_OBAT, $r['nama']));
 
         if ($diberikan->isEmpty()) {
             return [[], []];
         }
 
-        $semua = $diberikan->pluck('nama')->map(fn ($n) => trim($n))->unique()->sort()->values();
+        $semua = $diberikan->pluck('nama')->unique()->sort()->values();
         $terakhir = $diberikan->max('tanggal');
-        $hariTerakhir = $diberikan->where('tanggal', $terakhir)->pluck('nama')->map(fn ($n) => trim($n))->unique()->sort()->values();
+        $hariTerakhir = $diberikan->where('tanggal', $terakhir)
+            ->map(fn ($r) => $r['aturan'] ? "{$r['nama']} ({$r['aturan']})" : $r['nama'])
+            ->unique()->sort()->values();
 
         return [
             [self::item($semua->implode(', '), 'Obat yang diberikan apotek selama dirawat')],

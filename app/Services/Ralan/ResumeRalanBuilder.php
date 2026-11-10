@@ -3,6 +3,7 @@
 namespace App\Services\Ralan;
 
 use App\Models\RmeResumeRalan;
+use App\Services\Obat\ObatDiberikan;
 use App\Support\DiagnosaSplitter;
 use App\Support\ResumeFormat;
 use App\Support\TindakLanjutResolver;
@@ -25,7 +26,7 @@ class ResumeRalanBuilder
     /** Tagihan yang bukan prosedur medis (jasa, konsultasi, askep, bahan, administrasi). */
     private const BUKAN_PROSEDUR = '/konsul|jasa|askep|bakhp|observasi|telemedicine|administrasi/i';
 
-    public function __construct(private TindakLanjutResolver $resolver) {}
+    public function __construct(private TindakLanjutResolver $resolver, private ObatDiberikan $obatDiberikan) {}
 
     public function susun(string $noRawat, ?RmeResumeRalan $meta = null): ?array
     {
@@ -134,20 +135,18 @@ class ResumeRalanBuilder
     /** Obat yang diserahkan apotek (bisa berbeda dari resep); kosong sampai obat diserahkan. */
     private function obat(string $noRawat): string
     {
-        $diberikan = DB::table('detail_pemberian_obat as d')->join('databarang as b', 'b.kode_brng', '=', 'd.kode_brng')
-            ->where('d.no_rawat', $noRawat)->where('d.status', 'Ralan')
-            ->groupBy('d.kode_brng', 'b.nama_brng')->orderBy('b.nama_brng')
-            ->selectRaw('d.kode_brng, b.nama_brng, SUM(d.jml) as jml')->get();
-
-        $aturanApotek = DB::table('aturan_pakai')->where('no_rawat', $noRawat)->pluck('aturan', 'kode_brng');
         $aturanResep = DB::table('resep_obat as r')->join('resep_dokter as d', 'd.no_resep', '=', 'r.no_resep')
             ->where('r.no_rawat', $noRawat)->pluck('d.aturan_pakai', 'd.kode_brng');
 
-        $jadi = $diberikan->map(fn ($r) => ResumeFormat::barisObat(
-            $r->nama_brng,
-            self::jumlah($r->jml),
-            (string) ($aturanApotek[$r->kode_brng] ?? $aturanResep[$r->kode_brng] ?? '')
-        ));
+        // Komponen racikan sudah terwakili baris racikan di bawah. Barang sama dengan aturan berbeda tetap dipisah.
+        $jadi = $this->obatDiberikan->untukKunjungan($noRawat)
+            ->where('status', 'Ralan')->where('racikan', false)
+            ->map(fn ($r) => $r + ['aturan_akhir' => (string) ($r['aturan'] ?? $aturanResep[$r['kode_brng']] ?? '')])
+            ->groupBy(fn ($r) => $r['kode_brng'] . '|' . $r['aturan_akhir'])
+            ->map(fn ($g) => ['nama' => $g->first()['nama_brng'], 'jml' => $g->sum('jml'), 'aturan' => $g->first()['aturan_akhir']])
+            ->sortBy('nama')
+            ->map(fn ($r) => ResumeFormat::barisObat($r['nama'], self::jumlah($r['jml']), $r['aturan']))
+            ->values();
 
         $racik = DB::table('obat_racikan')->where('no_rawat', $noRawat)->orderBy('no_racik')
             ->get(['nama_racik', 'jml_dr', 'aturan_pakai'])
