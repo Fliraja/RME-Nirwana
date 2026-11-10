@@ -49,7 +49,7 @@
                                 </div>
                             </td>
                             <td>
-                                <a href="{{ url('/igd/' . str_replace('/', '-', $p->no_rawat)) }}" class="igd-link-pasien">
+                                <a href="{{ route('igd.pasien', str_replace('/', '-', $p->no_rawat)) }}" class="igd-link-pasien">
                                     {{ $p->nm_pasien }}
                                 </a>
                                 <div class="small text-muted">RM {{ $p->no_rkm_medis }} · {{ $p->no_rawat }}</div>

@@ -29,7 +29,41 @@
 .igd-status-list { display: flex; flex-wrap: wrap; gap: 4px; }
 .igd-status-ranap { background: #f1f5f9; color: #475569; }
 
+/* Halaman pasien */
+.igd-kembali { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #0d7a4a; text-decoration: none; margin-bottom: 0.6rem; min-height: 32px; }
+.igd-kembali:hover { text-decoration: underline; }
+.igd-kembali:focus-visible { outline: 2px solid #0d7a4a; outline-offset: 2px; }
+
+.igd-kepala { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap;
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.8rem 1rem; margin-bottom: 0.9rem; }
+.igd-kepala-nama { font-size: 1.05rem; font-weight: 600; color: #1e293b; margin: 0; }
+.igd-kepala-rm { display: inline-block; font-size: 0.8rem; font-weight: 400; color: var(--gray-500); margin-left: 6px; }
+.igd-chips { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; padding: 0; margin: 6px 0 0; }
+.igd-chip { font-size: 0.78rem; padding: 2px 8px; border-radius: var(--radius-sm); background: #f1f5f9; color: #475569; }
+.igd-chip-alergi { background: #fff1f2; color: #be123c; font-weight: 600; }
+.igd-kepala-waktu { text-align: right; }
+.igd-kepala-label { font-size: 0.78rem; color: var(--gray-500); }
+.igd-kepala-lama { font-size: 1.15rem; font-weight: 600; color: #1e293b; line-height: 1.3; }
+
+.igd-tabs .nav-link { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; }
+/* Tab aktif dan hover memakai hijau RS, bukan biru bawaan Bootstrap (design.md: temuan hover tab biru). */
+.igd-tabs.nav-tabs .nav-link:hover { color: #0d7a4a; }
+.igd-tabs.nav-tabs .nav-link.active { color: #0d7a4a; border-bottom: 2px solid #15a362; font-weight: 600; }
+.igd-tabs .nav-link:focus-visible { outline: 2px solid #0d7a4a; outline-offset: 2px; }
+.igd-tab-tanda { font-size: 0.7rem; font-weight: 600; padding: 0 6px; border-radius: 4px; }
+.igd-tab-tanda-belum { background: #fef3c7; color: #92400e; }
+
+.igd-kosong { color: var(--gray-500); font-size: 0.875rem; }
+.igd-state { display: flex; align-items: center; gap: 8px; color: var(--gray-500); font-size: 0.875rem; flex-wrap: wrap; }
+.igd-state-gagal { color: #be123c; }
+
+@media (max-width: 575.98px) {
+    .igd-kepala-waktu { text-align: left; }
+    .igd-kepala-rm { display: block; margin-left: 0; }
+}
+
 @media (pointer: coarse) {
+    .igd-tabs .nav-link, .igd-kembali { min-height: 44px; }
     .igd-link-pasien { min-height: 44px; display: inline-flex; align-items: center; }
     .igd-filter .form-control, .igd-btn-utama { min-height: 44px; }
 }

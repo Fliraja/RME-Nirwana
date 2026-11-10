@@ -30,6 +30,29 @@ class IgdController extends Controller
         ]);
     }
 
+    public function pasien(string $no_rawat)
+    {
+        $kepala = $this->pasien->kepala(self::noRawat($no_rawat));
+        abort_unless($kepala, 404, 'Kunjungan IGD tidak ditemukan.');
+
+        return view('igd.pasien', ['kepala' => $kepala, 'noRawatUrl' => $no_rawat]);
+    }
+
+    public function riwayat(string $no_rawat, RanapController $ranap)
+    {
+        $kepala = $this->pasien->kepala(self::noRawat($no_rawat));
+        abort_unless($kepala, 404, 'Kunjungan IGD tidak ditemukan.');
+
+        // Versi ranap berhalaman; versi ralan mengirim Collection ke view yang memanggil links().
+        return $ranap->getRiwayatPasien($kepala['reg']->no_rkm_medis);
+    }
+
+    /** No. rawat di URL memakai "-" sebagai pengganti "/" (pola ralan/ranap). */
+    public static function noRawat(string $dariUrl): string
+    {
+        return str_replace('-', '/', $dariUrl);
+    }
+
     private function tanggal(?string $nilai): ?string
     {
         if (!$nilai || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $nilai)) {

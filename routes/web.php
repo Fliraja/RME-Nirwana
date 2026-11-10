@@ -24,6 +24,8 @@ Route::middleware(['multi.auth'])->group(function () {
     //IGD Routes
     Route::middleware('dokter.igd')->prefix('igd')->name('igd.')->group(function () {
         Route::get('/', [IgdController::class, 'index'])->name('index');
+        Route::get('/{no_rawat}', [IgdController::class, 'pasien'])->where('no_rawat', '[0-9A-Za-z-]+')->name('pasien');
+        Route::get('/{no_rawat}/riwayat', [IgdController::class, 'riwayat'])->where('no_rawat', '[0-9A-Za-z-]+')->name('riwayat');
     });
 
     //Ranap Routes

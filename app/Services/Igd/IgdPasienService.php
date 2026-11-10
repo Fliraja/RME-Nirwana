@@ -2,6 +2,7 @@
 
 namespace App\Services\Igd;
 
+use App\Support\Alergi;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -50,6 +51,38 @@ class IgdPasienService
 
                 return $b;
             });
+    }
+
+    /** Data kepala halaman pasien; null bila kunjungan tidak ada atau bukan kunjungan IGD. */
+    public function kepala(string $noRawat): ?array
+    {
+        $reg = DB::table('reg_periksa as r')
+            ->join('pasien as p', 'p.no_rkm_medis', '=', 'r.no_rkm_medis')
+            ->leftJoin('penjab as j', 'j.kd_pj', '=', 'r.kd_pj')
+            ->leftJoin('dokter as d', 'd.kd_dokter', '=', 'r.kd_dokter')
+            ->where('r.no_rawat', $noRawat)
+            ->where('r.kd_poli', config('rme.igd.kd_poli'))
+            ->first([
+                'r.no_rawat', 'r.no_rkm_medis', 'r.tgl_registrasi', 'r.jam_reg', 'r.umurdaftar', 'r.sttsumur',
+                'r.status_lanjut', 'r.stts', 'p.nm_pasien', 'p.jk', 'p.tgl_lahir', 'j.png_jawab', 'd.nm_dokter',
+            ]);
+        if (!$reg) {
+            return null;
+        }
+
+        $asesmen = DB::table('penilaian_medis_igd')->where('no_rawat', $noRawat)->first(['alergi']);
+        $datang = Carbon::parse($reg->tgl_registrasi . ' ' . $reg->jam_reg);
+        $ranap = $this->masukRanap($noRawat);
+        $akhir = $ranap ?? Carbon::now();
+
+        return [
+            'reg'              => $reg,
+            'datang'           => $datang,
+            'alergi'           => $asesmen && Alergi::ada($asesmen->alergi) ? trim($asesmen->alergi) : null,
+            'ada_asesmen'      => (bool) $asesmen,
+            'lama_menit'       => max(0, (int) $datang->diffInMinutes($akhir, false)),
+            'rawat_inap_sejak' => $ranap,
+        ];
     }
 
     /** Waktu pasien mulai rawat inap, atau null bila masih di IGD/rawat jalan. */

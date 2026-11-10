@@ -98,3 +98,13 @@ Hanya transisi hover/fokus singkat (yang sudah ada, `--transition`). Tidak ada a
 ## 11. Tema
 
 Hanya terang, sama dengan aplikasi sekarang. Mode gelap belum diminta; bila nanti diminta, kedua mode wajib diuji penuh.
+
+## 12. Modul IGD
+
+Mockup acuan: susunan B (tab Order | Asesmen | Riwayat), disetujui user 2026-11-10 dengan catatan "jangan sepolos itu". Dial tetap 1/1/1; kehidupan datang dari ikon isian hijau muda, status berupa teks, dan kepala pasien yang padat informasi, bukan dari dekorasi.
+
+- **Daftar pasien IGD:** kartu `ralan-card` berisi filter (cari nama/no. RM/no. rawat, rentang tanggal, tombol "Tampilkan" `#0d7a4a`) dan tabel. Status per baris berupa badge teks: "Rawat inap" (abu `#475569` di `#f1f5f9`), "Asesmen terisi" (status hijau), "Asesmen belum" (status kuning). Nama pasien adalah tautan hijau `#0d7a4a`.
+- **Kepala pasien (`.igd-kepala`):** nama 1.05rem/600 + "RM · no. rawat" abu; chip identitas abu (`#475569` di `#f1f5f9`); chip alergi merah `#be123c` di `#fff1f2` (5,72:1) dengan ikon segitiga, hanya bila alergi benar-benar ada. Chip abu `#475569` di `#f1f5f9` 6,92:1. Di kanan: "Di IGD sejak HH.MM" dan lama di IGD dalam angka besar (1.15rem/600), atau "Rawat inap sejak dd/mm HH.MM" + "di IGD x j y m" setelah pasien naik bangsal. Di bawah 576px blok waktu pindah ke kiri di bawah identitas.
+- **Tab IGD (`.igd-tabs`):** ikon Font Awesome per tab; aktif = teks `#0d7a4a` tebal dengan garis bawah `#15a362` 2px; hover hijau. Tidak memakai biru Bootstrap. Tanda di label tab berupa teks kecil ("belum" kuning untuk asesmen yang belum ditulis).
+- **Isi tab dimuat saat pertama dibuka:** memuat = spinner kecil + "Memuat riwayat…"; gagal = kalimat merah + tombol "Coba lagi"; tautan halaman di dalam tab dimuat ulang di tempat.
+- **Kerangka halaman:** `igd.css` memberi `.wrapper > .main-content { min-width: 0 }` agar tabel lebar bergulir di dalam kartunya, bukan menggeser seluruh halaman.
