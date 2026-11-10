@@ -149,9 +149,7 @@
                 <td style="text-align: center;">
                     <div>Banjarbaru, {{ $tanggal->translatedFormat('d F Y') }} pukul {{ $tanggal->format('H.i') }}</div>
                     <div style="font-weight: bold; margin-top: 2px;">Dokter yang memeriksa</div>
-                    <div style="margin-top: 38px; font-weight: bold; text-decoration: underline;">{{ $dokter->nm_dokter ?? $a->kd_dokter }}</div>
-                    <div style="font-size: 7pt; color: #555;">{{ trim((string) ($dokter->no_ijn_praktek ?? '')) !== '' ? 'SIP: ' . trim($dokter->no_ijn_praktek) : 'Kode Dokter: ' . $a->kd_dokter }}</div>
-                </td>
+                    <div style="margin-top: 38px; font-weight: bold; text-decoration: underline;">{{ $dokter->nm_dokter ?? $a->kd_dokter }}</div>                </td>
             </tr>
         </table>
     </div>
