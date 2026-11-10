@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\ResepObat;
-use App\Models\DataBarang;
 use App\Models\RegPeriksa;
+use App\Services\Obat\StokObatService;
 use App\Models\ResepDokter;
 use Illuminate\Http\Request;
 use App\Models\MasterAturanPakai;
@@ -284,25 +284,6 @@ class ResepController extends Controller
 
     public function getObat(Request $request)
     {
-        $search = $request->search;
-
-        $obat = DataBarang::select('kode_brng', 'nama_brng')
-            ->where(function($query) use ($search) {
-                $query->where('nama_brng', 'LIKE', "%$search%")
-                    ->orWhere('kode_brng', 'LIKE', "%$search%");
-            })
-            ->where('status', '1') 
-            ->limit(20)            
-            ->get();
-
-        $response = [];
-        foreach($obat as $item){
-            $response[] = [
-                'id'    => $item->kode_brng,
-                'text'  => $item->nama_brng
-            ];
-        }
-
-        return response()->json($response);
+        return response()->json(app(StokObatService::class)->cari((string) $request->search));
     }
 }

@@ -1514,3 +1514,13 @@ a:hover {
     .resume-bilah-simpan .resume-aksi .btn { flex: 1; min-height: 44px; }
     .resume-isian-kepala { flex-wrap: wrap; }
 }
+
+/* Stok apotek di pilihan obat/BHP (Tom Select). Warna selalu ditemani teks. Kontras: lihat design.md bagian 12. */
+.opsi-barang { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.opsi-barang-nama { min-width: 0; overflow-wrap: anywhere; }
+.stok-badge { font-size: 0.72rem; font-weight: 600; padding: 1px 7px; border-radius: var(--radius-sm); white-space: nowrap; }
+.stok-aman { background: #dcfce7; color: #166534; }
+.stok-tipis { background: #fef3c7; color: #92400e; }
+.stok-habis { background: #f1f5f9; color: #475569; }
+.ts-dropdown .option[aria-disabled="true"] { cursor: not-allowed; }
+.ts-dropdown .option[aria-disabled="true"] .opsi-barang-nama { color: #64748b; }
