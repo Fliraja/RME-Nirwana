@@ -24,13 +24,28 @@
                 <span>MENU UTAMA</span>
             </li>
             
+            @php
+                $dokterIgd = \App\Support\DokterIgd::adalah(session('decrypted_id'));
+            @endphp
+
+            @unless($dokterIgd)
             <li class="nav-item">
                 <a href="{{ route('ralan.index') }}" class="nav-link {{ request()->is('ralan*') ? 'active' : '' }}">
                     <i class="fas fa-users"></i>
                     <span>Rawat Jalan</span>
                 </a>
             </li>
-            
+            @endunless
+
+            @if($dokterIgd)
+            <li class="nav-item">
+                <a href="{{ route('igd.index') }}" class="nav-link {{ request()->is('igd*') ? 'active' : '' }}">
+                    <i class="fas fa-truck-medical"></i>
+                    <span>IGD</span>
+                </a>
+            </li>
+            @endif
+
             <li class="nav-item">
                 <a href="{{ route('ranap.index') }}" class="nav-link {{ request()->is('ranap*') ? 'active' : '' }}">
                     <i class="fas fa-procedures"></i>
