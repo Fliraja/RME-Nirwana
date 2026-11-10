@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\OrderIgdTerkunci;
 use App\Http\Requests\Igd\StoreAsesmenIgdRequest;
+use App\Services\Igd\AsesmenIgdReferensi;
 use App\Services\Igd\AsesmenIgdService;
 use App\Services\Igd\IgdOrderService;
 use App\Support\Alergi;
@@ -19,6 +20,14 @@ class IgdAsesmenController extends Controller
         $this->pastikanIgd($noRawat);
 
         return view('igd.tabs.asesmen', $this->asesmen->data($noRawat) + ['noRawat' => $noRawat]);
+    }
+
+    public function referensi(string $no_rawat, AsesmenIgdReferensi $referensi)
+    {
+        $noRawat = IgdController::noRawat($no_rawat);
+        $this->pastikanIgd($noRawat);
+
+        return response()->json($referensi->untuk($noRawat));
     }
 
     public function simpan(StoreAsesmenIgdRequest $request)

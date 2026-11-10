@@ -4,6 +4,7 @@ namespace App\Services\Ranap;
 
 use App\Services\Obat\ObatDiberikan;
 use App\Support\DiagnosaSplitter;
+use App\Support\LabDiLuarRujukan;
 use App\Support\ResumeFormat;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -167,27 +168,9 @@ class ResumeRanapReferensi
     /** Lab per paket, hanya nilai di luar rujukan. */
     private function lab(string $noRawat, ?object $igd): array
     {
-        $item = DB::table('detail_periksa_lab as d')
-            ->join('template_laboratorium as t', function ($j) {
-                $j->on('t.id_template', '=', 'd.id_template')->on('t.kd_jenis_prw', '=', 'd.kd_jenis_prw');
-            })
-            ->join('jns_perawatan_lab as j', 'j.kd_jenis_prw', '=', 'd.kd_jenis_prw')
-            ->where('d.no_rawat', $noRawat)
-            ->orderBy('d.tgl_periksa')->orderBy('d.jam')->orderBy('t.urut')
-            ->get(['d.kd_jenis_prw', 'd.tgl_periksa', 'd.jam', 'j.nm_perawatan', 't.Pemeriksaan', 'd.nilai', 't.satuan', 'd.nilai_rujukan'])
-            ->map(function ($r) {
-                $r->flag = ResumeFormat::flagLab((string) $r->nilai, (string) $r->nilai_rujukan);
-                return $r;
-            })
-            ->filter(fn ($r) => $r->flag !== '')
-            ->groupBy(fn ($r) => "{$r->kd_jenis_prw}|{$r->tgl_periksa}|{$r->jam}")
-            ->map(fn ($baris) => self::item(
-                $baris->map(fn ($r) => ResumeFormat::barisLab((string) $r->Pemeriksaan, (string) $r->nilai, (string) $r->satuan, (string) $r->nilai_rujukan))->implode("\n"),
-                'Lab ' . trim($baris->first()->nm_perawatan) . ' · ' . self::tgl($baris->first()->tgl_periksa),
-                'sistem',
-                $baris->first()->tgl_periksa
-            ))
-            ->values()->all();
+        $item = LabDiLuarRujukan::perPaket($noRawat)
+            ->map(fn ($p) => self::item(implode("\n", $p['baris']), 'Lab ' . $p['paket'] . ' · ' . self::tgl($p['tanggal']), 'sistem', $p['tanggal']))
+            ->all();
 
         if ($igd && self::isi($igd->lab) !== '') {
             $item[] = self::item(self::isi($igd->lab), 'Asesmen IGD · lab', 'dokter', substr($igd->tanggal, 0, 10));

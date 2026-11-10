@@ -214,7 +214,128 @@
 
         perbaruiHubungan();
         perbaruiOrgan();
+        siapkanReferensi(form);
     }
+
+    /* Referensi di bawah isian Radiologi, Laboratorium, Tatalaksana. "Pakai" menambah baris baru, tidak menimpa. */
+    var KOTAK = {
+        radiologi: { grup: [['radiologi', 'ekspertise'], ['radiologi_menunggu', 'menunggu hasil']],
+            kosong: 'Belum ada ekspertise radiologi atau permintaan radiologi yang menunggu hasil.' },
+        lab: { grup: [['lab', 'di luar rujukan'], ['lab_menunggu', 'menunggu hasil']],
+            kosong: 'Belum ada hasil lab di luar rujukan atau permintaan lab yang menunggu hasil.' },
+        tatalaksana: { grup: [['tatalaksana', 'resep']],
+            kosong: 'Belum ada resep untuk kunjungan ini.' }
+    };
+
+    function siapkanReferensi(form) {
+        var kotak = Array.prototype.slice.call(form.querySelectorAll('.resume-ref[data-ref]'));
+
+        function isian(k) {
+            return form.querySelector('[name="' + k.dataset.target + '"]');
+        }
+
+        function sudahDipakai(k, teks) {
+            return isian(k).value.indexOf(teks) !== -1;
+        }
+
+        // Baris yang sudah ada di isian (dipakai sebelumnya atau diketik sendiri) ditandai, supaya tidak tergandakan.
+        function tandaiTerpakai(k) {
+            var sisa = 0;
+            k.querySelectorAll('.resume-pakai[data-teks]').forEach(function (b) {
+                var pakai = sudahDipakai(k, b.dataset.teks);
+                b.disabled = pakai;
+                b.textContent = pakai ? 'Dipakai' : 'Pakai';
+                sisa += pakai ? 0 : 1;
+            });
+            var semua = k.querySelector('[data-pakai-semua]');
+            semua && (semua.hidden = sisa < 2);
+        }
+
+        function pakai(k, daftarTeks) {
+            var el = isian(k);
+            daftarTeks.forEach(function (t) {
+                if (!sudahDipakai(k, t)) {
+                    el.value = el.value.trim() ? el.value.replace(/\s+$/, '') + '\n' + t : t;
+                }
+            });
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            tandaiTerpakai(k);
+        }
+
+        function tampilkan(k, data) {
+            var conf = KOTAK[k.dataset.ref];
+            k.innerHTML = '';
+            var ada = 0;
+            conf.grup.forEach(function (g) {
+                (data[g[0]] || []).forEach(function (teks) {
+                    ada++;
+                    var baris = el('div', 'resume-ref-item');
+                    baris.appendChild(el('span', 'resume-ref-sumber', g[1]));
+                    var isi = el('span', 'resume-ref-teks', teks);
+                    isi.id = 'ref-' + k.dataset.ref + '-' + ada;
+                    baris.appendChild(isi);
+                    var b = el('button', 'btn btn-sm btn-outline-secondary resume-pakai', 'Pakai');
+                    b.type = 'button';
+                    b.dataset.teks = teks;
+                    b.setAttribute('aria-describedby', isi.id);
+                    b.addEventListener('click', function () { pakai(k, [teks]); });
+                    baris.appendChild(b);
+                    k.appendChild(baris);
+                });
+            });
+
+            if (!ada) {
+                k.appendChild(el('div', 'resume-ref-kosong', conf.kosong));
+                return;
+            }
+            var bawah = el('div', 'igd-ref-semua');
+            var semua = el('button', 'btn btn-sm btn-outline-secondary resume-pakai', 'Pakai semua');
+            semua.type = 'button';
+            semua.dataset.pakaiSemua = '1';
+            semua.addEventListener('click', function () {
+                pakai(k, Array.prototype.map.call(k.querySelectorAll('.resume-pakai[data-teks]'), function (b) { return b.dataset.teks; }));
+            });
+            bawah.appendChild(semua);
+            k.appendChild(bawah);
+            tandaiTerpakai(k);
+        }
+
+        function muat() {
+            kotak.forEach(function (k) {
+                k.innerHTML = '<div class="igd-state" role="status"><span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Memuat referensi…</div>';
+            });
+            fetch(cfg.routes.referensiAsesmen, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
+                .then(function (res) {
+                    if (!res.ok) { throw new Error(res.status); }
+                    return res.json();
+                })
+                .then(function (data) { kotak.forEach(function (k) { tampilkan(k, data); }); })
+                .catch(function () {
+                    kotak.forEach(function (k) {
+                        k.innerHTML = '';
+                        var g = el('div', 'resume-ref-kosong', 'Referensi gagal dimuat. Isian tetap bisa diketik. ');
+                        var b = el('button', 'btn btn-sm btn-link p-0 align-baseline', 'Coba lagi');
+                        b.type = 'button';
+                        b.addEventListener('click', muat);
+                        g.appendChild(b);
+                        k.appendChild(g);
+                    });
+                });
+        }
+
+        form.addEventListener('input', function (e) {
+            kotak.forEach(function (k) { e.target === isian(k) && tandaiTerpakai(k); });
+        });
+        form.muatReferensi = muat;
+        muat();
+    }
+
+    // Permintaan/resep bisa berubah di tab lain; referensi dimuat ulang tiap kali tab Asesmen dibuka lagi, isian tidak disentuh.
+    var tabAsesmen = document.getElementById('asesmen-tab');
+    tabAsesmen && tabAsesmen.addEventListener('shown.bs.tab', function () {
+        var form = document.getElementById('formAsesmenIgd');
+        form && form.muatReferensi && form.muatReferensi();
+    });
 
     document.addEventListener('igd:tab-dimuat', function (e) {
         if (e.detail.panel.id !== 'tab-asesmen') {

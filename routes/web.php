@@ -37,6 +37,7 @@ Route::middleware(['multi.auth'])->group(function () {
         Route::post('/asesmen', [IgdAsesmenController::class, 'simpan'])->name('asesmen.simpan');
         Route::get('/{no_rawat}/order', [IgdOrderController::class, 'fragmen'])->where('no_rawat', '[0-9A-Za-z-]+')->name('order');
         Route::get('/{no_rawat}/asesmen', [IgdAsesmenController::class, 'fragmen'])->where('no_rawat', '[0-9A-Za-z-]+')->name('asesmen');
+        Route::get('/{no_rawat}/asesmen/referensi', [IgdAsesmenController::class, 'referensi'])->where('no_rawat', '[0-9A-Za-z-]+')->name('asesmen.referensi');
         Route::get('/{no_rawat}', [IgdController::class, 'pasien'])->where('no_rawat', '[0-9A-Za-z-]+')->name('pasien');
         Route::get('/{no_rawat}/riwayat', [IgdController::class, 'riwayat'])->where('no_rawat', '[0-9A-Za-z-]+')->name('riwayat');
     });

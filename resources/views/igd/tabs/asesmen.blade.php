@@ -135,10 +135,16 @@
             <h3 class="resume-isian-judul" id="judul-as-penunjang">IV. Pemeriksaan penunjang</h3>
         </div>
         <div class="resume-isian-badan">
-            <div class="row g-2">
-                <div class="col-md-4">{!! $teks('ekg', 'EKG', 2) !!}</div>
-                <div class="col-md-4">{!! $teks('rad', 'Radiologi', 2) !!}</div>
-                <div class="col-md-4">{!! $teks('lab', 'Laboratorium', 2) !!}</div>
+            <div class="igd-penunjang">
+                <div>{!! $teks('ekg', 'EKG', 2) !!}</div>
+                <div>
+                    {!! $teks('rad', 'Radiologi', 2) !!}
+                    <div class="resume-ref" data-ref="radiologi" data-target="rad" aria-live="polite"></div>
+                </div>
+                <div>
+                    {!! $teks('lab', 'Laboratorium', 2) !!}
+                    <div class="resume-ref" data-ref="lab" data-target="lab" aria-live="polite"></div>
+                </div>
             </div>
         </div>
     </section>
@@ -156,7 +162,10 @@
             <span class="resume-isian-ikon" aria-hidden="true"><i class="fas fa-prescription-bottle-medical"></i></span>
             <h3 class="resume-isian-judul" id="judul-as-tata">VI. Tatalaksana</h3>
         </div>
-        <div class="resume-isian-badan">{!! $teks('tata', 'Tatalaksana', 3) !!}</div>
+        <div class="resume-isian-badan">
+            {!! $teks('tata', 'Tatalaksana', 3) !!}
+            <div class="resume-ref" data-ref="tatalaksana" data-target="tata" aria-live="polite"></div>
+        </div>
     </section>
 
     <div class="resume-bilah-simpan igd-asesmen-bilah">

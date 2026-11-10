@@ -216,3 +216,20 @@
 @media (pointer: coarse) {
     .igd-pilih-opsi, .igd-pilih-organ .igd-pilih-opsi { min-height: 44px; }
 }
+
+/* Referensi asesmen (pola .resume-ref resume ranap, design.md bagian 5 dan 6). */
+.igd-penunjang { display: flex; flex-direction: column; gap: 10px; }
+.igd-asesmen .resume-ref .igd-state { font-size: 0.82rem; }
+.igd-asesmen .btn-link { color: #0d7a4a; font-weight: 600; text-decoration: none; }
+.igd-asesmen .btn-link:hover { text-decoration: underline; }
+.igd-ref-semua { display: flex; justify-content: flex-end; padding-top: 6px; border-top: 1px solid #dcfce7; }
+.igd-ref-semua .resume-pakai[hidden] { display: none; }
+.igd-ref-semua:has(.resume-pakai[hidden]) { display: none; }
+@media (pointer: coarse) {
+    .igd-asesmen .resume-ref .resume-pakai, .igd-asesmen .btn-link { min-height: 44px; }
+}
+/* Di ponsel badge sumber naik ke baris sendiri supaya teks referensi mendapat lebar penuh (design.md bagian 8). */
+@media (max-width: 575.98px) {
+    .igd-asesmen .resume-ref-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 8px; }
+    .igd-asesmen .resume-ref-sumber { grid-column: 1 / -1; justify-self: start; }
+}

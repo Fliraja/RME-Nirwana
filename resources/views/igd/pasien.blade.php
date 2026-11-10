@@ -68,6 +68,7 @@
                 simpanRacikan: @json(route('igd.order.resep.racikan')),
                 hapusResep: @json(url('/igd/order/resep')),
                 simpanAsesmen: @json(route('igd.asesmen.simpan')),
+                referensiAsesmen: @json(route('igd.asesmen.referensi', $noRawatUrl)),
             },
         };
     </script>
