@@ -62,6 +62,7 @@ Token di `:root` `admin.css`. Palet inti: hijau RS + slate. Kuning/merah/biru ha
 - **Bar progres (`.resume-progres`):** tinggi 6px, jalur `#e2e8f0`, isi `#0d7a4a`, didampingi teks "x dari 10 isian terisi" (`--gray-500`). Teks wajib ada; bar hanya penguat.
 - **Bilah simpan menempel (`.resume-bilah-simpan`):** `position: sticky; bottom: 0`, latar putih, border atas, berisi waktu simpan terakhir di kiri dan aksi di kanan (satu aksi utama, satu outline). Untuk form panjang agar tombol simpan selalu terjangkau.
 - **Notifikasi:** toast yang sudah ada (`tampilkanSukses`/`tampilkanError`) dan SweetAlert untuk konfirmasi hapus.
+- **Daftar resep ralan/ranap:** semua resep kunjungan, terbaru di atas (resep terbuka bisa dibuat kemarin dan ditambah hari ini). Tiap resep diawali baris `.resep-kepala` (`#475569`): "Resep no · dd/mm HH.MM · dokter" + status teks `.resume-status` dengan warna kartu resep IGD: "menunggu apotek" `.resep-status-tunggu` (`#475569`/`#f1f5f9`), "diterima apotek" `.resep-status-proses` (`#075985`/`#e0f2fe`), "diserahkan" `.resume-status-ok`. Tombol hapus hanya selama menunggu apotek. Kosong: "Belum ada resep untuk kunjungan ini."
 
 ## 6. State
 

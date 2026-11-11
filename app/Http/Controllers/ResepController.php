@@ -22,36 +22,21 @@ class ResepController extends Controller
     {
         $no_rawat = str_replace('-', '/', $no_rawat);
 
-        $resep = ResepObat::with([
-            'resepDokter.dataBarang',
-            'resepRacikan.detailRacikan.dataBarang',
-            'resepRacikan.metodeRacik'
-            ])
-            ->where('no_rawat', $no_rawat)
-            ->where('tgl_peresepan', date('Y-m-d'))
-            ->first();
+        // Per kunjungan, bukan hari ini: resep terbuka bisa dibuat kemarin dan ditambah hari ini.
+        $daftarResep = $this->resep->resepKunjungan($no_rawat);
 
         $masterAturan = MasterAturanPakai::all();
         $masterMetode = DB::table('metode_racik')->get();
         $pasien = RegPeriksa::where('no_rawat', $no_rawat)->first();
 
-        return view('ralan.resep', compact('resep', 'pasien', 'masterAturan', 'masterMetode'));
+        return view('ralan.resep', compact('daftarResep', 'pasien', 'masterAturan', 'masterMetode'));
     }
 
     public function getResepTable($no_rawat)
     {
-        $no_rawat = str_replace('-', '/', $no_rawat);
+        $daftarResep = $this->resep->resepKunjungan(str_replace('-', '/', $no_rawat));
 
-        $resep = ResepObat::with([
-            'resepDokter.dataBarang',
-            'resepRacikan.detailRacikan.dataBarang',
-            'resepRacikan.metodeRacik'
-            ])
-            ->where('no_rawat', $no_rawat)
-            ->where('tgl_peresepan', date('Y-m-d'))
-            ->first();
-
-        return view('ralan.resep_table', compact('resep'));
+        return view('ralan.resep_table', compact('daftarResep'));
     }
 
     public function storeResepObat(Request $request)
