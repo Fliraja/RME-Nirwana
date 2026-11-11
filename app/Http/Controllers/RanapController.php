@@ -252,7 +252,7 @@ class RanapController extends Controller
             ->where('no_rawat', $no_rawat)
             ->first();
 
-        $riwayatOrder = $this->orderHariIni(PermintaanLab::class, $no_rawat);
+        $riwayatOrder = $this->orderKunjungan(PermintaanLab::class, $no_rawat);
 
         // Hasil tes laboratorium resmi
         $hasilLab = $this->penunjangService->getHasilLab($no_rawat);
@@ -272,7 +272,7 @@ class RanapController extends Controller
             ->where('no_rawat', $no_rawat)
             ->first();
 
-        $riwayatOrder = $this->orderHariIni(PermintaanRadiologi::class, $no_rawat);
+        $riwayatOrder = $this->orderKunjungan(PermintaanRadiologi::class, $no_rawat);
 
         // Gambar dan Hasil Ekspertise
         $hasilRadiologi = $this->penunjangService->getHasilRadiologi($no_rawat);
@@ -407,17 +407,22 @@ class RanapController extends Controller
                 'riwayatTtv' => $this->vitalService->getRiwayatTtv($no_rawat), 'currentUserNip' => $currentUserNip,
             ]),
             'resep'     => view('ranap.tabs.partials.resep_table', ['daftarResep' => $this->resepService->resepKunjungan($no_rawat)]),
-            'lab'       => view('ranap.tabs.partials.lab_table', ['riwayatOrder' => $this->orderHariIni(PermintaanLab::class, $no_rawat)]),
-            'radiologi' => view('ranap.tabs.partials.radiologi_table', ['riwayatOrder' => $this->orderHariIni(PermintaanRadiologi::class, $no_rawat)]),
+            'lab'       => view('ranap.tabs.partials.lab_table', ['riwayatOrder' => $this->orderKunjungan(PermintaanLab::class, $no_rawat)]),
+            'radiologi' => view('ranap.tabs.partials.radiologi_table', ['riwayatOrder' => $this->orderKunjungan(PermintaanRadiologi::class, $no_rawat)]),
         };
     }
 
-    /** @param class-string<PermintaanLab|PermintaanRadiologi> $model */
-    private function orderHariIni(string $model, string $no_rawat)
+    /**
+     * Semua permintaan kunjungan, terbaru di atas: rawat inap berhari-hari, jadi "hari ini" menyembunyikan
+     * permintaan kemarin yang belum diproses.
+     *
+     * @param class-string<PermintaanLab|PermintaanRadiologi> $model
+     */
+    private function orderKunjungan(string $model, string $no_rawat)
     {
         return $model::with(['pemeriksaan.jenisPerawatan'])
             ->where('no_rawat', $no_rawat)
-            ->where('tgl_permintaan', date('Y-m-d'))
+            ->orderByDesc('tgl_permintaan')->orderByDesc('jam_permintaan')
             ->get();
     }
 }

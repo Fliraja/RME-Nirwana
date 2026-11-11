@@ -34,7 +34,7 @@
 
     <hr>
 
-    <h6 class="fw-bold mt-4"><i class="fas fa-history"></i> Riwayat Permintaan Radiologi Hari Ini</h6>
+    <h6 class="fw-bold mt-4"><i class="fas fa-history"></i> Permintaan Radiologi Kunjungan Ini</h6>
     <div id="tabel-riwayat-rad">
         @include('ralan.radiologi_table') 
     </div>

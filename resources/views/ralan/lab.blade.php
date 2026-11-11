@@ -41,7 +41,7 @@
 
     <hr>
 
-    <h6 class="fw-bold mt-4">Riwayat Permintaan Hari Ini</h6>
+    <h6 class="fw-bold mt-4">Permintaan Lab Kunjungan Ini</h6>
     <div id="tabel-riwayat-lab">
         @include('ralan.lab_table') 
     </div>

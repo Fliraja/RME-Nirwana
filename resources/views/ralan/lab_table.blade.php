@@ -80,7 +80,7 @@
                 </tr>
                 @endforeach
             @empty
-                <tr><td colspan="5" class="text-center py-4 text-muted">Belum ada riwayat Permintaan lab.</td></tr>
+                <tr><td colspan="5" class="text-center py-4 text-muted">Belum ada permintaan laboratorium untuk kunjungan ini.</td></tr>
             @endforelse
         </tbody>
     </table>

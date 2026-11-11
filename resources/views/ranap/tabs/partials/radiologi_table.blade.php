@@ -45,7 +45,7 @@
             @empty
                 <tr>
                     <td colspan="6" class="text-center p-3 text-muted small">
-                        Belum ada permintaan radiologi yang dibuat hari ini.
+                        Belum ada permintaan radiologi untuk kunjungan ini.
                     </td>
                 </tr>
             @endforelse

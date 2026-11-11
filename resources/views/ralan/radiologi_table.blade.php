@@ -58,7 +58,7 @@
                 <tr>
                     <td colspan="5" class="text-center py-4 text-muted">
                         <i class="fas fa-info-circle fa-2x mb-2"></i><br>
-                        Belum ada riwayat permintaan radiologi hari ini.
+                        Belum ada permintaan radiologi untuk kunjungan ini.
                     </td>
                 </tr>
             @endforelse

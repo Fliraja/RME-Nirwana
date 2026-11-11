@@ -40,7 +40,7 @@
     <div class="ralan-card mb-4">
         <div class="ralan-card-head">
             <span class="fw-bold text-dark">
-                <i class="fas fa-clock me-2 text-primary"></i>Riwayat Permintaan Radiologi Hari Ini
+                <i class="fas fa-clock me-2 text-primary"></i>Permintaan Radiologi Kunjungan Ini
             </span>
             <button type="button" class="btn btn-sm btn-outline-primary" onclick="reloadRanapTable('radiologi')">
                 <i class="fas fa-sync-alt me-1"></i> Refresh

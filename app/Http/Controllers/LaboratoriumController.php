@@ -23,7 +23,7 @@ class LaboratoriumController extends Controller
 
         $riwayat = PermintaanLab::with(['pemeriksaan.jenisPerawatan'])
             ->where('no_rawat', $no_rawat)
-            ->where('tgl_permintaan', date('Y-m-d'))
+            ->orderByDesc('tgl_permintaan')->orderByDesc('jam_permintaan')
             ->get();
 
         return view('ralan.lab', compact('pasien', 'riwayat'));
@@ -35,7 +35,7 @@ class LaboratoriumController extends Controller
 
         $riwayat = PermintaanLab::with(['pemeriksaan.jenisPerawatan'])
             ->where('no_rawat', $no_rawat)
-            ->where('tgl_permintaan', date('Y-m-d'))
+            ->orderByDesc('tgl_permintaan')->orderByDesc('jam_permintaan')
             ->get();
 
         return view('ralan.lab_table', compact('riwayat'));

@@ -23,7 +23,7 @@ class RadiologiController extends Controller
 
         $riwayat = PermintaanRadiologi::with(['pemeriksaan.jenisPerawatan'])
             ->where('no_rawat', $no_rawat)
-            ->where('tgl_permintaan', date('Y-m-d'))
+            ->orderByDesc('tgl_permintaan')->orderByDesc('jam_permintaan')
             ->get();
 
         return view('ralan.radiologi', compact('pasien', 'riwayat'));
@@ -35,7 +35,7 @@ class RadiologiController extends Controller
 
         $riwayat = PermintaanRadiologi::with(['pemeriksaan.jenisPerawatan'])
             ->where('no_rawat', $no_rawat)
-            ->where('tgl_permintaan', date('Y-m-d'))
+            ->orderByDesc('tgl_permintaan')->orderByDesc('jam_permintaan')
             ->get();
 
         return view('ralan.radiologi_table', compact('riwayat'));
