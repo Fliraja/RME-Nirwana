@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\HanyaDokterIgd;
+use App\Http\Middleware\KunciRanapRalan;
 use App\Http\Middleware\MultiRoleAuth;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'multi.auth' => MultiRoleAuth::class,
             'dokter.igd' => HanyaDokterIgd::class,
+            'kunci.ranap' => KunciRanapRalan::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

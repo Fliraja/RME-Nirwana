@@ -2,6 +2,7 @@
 
 namespace App\Services\Igd;
 
+use App\Services\Kunjungan\RawatInap;
 use App\Support\Alergi;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -9,6 +10,8 @@ use Illuminate\Support\Facades\DB;
 
 class IgdPasienService
 {
+    public function __construct(private RawatInap $rawatInap) {}
+
     /**
      * Sebelum jam ini pasien kemarin ikut tampil. Bukan jam pergantian jaga (07.00): dokter jaga malam
      * masih melengkapi asesmen sampai sekitar 08.00 (prod Jan-Okt 2026, 35 dari 50 asesmen terlambat).
@@ -75,7 +78,7 @@ class IgdPasienService
 
         $asesmen = DB::table('penilaian_medis_igd')->where('no_rawat', $noRawat)->first(['alergi']);
         $datang = Carbon::parse($reg->tgl_registrasi . ' ' . $reg->jam_reg);
-        $ranap = $this->masukRanap($noRawat);
+        $ranap = $this->rawatInap->masukKamar($noRawat);
         $akhir = $ranap ?? Carbon::now();
 
         return [
@@ -89,22 +92,4 @@ class IgdPasienService
         ];
     }
 
-    /** Sama dengan status di daftar IGD: status Ranap di registrasi atau sudah punya kamar. */
-    public function sudahRanap(string $noRawat): bool
-    {
-        return DB::table('reg_periksa')->where('no_rawat', $noRawat)->where('status_lanjut', 'Ranap')->exists()
-            || DB::table('kamar_inap')->where('no_rawat', $noRawat)->exists();
-    }
-
-    /**
-     * Waktu masuk kamar pertama, atau null bila belum ada baris kamar_inap.
-     * Status Ranap tanpa kamar sengaja tidak jatuh ke jam daftar: jam keluar IGD-nya tidak diketahui.
-     */
-    public function masukRanap(string $noRawat): ?Carbon
-    {
-        $kamar = DB::table('kamar_inap')->where('no_rawat', $noRawat)
-            ->orderBy('tgl_masuk')->orderBy('jam_masuk')->first(['tgl_masuk', 'jam_masuk']);
-
-        return $kamar ? Carbon::parse($kamar->tgl_masuk . ' ' . $kamar->jam_masuk) : null;
-    }
 }

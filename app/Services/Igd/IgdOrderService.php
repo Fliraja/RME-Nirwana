@@ -3,6 +3,7 @@
 namespace App\Services\Igd;
 
 use App\Exceptions\OrderIgdTerkunci;
+use App\Services\Kunjungan\RawatInap;
 use App\Services\Obat\ObatDiberikan;
 use App\Services\Resep\ResepService;
 use App\Support\ResumeFormat;
@@ -12,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 class IgdOrderService
 {
     public function __construct(
-        private IgdPasienService $pasien,
+        private RawatInap $rawatInap,
         private ResepService $resep,
         private ObatDiberikan $obatDiberikan,
     ) {}
@@ -39,14 +40,7 @@ class IgdOrderService
     /** Pesan kunci permintaan, atau null bila pasien belum rawat inap. */
     public function pesanTerkunci(string $noRawat): ?string
     {
-        if (!$this->pasien->sudahRanap($noRawat)) {
-            return null;
-        }
-
-        $sejak = $this->pasien->masukRanap($noRawat);
-        $waktu = $sejak ? 'sejak ' . AsesmenIgdService::waktu($sejak) : '(kamar belum tercatat)';
-
-        return "Pasien sudah rawat inap {$waktu}. Permintaan baru lewat modul Ranap.";
+        return $this->rawatInap->pesanKunci($noRawat);
     }
 
     /** Pastikan nomor order milik kunjungan ini, supaya order kunjungan lain tidak bisa dihapus lewat URL. */
