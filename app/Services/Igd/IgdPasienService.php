@@ -9,8 +9,11 @@ use Illuminate\Support\Facades\DB;
 
 class IgdPasienService
 {
-    /** Jam sebelum ini dianggap masih jaga malam, sehingga pasien kemarin ikut tampil. */
-    private const BATAS_JAGA_MALAM = 7;
+    /**
+     * Sebelum jam ini pasien kemarin ikut tampil. Bukan jam pergantian jaga (07.00): dokter jaga malam
+     * masih melengkapi asesmen sampai sekitar 08.00 (prod Jan-Okt 2026, 35 dari 50 asesmen terlambat).
+     */
+    private const BATAS_JAGA_MALAM = 9;
 
     /** @return array{0: Carbon, 1: Carbon} */
     public function rentangBawaan(Carbon $sekarang): array

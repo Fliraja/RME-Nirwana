@@ -21,12 +21,18 @@ class IgdController extends Controller
         }
 
         $cari = mb_substr(trim((string) $request->query('cari')), 0, 60);
+        $hariIni = now()->toDateString();
+        $kemarin = now()->subDay()->toDateString();
 
         return view('igd.index', [
             'daftarPasien' => $this->pasien->daftar($dari, $sampai, $cari),
             'dari'         => $dari,
             'sampai'       => $sampai,
             'cari'         => $cari,
+            'cepat'        => [
+                'Hari ini' => $hariIni,
+                'Kemarin'  => $kemarin,
+            ],
         ]);
     }
 
