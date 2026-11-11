@@ -10,6 +10,7 @@ use App\Services\Ralan\RadiologiService;
 use App\Services\Resep\ResepService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 /** Tab Permintaan di halaman pasien IGD: lab, radiologi (dan resep di tahap berikutnya). */
 class IgdOrderController extends Controller
@@ -50,10 +51,11 @@ class IgdOrderController extends Controller
 
     public function simpanLab(Request $request)
     {
-        $data = $request->validate($this->aturanPermintaan() + [
-            'detail_lab'   => 'nullable|array',
-            'detail_lab.*' => 'array',
-        ]);
+        $data = $request->validate($this->aturanPermintaan('jns_perawatan_lab') + [
+            'detail_lab'   => ['nullable', 'array', $this->subItemSePaket(...)],
+            'detail_lab.*'   => 'array',
+            'detail_lab.*.*' => 'distinct',
+        ], self::PESAN_PERMINTAAN);
 
         return $this->jalankan($data['no_rawat'], fn () => $this->lab->simpanPermintaan($this->bersihkan($data)));
     }
@@ -71,7 +73,7 @@ class IgdOrderController extends Controller
 
     public function simpanRadiologi(Request $request)
     {
-        $data = $request->validate($this->aturanPermintaan());
+        $data = $request->validate($this->aturanPermintaan('jns_perawatan_radiologi'), self::PESAN_PERMINTAAN);
 
         return $this->jalankan($data['no_rawat'], fn () => $this->radiologi->simpanPermintaan($this->bersihkan($data)));
     }
@@ -152,15 +154,39 @@ class IgdOrderController extends Controller
         });
     }
 
-    private function aturanPermintaan(): array
+    /** Proyek tanpa folder lang/: pesan validasi yang sampai ke dokter ditulis di sini. */
+    private const PESAN_PERMINTAAN = [
+        'kd_jenis_prw.*.exists'   => 'Pemeriksaan tidak ditemukan atau sudah tidak aktif. Muat ulang halaman lalu pilih lagi.',
+        'kd_jenis_prw.*.distinct' => 'Pemeriksaan yang sama dipilih dua kali.',
+        'detail_lab.*.*.distinct' => 'Sub-item lab yang sama dipilih dua kali.',
+    ];
+
+    /** Kode di luar daftar aktif atau dobel menabrak kunci Khanza (500); tolak lebih dulu sebagai 422. */
+    private function aturanPermintaan(string $tabelJenis): array
     {
         return [
             'no_rawat'           => 'required|string',
             'kd_jenis_prw'       => 'required|array|min:1',
-            'kd_jenis_prw.*'     => 'string',
+            'kd_jenis_prw.*'     => ['string', 'distinct', Rule::exists($tabelJenis, 'kd_jenis_prw')->where('status', '1')],
             'diagnosa_klinis'    => 'nullable|string|max:80',
             'informasi_tambahan' => 'nullable|string|max:60',
         ];
+    }
+
+    /** Sub-item (id_template) harus milik paket yang dikirim bersamanya. */
+    private function subItemSePaket(string $atribut, mixed $nilai, \Closure $gagal): void
+    {
+        $pasangan = collect(is_array($nilai) ? $nilai : [])
+            ->flatMap(fn ($id, $kd) => collect(is_array($id) ? $id : [$id])->map(fn ($i) => [(string) $kd, (string) $i]));
+        if ($pasangan->isEmpty()) {
+            return;
+        }
+
+        $milik = DB::table('template_laboratorium')->whereIn('id_template', $pasangan->pluck(1)->unique())
+            ->pluck('kd_jenis_prw', 'id_template');
+        if ($pasangan->contains(fn ($p) => (string) ($milik[$p[1]] ?? '') !== $p[0])) {
+            $gagal('Sub-item lab tidak cocok dengan paketnya. Muat ulang halaman lalu pilih lagi.');
+        }
     }
 
     private function bersihkan(array $data): array
