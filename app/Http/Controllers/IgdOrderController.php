@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Exceptions\OrderIgdTerkunci;
 use App\Exceptions\ResepTerkunci;
 use App\Services\Igd\IgdOrderService;
-use App\Services\Igd\IgdPasienService;
 use App\Services\Ralan\LaboratoriumService;
 use App\Services\Ralan\RadiologiService;
 use App\Services\Resep\ResepService;
@@ -17,7 +16,6 @@ class IgdOrderController extends Controller
 {
     public function __construct(
         private IgdOrderService $order,
-        private IgdPasienService $pasien,
         private LaboratoriumService $lab,
         private RadiologiService $radiologi,
         private ResepService $resep,
@@ -33,8 +31,7 @@ class IgdOrderController extends Controller
             abort($e->status, $e->getMessage());
         }
 
-        $ranap = $this->pasien->masukRanap($noRawat);
-        $lab = $this->order->daftarLab($noRawat);
+        $lab =$this->order->daftarLab($noRawat);
         $radiologi = $this->order->daftarRadiologi($noRawat);
         $resep = $this->order->daftarResep($noRawat);
 
@@ -46,7 +43,7 @@ class IgdOrderController extends Controller
             'jumlah'         => $lab->count() + $radiologi->count() + $resep->count(),
             'aturanPakai'    => DB::table('master_aturan_pakai')->orderBy('aturan')->pluck('aturan'),
             'metodeRacik'    => DB::table('metode_racik')->orderBy('kd_racik')->get(),
-            'pesanTerkunci'  => $ranap ? $this->order->pesanTerkunci($ranap->format('H.i')) : null,
+            'pesanTerkunci'  => $this->order->pesanTerkunci($noRawat),
             'usulanDiagnosa' => $this->order->usulanDiagnosaKlinis($noRawat),
         ]);
     }

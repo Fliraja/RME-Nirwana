@@ -22,9 +22,9 @@ class IgdOrderService
     {
         $this->pastikanPasienIgd($noRawat);
 
-        $ranap = $this->pasien->masukRanap($noRawat);
-        if ($ranap) {
-            throw new OrderIgdTerkunci($this->pesanTerkunci($ranap->format('H.i')), 409);
+        $pesan = $this->pesanTerkunci($noRawat);
+        if ($pesan) {
+            throw new OrderIgdTerkunci($pesan, 409);
         }
     }
 
@@ -36,9 +36,17 @@ class IgdOrderService
         }
     }
 
-    public function pesanTerkunci(string $jam): string
+    /** Pesan kunci permintaan, atau null bila pasien belum rawat inap. */
+    public function pesanTerkunci(string $noRawat): ?string
     {
-        return "Pasien sudah rawat inap sejak {$jam}. Permintaan baru lewat modul Ranap.";
+        if (!$this->pasien->sudahRanap($noRawat)) {
+            return null;
+        }
+
+        $sejak = $this->pasien->masukRanap($noRawat);
+        $waktu = $sejak ? 'sejak ' . AsesmenIgdService::waktu($sejak) : '(kamar belum tercatat)';
+
+        return "Pasien sudah rawat inap {$waktu}. Permintaan baru lewat modul Ranap.";
     }
 
     /** Pastikan nomor order milik kunjungan ini, supaya order kunjungan lain tidak bisa dihapus lewat URL. */

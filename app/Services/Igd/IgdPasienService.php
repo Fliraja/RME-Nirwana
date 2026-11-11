@@ -81,23 +81,27 @@ class IgdPasienService
             'alergi'           => $asesmen && Alergi::ada($asesmen->alergi) ? trim($asesmen->alergi) : null,
             'ada_asesmen'      => (bool) $asesmen,
             'lama_menit'       => max(0, (int) $datang->diffInMinutes($akhir, false)),
+            'rawat_inap'       => $ranap !== null || $reg->status_lanjut === 'Ranap',
             'rawat_inap_sejak' => $ranap,
         ];
     }
 
-    /** Waktu pasien mulai rawat inap, atau null bila masih di IGD/rawat jalan. */
+    /** Sama dengan status di daftar IGD: status Ranap di registrasi atau sudah punya kamar. */
+    public function sudahRanap(string $noRawat): bool
+    {
+        return DB::table('reg_periksa')->where('no_rawat', $noRawat)->where('status_lanjut', 'Ranap')->exists()
+            || DB::table('kamar_inap')->where('no_rawat', $noRawat)->exists();
+    }
+
+    /**
+     * Waktu masuk kamar pertama, atau null bila belum ada baris kamar_inap.
+     * Status Ranap tanpa kamar sengaja tidak jatuh ke jam daftar: jam keluar IGD-nya tidak diketahui.
+     */
     public function masukRanap(string $noRawat): ?Carbon
     {
         $kamar = DB::table('kamar_inap')->where('no_rawat', $noRawat)
             ->orderBy('tgl_masuk')->orderBy('jam_masuk')->first(['tgl_masuk', 'jam_masuk']);
-        if ($kamar) {
-            return Carbon::parse($kamar->tgl_masuk . ' ' . $kamar->jam_masuk);
-        }
 
-        $reg = DB::table('reg_periksa')->where('no_rawat', $noRawat)->first(['status_lanjut', 'tgl_registrasi', 'jam_reg']);
-
-        return $reg && $reg->status_lanjut === 'Ranap'
-            ? Carbon::parse($reg->tgl_registrasi . ' ' . $reg->jam_reg)
-            : null;
+        return $kamar ? Carbon::parse($kamar->tgl_masuk . ' ' . $kamar->jam_masuk) : null;
     }
 }
