@@ -371,6 +371,19 @@
                 '<button type="button" class="btn btn-sm igd-btn-hapus" data-buang-bahan aria-label="Hapus bahan ' + urut + '"><i class="fas fa-xmark" aria-hidden="true"></i></button>';
             ul.appendChild(li);
             li.ts = pilihanObat(li.querySelector('select'), function (opsi) {
+                // Bahan yang sama dua kali ditolak Khanza; arahkan dokter ke baris yang sudah ada.
+                var lama = Array.prototype.find.call(ul.querySelectorAll('.igd-bahan'), function (x) {
+                    return x !== li && x.kode === opsi.id;
+                });
+                if (lama) {
+                    li.kode = null;
+                    li.satuan = '';
+                    setTimeout(function () { li.ts.clear(true); });
+                    toast('warning', opsi.text + ' sudah ada di daftar bahan. Ubah dosisnya di baris itu.');
+                    lama.querySelector('[data-dosis]').focus();
+                    hitung(li);
+                    return;
+                }
                 li.kode = opsi.id;
                 li.satuan = opsi.satuan || '';
                 li.querySelector('[data-dosis]').focus();

@@ -26,11 +26,7 @@ class ResepService
     public function tambahObat(string $noRawat, array $items, string $kdDokter): array
     {
         $kode = array_column($items, 'kode_obat');
-        $ganda = array_unique(array_diff_assoc($kode, array_unique($kode)));
-        if ($ganda) {
-            $nama = DB::table('databarang')->whereIn('kode_brng', $ganda)->pluck('nama_brng')->map(fn ($n) => trim($n))->implode(', ');
-            throw new ResepTerkunci("{$nama} ada lebih dari sekali di daftar. Gabungkan jumlahnya menjadi satu baris.");
-        }
+        $this->tolakGanda($kode, 'ada lebih dari sekali di daftar. Gabungkan jumlahnya menjadi satu baris.');
         $this->pastikanAdaStok($kode);
 
         return NomorUrut::denganRetry(function () use ($noRawat, $items, $kdDokter, $kode) {
@@ -55,7 +51,9 @@ class ResepService
      */
     public function tambahRacikan(string $noRawat, array $racikan, string $kdDokter): array
     {
-        $this->pastikanAdaStok(array_column($racikan['detail'], 'kode_brng'));
+        $kode = array_column($racikan['detail'], 'kode_brng');
+        $this->tolakGanda($kode, 'ada lebih dari sekali di bahan racikan. Satukan dosisnya di satu baris.');
+        $this->pastikanAdaStok($kode);
 
         return NomorUrut::denganRetry(function () use ($noRawat, $racikan, $kdDokter) {
             $noResep = $this->resepTerbuka($noRawat, $kdDokter);
@@ -228,6 +226,18 @@ class ResepService
         ]);
 
         return $noResep;
+    }
+
+    /** Barang yang sama dua kali dalam satu kiriman ditolak sebelum menyentuh kunci primer Khanza. */
+    private function tolakGanda(array $kodeBarang, string $pesan): void
+    {
+        $ganda = array_unique(array_diff_assoc($kodeBarang, array_unique($kodeBarang)));
+        if (!$ganda) {
+            return;
+        }
+
+        $nama = DB::table('databarang')->whereIn('kode_brng', $ganda)->pluck('nama_brng')->map(fn ($n) => trim($n))->implode(', ');
+        throw new ResepTerkunci("{$nama} {$pesan}");
     }
 
     private function pastikanAdaStok(array $kodeBarang): void
