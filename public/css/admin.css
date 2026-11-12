@@ -1439,6 +1439,8 @@ a:hover {
 .resep-status-tunggu { background: #f1f5f9; color: #475569; }
 .resep-status-proses { background: #e0f2fe; color: #075985; }
 .resep-kepala { font-size: 0.8rem; color: #475569; }
+/* Kotak kunci rawat inap di tab ralan, sama dengan .igd-terkunci (design.md bagian 12). */
+.kunci-ranap { display: flex; align-items: center; gap: 8px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: var(--radius-sm); padding: 0.6rem 0.8rem; margin-bottom: 0.9rem; font-size: 0.85rem; color: #475569; }
 .resume-sumber-badge { font-size: 0.72rem; font-weight: 500; background: #f1f5f9; color: #475569; padding: 1px 6px; border-radius: var(--radius-sm); margin-left: 6px; }
 .resume-judul { font-size: 0.8rem; font-weight: 700; color: var(--gray-700); margin: 0 0 6px; }
 .resume-catatan { font-size: 0.8rem; color: var(--gray-500); }

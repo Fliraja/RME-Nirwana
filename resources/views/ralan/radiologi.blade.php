@@ -2,6 +2,9 @@
     @csrf
     <input type="hidden" name="no_rawat" value="{{ $pasien->no_rawat }}">
 
+    @if($pesanKunci)
+    @include('ralan.partials.kunci_ranap')
+    @else
     <div class="row">
         <div class="col-md-6">
             <div class="mb-3">
@@ -31,6 +34,7 @@
             <i class="fas fa-paper-plane"></i> Kirim Permintaan Radiologi
         </button>
     </div>
+    @endif
 
     <hr>
 

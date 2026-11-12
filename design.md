@@ -63,6 +63,7 @@ Token di `:root` `admin.css`. Palet inti: hijau RS + slate. Kuning/merah/biru ha
 - **Bilah simpan menempel (`.resume-bilah-simpan`):** `position: sticky; bottom: 0`, latar putih, border atas, berisi waktu simpan terakhir di kiri dan aksi di kanan (satu aksi utama, satu outline). Untuk form panjang agar tombol simpan selalu terjangkau.
 - **Notifikasi:** toast yang sudah ada (`tampilkanSukses`/`tampilkanError`) dan SweetAlert untuk konfirmasi hapus.
 - **Daftar resep ralan/ranap:** semua resep kunjungan, terbaru di atas (resep terbuka bisa dibuat kemarin dan ditambah hari ini). Tiap resep diawali baris `.resep-kepala` (`#475569`): "Resep no · dd/mm HH.MM · dokter" + status teks `.resume-status` dengan warna kartu resep IGD: "menunggu apotek" `.resep-status-tunggu` (`#475569`/`#f1f5f9`), "diterima apotek" `.resep-status-proses` (`#075985`/`#e0f2fe`), "diserahkan" `.resume-status-ok`. Tombol hapus hanya selama menunggu apotek. Kosong: "Belum ada resep untuk kunjungan ini."
+- **Kotak kunci rawat inap di tab ralan (`.kunci-ranap`):** sama dengan `.igd-terkunci` (garis putus-putus `#cbd5e1`, latar `#f8fafc`, teks `#475569`, ikon gembok). Bila pasien sudah ranap, form permintaan di tab Lab, Radiologi, dan Resep diganti kotak "Pasien sudah rawat inap sejak … Permintaan baru lewat modul Ranap. Daftar di bawah tetap bisa dibaca."; tombol hapus di tabelnya tidak dirender. Server juga menolak (409).
 
 ## 6. State
 

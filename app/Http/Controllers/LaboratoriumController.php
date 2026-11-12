@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Ralan\StorePermintaanLabRequest;
 use App\Models\PermintaanLab;
+use App\Services\Kunjungan\RawatInap;
 use App\Services\Ralan\LaboratoriumService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class LaboratoriumController extends Controller
 {
-    public function __construct(private LaboratoriumService $service) {}
+    public function __construct(private LaboratoriumService $service, private RawatInap $rawatInap) {}
 
     public function getLabPasien($no_rawat)
     {
@@ -26,7 +27,7 @@ class LaboratoriumController extends Controller
             ->orderByDesc('tgl_permintaan')->orderByDesc('jam_permintaan')
             ->get();
 
-        return view('ralan.lab', compact('pasien', 'riwayat'));
+        return view('ralan.lab', compact('pasien', 'riwayat') + ['pesanKunci' => $this->rawatInap->pesanKunci($no_rawat)]);
     }
 
     public function getLabTable($no_rawat)
@@ -38,7 +39,7 @@ class LaboratoriumController extends Controller
             ->orderByDesc('tgl_permintaan')->orderByDesc('jam_permintaan')
             ->get();
 
-        return view('ralan.lab_table', compact('riwayat'));
+        return view('ralan.lab_table', compact('riwayat') + ['pesanKunci' => $this->rawatInap->pesanKunci($no_rawat)]);
     }
 
     public function getPemeriksaan(Request $request)

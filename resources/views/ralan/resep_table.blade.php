@@ -1,4 +1,5 @@
 @php
+    $pesanKunci = $pesanKunci ?? null;
     $angka = fn ($n) => rtrim(rtrim(number_format((float) $n, 2, ',', '.'), '0'), ',');
     $kelasStatus = ['menunggu apotek' => 'resep-status-tunggu', 'diterima apotek' => 'resep-status-proses', 'diserahkan' => 'resume-status-ok'];
 @endphp
@@ -28,7 +29,7 @@
                     <td class="text-center">{{ $angka($item->jml) }} {{ $item->kode_sat }}</td>
                     <td>{{ $item->aturan_pakai }}</td>
                     <td class="text-center">
-                        @unless($resep->divalidasi)
+                        @unless($resep->divalidasi || $pesanKunci)
                             <button class="btn btn-danger btn-xs" onclick="hapusObat('{{ $item->no_resep }}', '{{ $item->kode_brng }}')" aria-label="Hapus {{ $item->nama_brng }}">
                                 <i class="fa fa-trash" aria-hidden="true"></i>
                             </button>
@@ -46,7 +47,7 @@
                     <td class="text-center fw-bold">{{ $racik->jml_dr }}</td>
                     <td class="fw-bold">{{ $racik->aturan_pakai }}</td>
                     <td class="text-center">
-                        @unless($resep->divalidasi)
+                        @unless($resep->divalidasi || $pesanKunci)
                             <button class="btn btn-danger btn-xs" onclick="hapusRacikan('{{ $racik->no_resep }}', '{{ $racik->no_racik }}')" aria-label="Hapus racikan {{ $racik->nama_racik }}">
                                 <i class="fa fa-trash" aria-hidden="true"></i>
                             </button>

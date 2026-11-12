@@ -7,6 +7,7 @@ use App\Models\RegPeriksa;
 use App\Services\Obat\StokObatService;
 use App\Models\ResepDokter;
 use App\Exceptions\ResepTerkunci;
+use App\Services\Kunjungan\RawatInap;
 use App\Services\Resep\ResepService;
 use Illuminate\Http\Request;
 use App\Models\MasterAturanPakai;
@@ -16,7 +17,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ResepController extends Controller
 {
-    public function __construct(private ResepService $resep) {}
+    public function __construct(private ResepService $resep, private RawatInap $rawatInap) {}
 
     public function getResepPasien($no_rawat)
     {
@@ -29,14 +30,15 @@ class ResepController extends Controller
         $masterMetode = DB::table('metode_racik')->get();
         $pasien = RegPeriksa::where('no_rawat', $no_rawat)->first();
 
-        return view('ralan.resep', compact('daftarResep', 'pasien', 'masterAturan', 'masterMetode'));
+        return view('ralan.resep', compact('daftarResep', 'pasien', 'masterAturan', 'masterMetode') + ['pesanKunci' => $this->rawatInap->pesanKunci($no_rawat)]);
     }
 
     public function getResepTable($no_rawat)
     {
-        $daftarResep = $this->resep->resepKunjungan(str_replace('-', '/', $no_rawat));
+        $no_rawat = str_replace('-', '/', $no_rawat);
+        $daftarResep = $this->resep->resepKunjungan($no_rawat);
 
-        return view('ralan.resep_table', compact('daftarResep'));
+        return view('ralan.resep_table', compact('daftarResep') + ['pesanKunci' => $this->rawatInap->pesanKunci($no_rawat)]);
     }
 
     public function storeResepObat(Request $request)
