@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Dokter;
 use App\Models\ResepObat;
 use App\Models\RegPeriksa;
+use App\Services\Kunjungan\RiwayatKunjungan;
 use Illuminate\Http\Request;
 use App\Models\PermintaanLab;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -350,20 +351,7 @@ class ReportController extends Controller
             return back()->with('error', 'Data pasien tidak ditemukan');
         }
 
-        $riwayat = RegPeriksa::with([
-                'poliklinik',
-                'dokter',
-                'pemeriksaanRalan',
-                'pemeriksaanRanap',
-                'detailObat.barang',
-                'detailLab.template',
-                'gambarRadiologi'
-            ])
-            ->where('no_rkm_medis', $no_rkm_medis)
-            ->where('stts', '!=', 'Batal')
-            ->orderBy('tgl_registrasi', 'DESC')
-            ->limit(5) 
-            ->get();
+        $riwayat = app(RiwayatKunjungan::class)->terakhir($no_rkm_medis, 5);
 
         $pdf = Pdf::loadView('report.riwayat_pdf', compact('detailPasien', 'riwayat'))
                 ->setPaper('a4', 'landscape');

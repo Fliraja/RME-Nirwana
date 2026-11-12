@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use App\Support\AksesRme;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -16,7 +17,11 @@ class MultiRoleAuth
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::check() || session('login_admin')) {
+        if (Auth::check() && session(AksesRme::SESI) !== true) {
+            // Sesi dari sebelum aturan akses RME, atau akun yang tidak lagi berhak.
+            Auth::logout();
+            $request->session()->invalidate();
+        } elseif (Auth::check() || session('login_admin')) {
             return $next($request);
         }
 

@@ -12,6 +12,7 @@ use App\Http\Requests\Ralan\StoreVitalSignRequest;
 use App\Services\Ralan\ResumeRalanService;
 use App\Services\Ralan\SoapService;
 use App\Services\Ralan\VitalSignService;
+use App\Services\Kunjungan\RiwayatKunjungan;
 use App\Support\AntrolBpjsUpdater;
 use Illuminate\Support\Facades\Log;
 
@@ -51,15 +52,7 @@ class RalanController extends Controller
             if ($data['detailPasien']) {
                 AntrolBpjsUpdater::tandaiPerawat($data['detailPasien']->no_rawat, $data['detailPasien']->kd_pj);
 
-                $data['riwayat'] = RegPeriksa::with([
-                        'poliklinik', 'dokter', 'pemeriksaanRalan', 'pemeriksaanRanap',
-                        'resepObat.resepDokter.dataBarang', 'detailObat.barang',
-                        'detailLab.template', 'gambarRadiologi'
-                    ])
-                    ->where('no_rkm_medis', $data['detailPasien']->no_rkm_medis)
-                    ->where('stts', '!=', 'Batal')
-                    ->orderBy('tgl_registrasi', 'DESC')
-                    ->paginate(5, ['*'], 'riwayat_page');
+                $data['riwayat'] = app(RiwayatKunjungan::class)->halaman($data['detailPasien']->no_rkm_medis);
 
                 $data['riwayat']->appends($request->all());
             }
@@ -84,26 +77,9 @@ class RalanController extends Controller
         return view('ralan.index', $data);
     }
 
-    public function getRiwayatPasien($no_rkm_medis)
+    public function getRiwayatPasien($no_rkm_medis, RiwayatKunjungan $riwayat)
     {
-        $riwayat = RegPeriksa::with([
-                'poliklinik',
-                'dokter',
-                'pemeriksaanRalan', 
-                'pemeriksaanRanap',
-                'detailObat.barang', 
-                'detailLab.template', 
-                'gambarRadiologi'
-            ])
-            ->where('no_rkm_medis', $no_rkm_medis)
-            ->where('stts', '!=', 'Batal')
-            ->orderBy('tgl_registrasi', 'DESC')
-            // View memanggil links() dan tombol PDF memakai $detailPasien, sama dengan halaman ralan.
-            ->paginate(5, ['*'], 'riwayat_page');
-
-        $detailPasien = RegPeriksa::where('no_rkm_medis', $no_rkm_medis)->first();
-
-        return view('ralan.riwayat', compact('riwayat', 'detailPasien'));
+        return view('riwayat.kunjungan', ['riwayat' => $riwayat->halaman($no_rkm_medis), 'noRkmMedis' => $no_rkm_medis]);
     }
 
     public function getSoapPasien($no_rawat)

@@ -1437,6 +1437,7 @@ a:hover {
 .resume-status { font-size: 0.75rem; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-sm); }
 .resume-status-tunggu { background: #fef3c7; color: #92400e; }
 .resume-status-ok { background: #dcfce7; color: #166534; }
+.igd-status-ranap { background: #f1f5f9; color: #475569; }
 /* Status resep ralan/ranap, warna sama dengan kartu resep IGD (design.md bagian 12). */
 .resep-status-tunggu { background: #f1f5f9; color: #475569; }
 .resep-status-proses { background: #e0f2fe; color: #075985; }
@@ -1532,3 +1533,43 @@ a:hover {
 .stok-habis { background: #f1f5f9; color: #475569; }
 .ts-dropdown .option[aria-disabled="true"] { cursor: not-allowed; }
 .ts-dropdown .option[aria-disabled="true"] .opsi-barang-nama { color: #64748b; }
+
+/* Penghitung batas isian SOAP/TTV (public/js/batas-isian.js) */
+.batas-isian { font-size: 0.75rem; color: #64748b; text-align: right; margin-top: 0.25rem; min-height: 0; }
+.batas-isian:empty { display: none; }
+.batas-isian.lebih { color: #be123c; font-weight: 600; text-align: left; }
+
+/* Tab Riwayat bersama IGD, ralan, ranap (resources/views/riwayat/kunjungan.blade.php) */
+.riwayat-kartu { border: 1px solid #e5e7eb; border-radius: var(--radius); background: #fff; margin-bottom: 0.75rem; }
+.riwayat-kepala { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.75rem; padding: 0.6rem 1rem; border-bottom: 1px solid #eef0f2; }
+.riwayat-tanggal { margin: 0; font-size: 0.95rem; font-weight: 600; color: #334155; }
+.riwayat-jenis { font-size: 0.75rem; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-sm); background: #f1f5f9; color: #475569; }
+.riwayat-meta { font-size: 0.8rem; color: #64748b; overflow-wrap: anywhere; }
+.riwayat-badan { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 0.5rem 1.5rem; padding: 0.75rem 1rem; }
+.riwayat-isi { margin: 0; }
+.riwayat-isi dt { font-size: 0.75rem; font-weight: 600; color: #64748b; margin-top: 0.6rem; }
+.riwayat-isi dt:first-child { margin-top: 0; }
+.riwayat-isi dd { margin: 0.1rem 0 0; font-size: 0.85rem; color: #334155; white-space: pre-line; overflow-wrap: anywhere; }
+.riwayat-isi dd.riwayat-blok { white-space: normal; }
+.riwayat-isi dd .riwayat-meta { display: block; }
+.riwayat-baris { display: block; white-space: pre-line; }
+.riwayat-redup, .riwayat-kosong { color: #64748b; }
+.riwayat-kosong { padding: 1rem 0; margin: 0; }
+.riwayat-lengkap summary { display: inline-block; padding: 0.2rem 0; color: #0d7a4a; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+.riwayat-lengkap summary:hover { text-decoration: underline; }
+.riwayat-lengkap summary:focus-visible { outline: 2px solid #0d7a4a; outline-offset: 2px; border-radius: 2px; }
+.riwayat-daftar { list-style: none; margin: 0.35rem 0 0; padding: 0.5rem 0.75rem; background: #f8fafc; border-radius: var(--radius-sm); white-space: normal; }
+.riwayat-daftar li + li { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #e5e7eb; }
+.riwayat-daftar p { margin: 0; }
+.riwayat-daftar p.riwayat-baris { margin-bottom: 0.4rem; }
+.riwayat-kaki { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+.riwayat-kaki .pagination { margin: 0; }
+.riwayat .page-link { color: #0d7a4a; }
+.riwayat .page-item.active .page-link { background: #0d7a4a; border-color: #0d7a4a; color: #fff; }
+@media (max-width: 767.98px) {
+    .riwayat-badan { grid-template-columns: minmax(0, 1fr); }
+}
+@media (pointer: coarse) {
+    .riwayat-lengkap summary { display: inline-flex; align-items: center; min-height: 44px; }
+    .riwayat-kaki .btn, .riwayat .page-link { min-height: 44px; display: inline-flex; align-items: center; }
+}

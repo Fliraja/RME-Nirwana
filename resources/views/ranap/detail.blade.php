@@ -58,7 +58,7 @@
                             {{-- Tab 1: Riwayat --}}
                             <div role="tabpanel" class="tab-pane fade show active" id="riwayat">
                                 <div id="content-riwayat">
-                                    @include('ranap.tabs.riwayat')
+                                    @include('riwayat.kunjungan', ['noRawatAktif' => $detailPasien->no_rawat, 'noRkmMedis' => $detailPasien->no_rkm_medis])
                                 </div>
                             </div>
 

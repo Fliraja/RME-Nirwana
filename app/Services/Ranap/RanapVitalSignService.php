@@ -99,16 +99,17 @@ class RanapVitalSignService
             $noRawat = $data['no_rawat'];
             $isEdit = !empty($data['mode_edit_ttv']) && $data['mode_edit_ttv'] == '1';
 
-            $suhu = substr($data['suhu_tubuh'] ?? '', 0, 5);
-            $tensi = substr($data['tensi'] ?? '-', 0, 7);
-            $nadi = substr($data['nadi'] ?? '', 0, 3);
-            $respirasi = substr($data['respirasi'] ?? '', 0, 3);
-            $tinggi = substr($data['tinggi'] ?? '', 0, 5);
-            $berat = substr($data['berat'] ?? '', 0, 5);
-            $spo2 = substr($data['spo2'] ?? '', 0, 3);
-            $gcs = substr($data['gcs'] ?? '', 0, 10);
+            // Panjang sudah dijaga StoreVitalRanapRequest (BatasIsianPemeriksaan).
+            $suhu = $data['suhu_tubuh'] ?? '';
+            $tensi = $data['tensi'] ?? '-';
+            $nadi = $data['nadi'] ?? '';
+            $respirasi = $data['respirasi'] ?? '';
+            $tinggi = $data['tinggi'] ?? '';
+            $berat = $data['berat'] ?? '';
+            $spo2 = $data['spo2'] ?? '';
+            $gcs = $data['gcs'] ?? '';
             $kesadaran = !empty($data['kesadaran']) ? $data['kesadaran'] : 'Compos Mentis';
-            $alergi = substr($data['alergi'] ?? '', 0, 400);
+            $alergi = $data['alergi'] ?? '';
             $sbar = trim($data['sbar'] ?? '');
 
             if ($isEdit) {
@@ -191,15 +192,9 @@ class RanapVitalSignService
                     'spo2'          => $spo2,
                     'gcs'           => $gcs,
                     'kesadaran'     => $kesadaran,
-                    'keluhan'       => '',
-                    'pemeriksaan'   => '',
                     'alergi'        => $alergi,
-                    'penilaian'     => '',
-                    'rtl'           => '',
-                    'instruksi'     => '',
-                    'evaluasi'      => '-',
                     'nip'           => $nip,
-                ]);
+                ] + BarisPemeriksaanRanap::SOAP_KOSONG);
 
                 if ($sbar !== '') {
                     DB::table('catatan_sbar_ranap')->insert([
@@ -231,18 +226,26 @@ class RanapVitalSignService
                 $query->where('nip', $nip);
             }
 
-            $deleted = $query->delete();
-            if ($deleted) {
-                DB::table('catatan_sbar_ranap')
-                    ->where('no_rawat', $noRawat)
-                    ->where('tgl_perawatan', $tgl)
-                    ->where('jam_rawat', $jam)
-                    ->delete();
-
-                return ['status' => 'success', 'message' => 'Data TTV & SBAR berhasil dihapus'];
+            $baris = (clone $query)->first();
+            if (!$baris) {
+                return ['status' => 'error', 'message' => 'Gagal menghapus data atau Anda tidak memiliki akses'];
             }
 
-            return ['status' => 'error', 'message' => 'Gagal menghapus data atau Anda tidak memiliki akses'];
+            DB::table('catatan_sbar_ranap')
+                ->where('no_rawat', $noRawat)
+                ->where('tgl_perawatan', $tgl)
+                ->where('jam_rawat', $jam)
+                ->delete();
+
+            if (BarisPemeriksaanRanap::adaSoap($baris)) {
+                $query->update(BarisPemeriksaanRanap::TTV_KOSONG);
+
+                return ['status' => 'success', 'message' => 'TTV & SBAR dihapus. Catatan SOAP pada jam yang sama tetap disimpan.'];
+            }
+
+            $query->delete();
+
+            return ['status' => 'success', 'message' => 'Data TTV & SBAR berhasil dihapus'];
         });
     }
 }

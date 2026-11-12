@@ -310,6 +310,10 @@ function initSoapHandlers() {
             },
             error: function(xhr) {
                 $btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan SOAP');
+                if (xhr.status === 422 && xhr.responseJSON && tampilkanGalatIsian($('#formSoapRanap')[0], xhr.responseJSON.errors)) {
+                    tampilkanError('SOAP belum disimpan. Perbaiki isian yang ditandai merah.');
+                    return;
+                }
                 var err = xhr.responseJSON ? xhr.responseJSON.message : 'Terjadi kesalahan sistem.';
                 tampilkanError(err);
             }
@@ -488,6 +492,10 @@ function initTtvHandlers() {
             },
             error: function(xhr) {
                 $btn.prop('disabled', false).html('<i class="fas fa-save me-1"></i> Simpan TTV & SBAR');
+                if (xhr.status === 422 && xhr.responseJSON && tampilkanGalatIsian($('#formTtvRanap')[0], xhr.responseJSON.errors)) {
+                    tampilkanError('TTV belum disimpan. Perbaiki isian yang ditandai merah.');
+                    return;
+                }
                 var err = xhr.responseJSON ? xhr.responseJSON.message : 'Terjadi kesalahan sistem.';
                 tampilkanError(err);
             }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Ralan;
 
+use App\Support\BatasIsianPemeriksaan as Batas;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreVitalSignRequest extends FormRequest
@@ -15,6 +16,11 @@ class StoreVitalSignRequest extends FormRequest
     {
         return [
             'no_rawat' => 'required',
-        ];
+        ] + Batas::aturan(Batas::TTV + ['alergi' => Batas::ALERGI_RALAN]);
+    }
+
+    public function attributes(): array
+    {
+        return Batas::label();
     }
 }
