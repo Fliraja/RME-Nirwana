@@ -97,10 +97,13 @@ class RalanController extends Controller
             ])
             ->where('no_rkm_medis', $no_rkm_medis)
             ->where('stts', '!=', 'Batal')
-            ->orderBy('tgl_registrasi', 'DESC') 
-            ->get();
+            ->orderBy('tgl_registrasi', 'DESC')
+            // View memanggil links() dan tombol PDF memakai $detailPasien, sama dengan halaman ralan.
+            ->paginate(5, ['*'], 'riwayat_page');
 
-        return view('ralan.riwayat', compact('riwayat'));
+        $detailPasien = RegPeriksa::where('no_rkm_medis', $no_rkm_medis)->first();
+
+        return view('ralan.riwayat', compact('riwayat', 'detailPasien'));
     }
 
     public function getSoapPasien($no_rawat)
