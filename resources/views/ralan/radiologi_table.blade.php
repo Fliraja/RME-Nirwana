@@ -28,7 +28,7 @@
                     <td class="align-middle">
                         <div class="d-flex justify-content-between align-items-center">
                             <span>{{ $item->jenisPerawatan->nm_perawatan }}</span>
-                            @if($item->stts_bayar == 'Belum' && !$pesanKunci)
+                            @if(!$row->sudahDiproses() && !$pesanKunci)
                                 <a href="javascript:void(0)" class="text-danger p-1" 
                                    onclick="hapusRadiologi('{{ $row->noorder }}', '{{ $item->kd_jenis_prw }}')" 
                                    title="Hapus Pemeriksaan ini">
@@ -45,9 +45,9 @@
                         </td>
                         
                         <td rowspan="{{ $row->pemeriksaan->count() }}" class="text-center align-middle">
-                            @if($item->stts_bayar == 'Belum' && $pesanKunci)
+                            @if(!$row->sudahDiproses() && $pesanKunci)
                                 <span class="text-muted small">-</span>
-                            @elseif($item->stts_bayar == 'Belum')
+                            @elseif(!$row->sudahDiproses())
                                 <button class="btn btn-danger btn-sm" onclick="hapusRadiologi('{{ $row->noorder }}')" title="Batalkan Seluruh Order">
                                     <i class="fa fa-trash"></i>
                                 </button>

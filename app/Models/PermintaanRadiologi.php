@@ -35,4 +35,21 @@ class PermintaanRadiologi extends Model
     {
         return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat');
     }
+
+    /** Sama dengan aturan RadiologiService::hapus: tgl_sampel terisi atau hasil sudah ditagih. */
+    public function sudahDiproses(): bool
+    {
+        return ($this->tgl_sampel && $this->tgl_sampel !== '0000-00-00')
+            || $this->pemeriksaan->contains('stts_bayar', 'Sudah');
+    }
+
+    /** Teks status yang sama dengan kartu permintaan IGD. */
+    public function statusTeks(): string
+    {
+        if ($this->tgl_hasil && $this->tgl_hasil !== '0000-00-00') {
+            return 'hasil keluar';
+        }
+
+        return $this->sudahDiproses() ? 'sampel diambil' : 'menunggu sampel';
+    }
 }
