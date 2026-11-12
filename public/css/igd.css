@@ -72,6 +72,13 @@
 @media (max-width: 575.98px) {
     .igd-kepala-waktu { text-align: left; }
     .igd-kepala-rm { display: block; margin-left: 0; }
+    /* Tiga tab harus terlihat utuh di ponsel; label dan tanda (jumlah, "belum") lebih penting dari ikon. */
+    .igd-tabs.nav-tabs .nav-item { margin-left: 0; margin-right: 0; }
+    .igd-tabs.nav-tabs .nav-link { gap: 4px; padding-left: 0.35rem; padding-right: 0.35rem; }
+    .igd-tabs.nav-tabs .nav-link > i { display: none; }
+}
+@media (max-width: 359.98px) {
+    .igd-tabs.nav-tabs .nav-link { font-size: 0.75rem; padding-left: 0.2rem; padding-right: 0.2rem; }
 }
 
 @media (pointer: coarse) {
