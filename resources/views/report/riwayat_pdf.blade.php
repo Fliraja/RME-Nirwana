@@ -212,7 +212,7 @@
                     @forelse($k->radiologi as $r)
                         <span class="isi">{{ $r['pemeriksaan'] }} ({{ RK::tanggal($r['tanggal'], 'd/m') }}): {{ $r['hasil'] }}</span>
                     @empty
-                        {{ $k->gambar ? count($k->gambar) . ' gambar tanpa hasil bacaan.' : 'Tidak ada hasil radiologi.' }}
+                        Tidak ada hasil radiologi.
                     @endforelse
                     <span class="label">Obat{{ $k->obat ? ' (' . count($k->obat) . ' jenis)' : '' }}</span>
                     {{ $k->obat ? collect($k->obat)->map(fn ($o) => "{$o['nama']} ({$o['jumlah']} {$o['satuan']})")->implode(', ') : 'Tidak ada obat dari apotek.' }}

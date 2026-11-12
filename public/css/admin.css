@@ -1556,13 +1556,11 @@ a:hover {
 .riwayat-kosong { padding: 1rem 0; margin: 0; }
 .riwayat-lengkap summary { display: inline-block; padding: 0.2rem 0; color: #0d7a4a; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
 .riwayat-lengkap summary:hover { text-decoration: underline; }
-.riwayat-lengkap summary:focus-visible, .riwayat-gambar a:focus-visible { outline: 2px solid #0d7a4a; outline-offset: 2px; border-radius: 2px; }
+.riwayat-lengkap summary:focus-visible { outline: 2px solid #0d7a4a; outline-offset: 2px; border-radius: 2px; }
 .riwayat-daftar { list-style: none; margin: 0.35rem 0 0; padding: 0.5rem 0.75rem; background: #f8fafc; border-radius: var(--radius-sm); white-space: normal; }
 .riwayat-daftar li + li { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #e5e7eb; }
 .riwayat-daftar p { margin: 0; }
 .riwayat-daftar p.riwayat-baris { margin-bottom: 0.4rem; }
-.riwayat-gambar { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; }
-.riwayat-gambar a { color: #0d7a4a; font-size: 0.8rem; font-weight: 600; }
 .riwayat-kaki { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
 .riwayat-kaki .pagination { margin: 0; }
 .riwayat .page-link { color: #0d7a4a; }
@@ -1571,6 +1569,6 @@ a:hover {
     .riwayat-badan { grid-template-columns: minmax(0, 1fr); }
 }
 @media (pointer: coarse) {
-    .riwayat-lengkap summary, .riwayat-gambar a { display: inline-flex; align-items: center; min-height: 44px; }
+    .riwayat-lengkap summary { display: inline-flex; align-items: center; min-height: 44px; }
     .riwayat-kaki .btn, .riwayat .page-link { min-height: 44px; display: inline-flex; align-items: center; }
 }

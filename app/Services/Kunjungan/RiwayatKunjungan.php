@@ -58,11 +58,9 @@ class RiwayatKunjungan
         $cppt = $this->cpptDokter($no);
         $lab = $this->lab($no);
         $radiologi = $this->radiologi($no);
-        $gambar = DB::table('gambar_radiologi')->whereIn('no_rawat', $no)
-            ->orderBy('tgl_periksa')->orderBy('jam')->get()->groupBy('no_rawat');
         $obat = $this->obat($no);
 
-        return $reg->map(function ($r) use ($soap, $igd, $kamar, $dpjp, $cppt, $lab, $radiologi, $gambar, $obat) {
+        return $reg->map(function ($r) use ($soap, $igd, $kamar, $dpjp, $cppt, $lab, $radiologi, $obat) {
             $n = $r->no_rawat;
             $jenis = $r->status_lanjut === 'Ranap' ? 'ranap'
                 : ($r->kd_poli === config('rme.igd.kd_poli') ? 'igd' : 'poli');
@@ -83,8 +81,6 @@ class RiwayatKunjungan
                 'ranap'     => $jenis === 'ranap' ? $this->ranap($kamar->get($n, collect()), $dpjp->get($n, collect()), $cppt->get($n, collect())) : null,
                 'lab'       => $lab->get($n, ['jumlah' => 0, 'luar' => [], 'per_tanggal' => []]),
                 'radiologi' => $radiologi->get($n, collect())->all(),
-                'gambar'    => $gambar->get($n, collect())
-                    ->map(fn ($g) => rtrim((string) config('app.simrs_url'), '/') . '/radiologi/' . $g->lokasi_gambar)->all(),
                 'obat'      => $obat->get($n, collect())->all(),
             ];
         });

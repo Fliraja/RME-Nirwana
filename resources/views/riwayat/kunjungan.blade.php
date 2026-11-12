@@ -146,17 +146,8 @@
                             @endif
                         </dd>
                     @empty
-                        @unless($k->gambar)
-                            <dd class="riwayat-redup">Tidak ada hasil radiologi.</dd>
-                        @endunless
+                        <dd class="riwayat-redup">Tidak ada hasil radiologi.</dd>
                     @endforelse
-                    @if($k->gambar)
-                        <dd class="riwayat-blok riwayat-gambar">
-                            @foreach($k->gambar as $url)
-                                <a href="{{ $url }}" target="_blank" rel="noopener">Gambar {{ $loop->iteration }}</a>
-                            @endforeach
-                        </dd>
-                    @endif
 
                     <dt>Obat{{ $k->obat ? ' · ' . count($k->obat) . ' jenis' : '' }}</dt>
                     @if(!$k->obat)
