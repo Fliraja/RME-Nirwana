@@ -1,8 +1,5 @@
 /* Modul IGD. Token warna mengikuti design.md. */
 
-/* Anak flex dengan min-width auto ikut melebar mengikuti tabel; tanpa ini seluruh halaman bergulir horizontal di layar sempit. */
-.wrapper > .main-content { min-width: 0; }
-
 .igd-daftar-head { flex-wrap: wrap; gap: 0.5rem; justify-content: space-between; }
 .igd-jumlah { font-weight: 400; font-size: 0.8rem; color: var(--gray-500); margin-left: 0.5rem; }
 

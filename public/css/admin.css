@@ -88,6 +88,8 @@ a:hover {
 
 .main-content {
     flex: 1;
+    /* Anak flex dengan min-width auto ikut melebar mengikuti tabel; tanpa ini seluruh halaman bergulir horizontal di layar sempit. */
+    min-width: 0;
     margin-left: var(--sidebar-width);
     display: flex;
     flex-direction: column;
