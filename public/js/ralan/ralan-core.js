@@ -834,6 +834,10 @@ $(document).ready(function() {
             },
             error: function(xhr) {
                 btn.prop('disabled', false).html(originalText);
+                if (xhr.status === 422 && xhr.responseJSON && tampilkanGalatIsian(form[0], xhr.responseJSON.errors)) {
+                    tampilkanError('SOAP belum disimpan. Perbaiki isian yang ditandai merah.');
+                    return;
+                }
                 tampilkanError(xhr.responseJSON?.message || 'Gagal menyimpan SOAP.');
             }
         });
@@ -858,6 +862,10 @@ $(document).ready(function() {
             },
             error: function(xhr) {
                 btn.prop('disabled', false).html(originalText);
+                if (xhr.status === 422 && xhr.responseJSON && tampilkanGalatIsian(form[0], xhr.responseJSON.errors)) {
+                    tampilkanError('Vital sign belum disimpan. Perbaiki isian yang ditandai merah.');
+                    return;
+                }
                 tampilkanError(xhr.responseJSON?.message || 'Gagal menyimpan Vital Sign.');
             }
         });

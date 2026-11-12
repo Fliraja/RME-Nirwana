@@ -1532,3 +1532,8 @@ a:hover {
 .stok-habis { background: #f1f5f9; color: #475569; }
 .ts-dropdown .option[aria-disabled="true"] { cursor: not-allowed; }
 .ts-dropdown .option[aria-disabled="true"] .opsi-barang-nama { color: #64748b; }
+
+/* Penghitung batas isian SOAP/TTV (public/js/batas-isian.js) */
+.batas-isian { font-size: 0.75rem; color: #64748b; text-align: right; margin-top: 0.25rem; min-height: 0; }
+.batas-isian:empty { display: none; }
+.batas-isian.lebih { color: #be123c; font-weight: 600; text-align: left; }

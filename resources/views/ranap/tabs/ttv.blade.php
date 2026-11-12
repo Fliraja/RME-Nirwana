@@ -10,6 +10,7 @@
             </div>
             <div class="ralan-card-body">
                 <form id="formTtvRanap">
+                    @php($batas = \App\Support\BatasIsianPemeriksaan::TTV + ['alergi' => \App\Support\BatasIsianPemeriksaan::ALERGI_RANAP])
                     @csrf
                     <input type="hidden" name="no_rawat" value="{{ $pasien->no_rawat ?? '' }}">
                     <input type="hidden" name="mode_edit_ttv" id="mode_edit_ttv" value="0">
@@ -19,29 +20,29 @@
                     <div class="row">
                         <div class="col-md-3 col-6">
                             <div class="mb-3">
-                                <label class="small fw-bold">Tensi (mmHg)</label>
-                                <input type="text" name="tensi" id="ttv_tensi" class="form-control form-control-sm" placeholder="120/80">
+                                <label class="small fw-bold" for="ttv_tensi">Tensi (mmHg)</label>
+                                <input type="text" name="tensi" id="ttv_tensi" maxlength="{{ $batas['tensi'] }}" class="form-control form-control-sm" placeholder="120/80">
                             </div>
                         </div>
 
                         <div class="col-md-2 col-6">
                             <div class="mb-3">
-                                <label class="small fw-bold">Suhu (°C)</label>
-                                <input type="text" name="suhu_tubuh" id="ttv_suhu_tubuh" class="form-control form-control-sm" placeholder="36.5">
+                                <label class="small fw-bold" for="ttv_suhu_tubuh">Suhu (°C)</label>
+                                <input type="text" name="suhu_tubuh" id="ttv_suhu_tubuh" maxlength="{{ $batas['suhu_tubuh'] }}" class="form-control form-control-sm" placeholder="36.5">
                             </div>
                         </div>
 
                         <div class="col-md-2 col-6">
                             <div class="mb-3">
-                                <label class="small fw-bold">Nadi (/mnt)</label>
-                                <input type="text" name="nadi" id="ttv_nadi" class="form-control form-control-sm" placeholder="80">
+                                <label class="small fw-bold" for="ttv_nadi">Nadi (/mnt)</label>
+                                <input type="text" name="nadi" id="ttv_nadi" maxlength="{{ $batas['nadi'] }}" class="form-control form-control-sm" placeholder="80">
                             </div>
                         </div>
 
                         <div class="col-md-2 col-6">
                             <div class="mb-3">
-                                <label class="small fw-bold">Respirasi (/mnt)</label>
-                                <input type="text" name="respirasi" id="ttv_respirasi" class="form-control form-control-sm" placeholder="20">
+                                <label class="small fw-bold" for="ttv_respirasi">Respirasi (/mnt)</label>
+                                <input type="text" name="respirasi" id="ttv_respirasi" maxlength="{{ $batas['respirasi'] }}" class="form-control form-control-sm" placeholder="20">
                             </div>
                         </div>
 
@@ -68,36 +69,36 @@
                     <div class="row">
                         <div class="col-md-2 col-6">
                             <div class="mb-3">
-                                <label class="small fw-bold">Tinggi (cm)</label>
-                                <input type="text" name="tinggi" id="ttv_tinggi" class="form-control form-control-sm" placeholder="165">
+                                <label class="small fw-bold" for="ttv_tinggi">Tinggi (cm)</label>
+                                <input type="text" name="tinggi" id="ttv_tinggi" maxlength="{{ $batas['tinggi'] }}" class="form-control form-control-sm" placeholder="165">
                             </div>
                         </div>
 
                         <div class="col-md-2 col-6">
                             <div class="mb-3">
-                                <label class="small fw-bold">Berat (Kg)</label>
-                                <input type="text" name="berat" id="ttv_berat" class="form-control form-control-sm" placeholder="60">
+                                <label class="small fw-bold" for="ttv_berat">Berat (Kg)</label>
+                                <input type="text" name="berat" id="ttv_berat" maxlength="{{ $batas['berat'] }}" class="form-control form-control-sm" placeholder="60">
                             </div>
                         </div>
 
                         <div class="col-md-2 col-6">
                             <div class="mb-3">
-                                <label class="small fw-bold">SpO2 (%)</label>
-                                <input type="text" name="spo2" id="ttv_spo2" class="form-control form-control-sm" placeholder="98">
+                                <label class="small fw-bold" for="ttv_spo2">SpO2 (%)</label>
+                                <input type="text" name="spo2" id="ttv_spo2" maxlength="{{ $batas['spo2'] }}" class="form-control form-control-sm" placeholder="98">
                             </div>
                         </div>
 
                         <div class="col-md-2 col-6">
                             <div class="mb-3">
-                                <label class="small fw-bold">GCS (E,V,M)</label>
-                                <input type="text" name="gcs" id="ttv_gcs" class="form-control form-control-sm" placeholder="15">
+                                <label class="small fw-bold" for="ttv_gcs">GCS (E,V,M)</label>
+                                <input type="text" name="gcs" id="ttv_gcs" maxlength="{{ $batas['gcs'] }}" class="form-control form-control-sm" placeholder="15">
                             </div>
                         </div>
 
                         <div class="col-md-4 col-12">
                             <div class="mb-3">
-                                <label class="small fw-bold">Riwayat Alergi</label>
-                                <input type="text" name="alergi" id="ttv_alergi" class="form-control form-control-sm" placeholder="Alergi obat / makanan...">
+                                <label class="small fw-bold" for="ttv_alergi">Riwayat Alergi</label>
+                                <input type="text" name="alergi" id="ttv_alergi" maxlength="{{ $batas['alergi'] }}" class="form-control form-control-sm" placeholder="Alergi obat / makanan...">
                             </div>
                         </div>
                     </div>

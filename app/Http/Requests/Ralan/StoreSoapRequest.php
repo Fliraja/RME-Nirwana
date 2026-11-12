@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Ralan;
 
+use App\Support\BatasIsianPemeriksaan as Batas;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreSoapRequest extends FormRequest
@@ -15,6 +16,11 @@ class StoreSoapRequest extends FormRequest
     {
         return [
             'no_rawat' => 'required',
-        ];
+        ] + Batas::aturan(Batas::SOAP_RALAN);
+    }
+
+    public function attributes(): array
+    {
+        return Batas::label();
     }
 }

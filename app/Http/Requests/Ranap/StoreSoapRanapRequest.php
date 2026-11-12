@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Ranap;
 
+use App\Support\BatasIsianPemeriksaan as Batas;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreSoapRanapRequest extends FormRequest
@@ -15,15 +16,14 @@ class StoreSoapRanapRequest extends FormRequest
     {
         return [
             'no_rawat'                => 'required|string',
-            'keluhan'                 => 'nullable|string',
-            'pemeriksaan'             => 'nullable|string',
-            'penilaian'               => 'nullable|string',
-            'rtl'                     => 'nullable|string',
-            'instruksi'               => 'nullable|string',
-            'evaluasi'                => 'nullable|string',
             'mode_edit_soap'          => 'nullable|in:0,1',
             'tgl_perawatan_edit_soap' => 'nullable|date_format:Y-m-d',
             'jam_rawat_edit_soap'     => 'nullable|date_format:H:i:s',
-        ];
+        ] + Batas::aturan(Batas::SOAP_RANAP);
+    }
+
+    public function attributes(): array
+    {
+        return Batas::label();
     }
 }

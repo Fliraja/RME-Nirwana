@@ -10,6 +10,7 @@
             </div>
             <div class="ralan-card-body">
                 <form id="formSoapRanap">
+                    @php($batas = \App\Support\BatasIsianPemeriksaan::SOAP_RANAP)
                     @csrf
                     <input type="hidden" name="no_rawat" value="{{ $pasien->no_rawat ?? '' }}">
                     <input type="hidden" name="mode_edit_soap" id="mode_edit_soap" value="0">
@@ -18,34 +19,34 @@
 
                     <div class="row mt-2">
                         <div class="col-md-6 mb-3">
-                            <label class="fw-bold mb-2">Subjek (Keluhan)</label>
-                            <textarea name="keluhan" id="soap_keluhan" class="form-control" rows="5" placeholder="Keluhan utama, riwayat keluhan saat ini..."></textarea>
+                            <label class="fw-bold mb-2" for="soap_keluhan">Subjek (Keluhan)</label>
+                            <textarea name="keluhan" id="soap_keluhan" data-batas="{{ $batas['keluhan'] }}" class="form-control" rows="5" placeholder="Keluhan utama, riwayat keluhan saat ini..."></textarea>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="fw-bold mb-2">Objek (Pemeriksaan Fisik)</label>
-                            <textarea name="pemeriksaan" id="soap_pemeriksaan" class="form-control" rows="5" placeholder="Hasil pemeriksaan fisik, status lokalis, penunjang..."></textarea>
+                            <label class="fw-bold mb-2" for="soap_pemeriksaan">Objek (Pemeriksaan Fisik)</label>
+                            <textarea name="pemeriksaan" id="soap_pemeriksaan" data-batas="{{ $batas['pemeriksaan'] }}" class="form-control" rows="5" placeholder="Hasil pemeriksaan fisik, status lokalis, penunjang..."></textarea>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-4 mb-3">
-                            <label class="fw-bold mb-2">Assesmen (Diagnosa)</label>
-                            <textarea name="penilaian" id="soap_penilaian" class="form-control" rows="4" placeholder="Diagnosis kerja, diagnosis banding..."></textarea>
+                            <label class="fw-bold mb-2" for="soap_penilaian">Assesmen (Diagnosa)</label>
+                            <textarea name="penilaian" id="soap_penilaian" data-batas="{{ $batas['penilaian'] }}" class="form-control" rows="4" placeholder="Diagnosis kerja, diagnosis banding..."></textarea>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="fw-bold mb-2">Plan (Terapi/Tindakan)</label>
-                            <textarea name="rtl" id="soap_rtl" class="form-control" rows="4" placeholder="Rencana pengobatan, tindakan, monitoring..."></textarea>
+                            <label class="fw-bold mb-2" for="soap_rtl">Plan (Terapi/Tindakan)</label>
+                            <textarea name="rtl" id="soap_rtl" data-batas="{{ $batas['rtl'] }}" class="form-control" rows="4" placeholder="Rencana pengobatan, tindakan, monitoring..."></textarea>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="fw-bold mb-2">Instruksi / RTL</label>
-                            <textarea name="instruksi" id="soap_instruksi" class="form-control" rows="4" placeholder="Instruksi khusus kepada perawat / tim medis..."></textarea>
+                            <label class="fw-bold mb-2" for="soap_instruksi">Instruksi / RTL</label>
+                            <textarea name="instruksi" id="soap_instruksi" data-batas="{{ $batas['instruksi'] }}" class="form-control" rows="4" placeholder="Instruksi khusus kepada perawat / tim medis..."></textarea>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-12 mb-3">
-                            <label class="fw-bold mb-2">Evaluasi</label>
-                            <textarea name="evaluasi" id="soap_evaluasi" class="form-control" rows="3" placeholder="Evaluasi harian / perkembangan respon terapi..."></textarea>
+                            <label class="fw-bold mb-2" for="soap_evaluasi">Evaluasi</label>
+                            <textarea name="evaluasi" id="soap_evaluasi" data-batas="{{ $batas['evaluasi'] }}" class="form-control" rows="3" placeholder="Evaluasi harian / perkembangan respon terapi..."></textarea>
                         </div>
                     </div>
 
