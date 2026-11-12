@@ -120,24 +120,14 @@ class RanapSoapService
                 'no_rawat'      => $noRawat,
                 'tgl_perawatan' => $tglPerawatan,
                 'jam_rawat'     => $jamRawat,
-                'suhu_tubuh'    => '',
-                'tensi'         => '-',
-                'nadi'          => '',
-                'respirasi'     => '',
-                'tinggi'        => '',
-                'berat'         => '',
-                'spo2'          => '',
-                'gcs'           => '',
-                'kesadaran'     => 'Compos Mentis',
                 'keluhan'       => $keluhan,
                 'pemeriksaan'   => $pemeriksaan,
-                'alergi'        => '',
                 'penilaian'     => $penilaian,
                 'rtl'           => $rtl,
                 'instruksi'     => $instruksi,
                 'evaluasi'      => $evaluasi,
                 'nip'           => $nip,
-            ]);
+            ] + BarisPemeriksaanRanap::TTV_KOSONG);
 
             return [
                 'status'  => 'success',
@@ -160,12 +150,23 @@ class RanapSoapService
             $query->where('nip', $nip);
         }
 
-        $deleted = $query->delete();
-
-        if ($deleted) {
-            return ['status' => 'success', 'message' => 'Data SOAP berhasil dihapus'];
+        $baris = (clone $query)->first();
+        if (!$baris) {
+            return ['status' => 'error', 'message' => 'Gagal menghapus data atau Anda tidak memiliki akses'];
         }
 
-        return ['status' => 'error', 'message' => 'Gagal menghapus data atau Anda tidak memiliki akses'];
+        $adaSbar = DB::table('catatan_sbar_ranap')
+            ->where('no_rawat', $noRawat)->where('tgl_perawatan', $tgl)->where('jam_rawat', $jam)
+            ->exists();
+
+        if (BarisPemeriksaanRanap::adaTtv($baris) || $adaSbar) {
+            $query->update(BarisPemeriksaanRanap::SOAP_KOSONG);
+
+            return ['status' => 'success', 'message' => 'Catatan SOAP dihapus. TTV pada jam yang sama tetap disimpan.'];
+        }
+
+        $query->delete();
+
+        return ['status' => 'success', 'message' => 'Data SOAP berhasil dihapus'];
     }
 }

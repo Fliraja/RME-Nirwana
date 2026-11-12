@@ -192,15 +192,9 @@ class RanapVitalSignService
                     'spo2'          => $spo2,
                     'gcs'           => $gcs,
                     'kesadaran'     => $kesadaran,
-                    'keluhan'       => '',
-                    'pemeriksaan'   => '',
                     'alergi'        => $alergi,
-                    'penilaian'     => '',
-                    'rtl'           => '',
-                    'instruksi'     => '',
-                    'evaluasi'      => '-',
                     'nip'           => $nip,
-                ]);
+                ] + BarisPemeriksaanRanap::SOAP_KOSONG);
 
                 if ($sbar !== '') {
                     DB::table('catatan_sbar_ranap')->insert([
@@ -232,18 +226,26 @@ class RanapVitalSignService
                 $query->where('nip', $nip);
             }
 
-            $deleted = $query->delete();
-            if ($deleted) {
-                DB::table('catatan_sbar_ranap')
-                    ->where('no_rawat', $noRawat)
-                    ->where('tgl_perawatan', $tgl)
-                    ->where('jam_rawat', $jam)
-                    ->delete();
-
-                return ['status' => 'success', 'message' => 'Data TTV & SBAR berhasil dihapus'];
+            $baris = (clone $query)->first();
+            if (!$baris) {
+                return ['status' => 'error', 'message' => 'Gagal menghapus data atau Anda tidak memiliki akses'];
             }
 
-            return ['status' => 'error', 'message' => 'Gagal menghapus data atau Anda tidak memiliki akses'];
+            DB::table('catatan_sbar_ranap')
+                ->where('no_rawat', $noRawat)
+                ->where('tgl_perawatan', $tgl)
+                ->where('jam_rawat', $jam)
+                ->delete();
+
+            if (BarisPemeriksaanRanap::adaSoap($baris)) {
+                $query->update(BarisPemeriksaanRanap::TTV_KOSONG);
+
+                return ['status' => 'success', 'message' => 'TTV & SBAR dihapus. Catatan SOAP pada jam yang sama tetap disimpan.'];
+            }
+
+            $query->delete();
+
+            return ['status' => 'success', 'message' => 'Data TTV & SBAR berhasil dihapus'];
         });
     }
 }
