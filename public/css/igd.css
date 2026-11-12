@@ -39,7 +39,6 @@
 .igd-btn-utama:focus-visible { outline: 2px solid #0d7a4a; outline-offset: 2px; }
 
 .igd-status-list { display: flex; flex-wrap: wrap; gap: 4px; }
-.igd-status-ranap { background: #f1f5f9; color: #475569; }
 
 /* Halaman pasien */
 .igd-kembali { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #0d7a4a; text-decoration: none; margin-bottom: 0.6rem; min-height: 32px; }

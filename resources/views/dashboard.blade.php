@@ -28,8 +28,8 @@
                 <i class="fas fa-calendar-alt text-warning"></i>
             </div>
             <div class="stat-content">
-                <h3>{{ number_format($stats['pasienPoliBulanIni'] ?? 0) }}</h3>
-                <p>Pasien Poli Bulan Ini</p>
+                <h3>{{ number_format($stats['bulanIni'] ?? 0) }}</h3>
+                <p>{{ $igd ? 'Pasien IGD bulan ini' : 'Pasien Poli Bulan Ini' }}</p>
             </div>
         </div>
     </div>
@@ -39,8 +39,8 @@
                 <i class="fas fa-calendar-check text-success"></i>
             </div>
             <div class="stat-content">
-                <h3>{{ number_format($stats['kunjunganHariIni'] ?? 0) }}</h3>
-                <p>Pasien Poli Hari Ini</p>
+                <h3>{{ number_format($stats['hariIni'] ?? 0) }}</h3>
+                <p>{{ $igd ? 'Pasien IGD hari ini' : 'Pasien Poli Hari Ini' }}</p>
             </div>
         </div>
     </div>
@@ -50,8 +50,8 @@
                 <i class="fas fa-clock text-info"></i>
             </div>
             <div class="stat-content">
-                <h3>{{ number_format($stats['belumDiperiksa'] ?? 0) }}</h3>
-                <p>Belum Diperiksa</p>
+                <h3>{{ number_format($stats['perluDitulis'] ?? 0) }}</h3>
+                <p>{{ $igd ? 'Asesmen IGD belum ditulis' : 'Belum Diperiksa' }}</p>
             </div>
         </div>
     </div>
@@ -64,7 +64,7 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="card-title">Pasien Terbaru</h5>
-                <a href="{{ route('ralan.index') }}" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
+                <a href="{{ $igd ? route('igd.index') : route('ralan.index') }}" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -82,21 +82,11 @@
                             @forelse($pasienTerbaru as $item)
                             <tr>
                                 <td><strong>{{ $item->no_rkm_medis }}</strong></td>
-                                <td>{{ $item->pasien->nm_pasien ?? '-' }}</td>
+                                <td>{{ $item->nm_pasien }}</td>
                                 <td>{{ \Carbon\Carbon::parse($item->tgl_registrasi)->format('d M Y') }}</td>
+                                <td><span class="resume-status {{ $item->kelas }}">{{ $item->status }}</span></td>
                                 <td>
-                                    @if($item->stts === 'Sudah' || $item->stts === 'Bayar')
-                                        <span class="badge badge-success">{{ $item->stts }}</span>
-                                    @elseif($item->stts === 'Belum')
-                                        <span class="badge badge-warning">{{ $item->stts }}</span>
-                                    @elseif($item->stts === 'Batal')
-                                        <span class="badge badge-danger">{{ $item->stts }}</span>
-                                    @else
-                                        <span class="badge badge-info">{{ $item->stts }}</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <a href="{{ route('ralan.index', ['no_rawat' => $item->no_rawat]) }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></a>
+                                    <a href="{{ $item->tautan }}" class="btn btn-sm btn-outline-primary" aria-label="Buka {{ $item->nm_pasien }}"><i class="fas fa-eye" aria-hidden="true"></i></a>
                                 </td>
                             </tr>
                             @empty
