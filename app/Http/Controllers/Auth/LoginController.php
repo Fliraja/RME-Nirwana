@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use App\Support\AksesRme;
 use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
@@ -32,6 +33,12 @@ class LoginController extends Controller
                 ->whereRaw("CAST(AES_DECRYPT(password, 'windi') AS CHAR) = ?", [$request->password])
                 ->first();
 
+            if ($userCheck && !AksesRme::boleh($request->username)) {
+                Log::info('Login ditolak: bukan dokter spesialis atau dokter IGD', ['username' => $request->username]);
+                return back()->withErrors(['username' => 'Akun ini belum bisa memakai RME. RME saat ini hanya untuk dokter spesialis dan dokter IGD.'])
+                    ->onlyInput('username');
+            }
+
             if ($userCheck) {
                 Log::info('Login User Berhasil');
                 $user = User::where('id_user', $userCheck->id_user)->first();
@@ -40,6 +47,7 @@ class LoginController extends Controller
                     session([
                         'role' => 'user',
                         'decrypted_id' => $request->username,
+                        AksesRme::SESI => true,
                         'jenis_poli' => Jadwal::where('kd_dokter', $request->username)->value('kd_poli')
                     ]);
                     return redirect()->intended('/dashboard');
@@ -69,7 +77,7 @@ class LoginController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Error Login: ' . $e->getMessage());
-            return back()->withErrors(['username' => 'Terjadi kesalahan sistem: ' . $e->getMessage()]);
+            return back()->withErrors(['username' => 'Login gagal karena gangguan sistem. Coba lagi beberapa saat.']);
         }
     }
 
