@@ -104,7 +104,7 @@
                             <div class="tab-content ralan-panel p-3" id="myTabContent">
                                 <div class="tab-pane fade show active" id="riwayat" role="tabpanel">
                                     @if(isset($riwayat))
-                                        @include('ralan.riwayat', ['riwayat' => $riwayat])
+                                        @include('riwayat.kunjungan', ['noRawatAktif' => $detailPasien->no_rawat, 'noRkmMedis' => $detailPasien->no_rkm_medis])
                                     @else
                                         <p class="text-center mt-3">Data riwayat tidak ditemukan.</p>
                                     @endif

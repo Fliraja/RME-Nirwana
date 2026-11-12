@@ -7,6 +7,7 @@ use App\Models\MasterAturanPakai;
 use App\Models\PermintaanLab;
 use App\Models\PermintaanRadiologi;
 use App\Models\RegPeriksa;
+use App\Services\Kunjungan\RiwayatKunjungan;
 use App\Services\Ranap\RanapDashboardService;
 use App\Services\Ranap\RanapPenunjangService;
 use App\Services\Ranap\RanapSoapService;
@@ -103,17 +104,7 @@ class RanapController extends Controller
 
         $kamarAktif = $detailPasien->kamarInap->first();
 
-        // 5 Riwayat kunjungan terakhir untuk tab riwayat awal
-        $riwayat = RegPeriksa::with([
-                'poliklinik', 'dokter', 'pemeriksaanRalan', 'pemeriksaanRanap',
-                'resepObat.resepDokter.dataBarang', 'detailObat.barang',
-                'detailLab.template', 'gambarRadiologi'
-            ])
-            ->where('no_rkm_medis', $detailPasien->no_rkm_medis)
-            ->where('stts', '!=', 'Batal')
-            ->orderBy('tgl_registrasi', 'DESC')
-            ->paginate(5, ['*'], 'riwayat_page');
-
+        $riwayat = app(RiwayatKunjungan::class)->halaman($detailPasien->no_rkm_medis);
         $riwayat->appends($request->all());
 
         $data = [
@@ -136,25 +127,13 @@ class RanapController extends Controller
     /**
      * Tab Riwayat Kunjungan
      */
-    public function getRiwayatPasien($no_rkm_medis)
+    public function getRiwayatPasien($no_rkm_medis, ?string $noRawatAktif = null)
     {
-        $riwayat = RegPeriksa::with([
-                'poliklinik',
-                'dokter',
-                'pemeriksaanRalan',
-                'pemeriksaanRanap',
-                'detailObat.barang',
-                'detailLab.template',
-                'gambarRadiologi'
-            ])
-            ->where('no_rkm_medis', $no_rkm_medis)
-            ->where('stts', '!=', 'Batal')
-            ->orderBy('tgl_registrasi', 'DESC')
-            ->paginate(5, ['*'], 'riwayat_page');
-
-        $detailPasien = RegPeriksa::where('no_rkm_medis', $no_rkm_medis)->first();
-
-        return view('ranap.tabs.riwayat', compact('riwayat', 'detailPasien'));
+        return view('riwayat.kunjungan', [
+            'riwayat'      => app(RiwayatKunjungan::class)->halaman($no_rkm_medis),
+            'noRawatAktif' => $noRawatAktif,
+            'noRkmMedis'   => $no_rkm_medis,
+        ]);
     }
 
     /**

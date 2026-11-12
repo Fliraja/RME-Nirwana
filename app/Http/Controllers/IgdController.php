@@ -49,8 +49,7 @@ class IgdController extends Controller
         $kepala = $this->pasien->kepala(self::noRawat($no_rawat));
         abort_unless($kepala, 404, 'Kunjungan IGD tidak ditemukan.');
 
-        // Versi ranap berhalaman; versi ralan mengirim Collection ke view yang memanggil links().
-        return $ranap->getRiwayatPasien($kepala['reg']->no_rkm_medis);
+        return $ranap->getRiwayatPasien($kepala['reg']->no_rkm_medis, $kepala['reg']->no_rawat);
     }
 
     /** No. rawat di URL memakai "-" sebagai pengganti "/" (pola ralan/ranap). */
