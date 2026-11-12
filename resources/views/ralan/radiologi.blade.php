@@ -2,6 +2,9 @@
     @csrf
     <input type="hidden" name="no_rawat" value="{{ $pasien->no_rawat }}">
 
+    @if($pesanKunci)
+    @include('ralan.partials.kunci_ranap')
+    @else
     <div class="row">
         <div class="col-md-6">
             <div class="mb-3">
@@ -31,10 +34,11 @@
             <i class="fas fa-paper-plane"></i> Kirim Permintaan Radiologi
         </button>
     </div>
+    @endif
 
     <hr>
 
-    <h6 class="fw-bold mt-4"><i class="fas fa-history"></i> Riwayat Permintaan Radiologi Hari Ini</h6>
+    <h6 class="fw-bold mt-4"><i class="fas fa-history"></i> Permintaan Radiologi Kunjungan Ini</h6>
     <div id="tabel-riwayat-rad">
         @include('ralan.radiologi_table') 
     </div>

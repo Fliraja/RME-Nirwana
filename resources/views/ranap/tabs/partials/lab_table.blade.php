@@ -12,9 +12,6 @@
         </thead>
         <tbody>
             @forelse($riwayatOrder as $order)
-                @php
-                    $statusBayar = $order->pemeriksaan->first()->stts_bayar ?? 'Belum';
-                @endphp
                 <tr>
                     <td><span class="badge bg-light text-dark border">{{ $order->noorder }}</span></td>
                     <td class="small">{{ $order->tgl_permintaan }} <br><span class="text-muted">{{ $order->jam_permintaan }}</span></td>
@@ -27,24 +24,22 @@
                     </td>
                     <td class="small">{{ $order->diagnosa_klinis ?: '-' }}</td>
                     <td>
-                        <span class="badge {{ $statusBayar === 'Sudah' ? 'bg-success' : 'bg-warning text-dark' }}">
-                            {{ $statusBayar }}
-                        </span>
+                        <span class="resume-status {{ ['menunggu sampel' => 'resep-status-tunggu', 'sampel diambil' => 'resep-status-proses', 'hasil keluar' => 'resume-status-ok'][$order->statusTeks()] }}">{{ $order->statusTeks() }}</span>
                     </td>
                     <td class="text-center">
-                        @if($statusBayar === 'Belum')
+                        @unless($order->sudahDiproses())
                             <button type="button" class="btn btn-sm btn-outline-danger border-0 btn-hapus-lab" data-noorder="{{ $order->noorder }}" title="Batalkan Permintaan">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         @else
                             <span class="text-muted small fst-italic">Diproses</span>
-                        @endif
+                        @endunless
                     </td>
                 </tr>
             @empty
                 <tr>
                     <td colspan="6" class="text-center p-3 text-muted small">
-                        Belum ada permintaan laboratorium yang dibuat hari ini.
+                        Belum ada permintaan laboratorium untuk kunjungan ini.
                     </td>
                 </tr>
             @endforelse

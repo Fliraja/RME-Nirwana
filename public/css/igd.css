@@ -1,8 +1,5 @@
 /* Modul IGD. Token warna mengikuti design.md. */
 
-/* Anak flex dengan min-width auto ikut melebar mengikuti tabel; tanpa ini seluruh halaman bergulir horizontal di layar sempit. */
-.wrapper > .main-content { min-width: 0; }
-
 .igd-daftar-head { flex-wrap: wrap; gap: 0.5rem; justify-content: space-between; }
 .igd-jumlah { font-weight: 400; font-size: 0.8rem; color: var(--gray-500); margin-left: 0.5rem; }
 
@@ -14,6 +11,21 @@
     .igd-filter .igd-cari { width: 100%; }
 }
 .igd-filter-label { font-size: 0.8rem; color: var(--gray-500); margin: 0; }
+
+/* Dua tombol rentang berdempet supaya terbaca sebagai satu pilihan; yang aktif hijau muda seperti pilihan asesmen. */
+.igd-cepat-grup { display: inline-flex; }
+.igd-cepat { display: inline-flex; align-items: center; min-height: 36px; padding: 0 0.7rem; font-size: 0.8rem;
+    color: #334155; background: #fff; border: 1px solid #cbd5e1; text-decoration: none; white-space: nowrap; }
+.igd-cepat:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+.igd-cepat:last-child { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin-left: -1px; }
+.igd-cepat:hover { color: #0d7a4a; }
+.igd-cepat[aria-current="true"] { position: relative; color: #166534; background: #f0fdf4; border-color: #15a362; font-weight: 600; }
+.igd-cepat:focus-visible { position: relative; z-index: 1; outline: 2px solid #0d7a4a; outline-offset: 2px; }
+/* Ponsel: baris sendiri selebar kartu, supaya label "Dari" tetap menempel ke tanggalnya. */
+@media (max-width: 575.98px) {
+    .igd-cepat-grup { width: 100%; }
+    .igd-cepat { flex: 1; justify-content: center; }
+}
 
 .igd-btn-utama { background: #0d7a4a; border-color: #0d7a4a; color: #fff; min-height: 36px; }
 .igd-btn-utama:hover, .igd-btn-utama:focus-visible { background: #0a6440; border-color: #0a6440; color: #fff; }
@@ -60,12 +72,19 @@
 @media (max-width: 575.98px) {
     .igd-kepala-waktu { text-align: left; }
     .igd-kepala-rm { display: block; margin-left: 0; }
+    /* Tiga tab harus terlihat utuh di ponsel; label dan tanda (jumlah, "belum") lebih penting dari ikon. */
+    .igd-tabs.nav-tabs .nav-item { margin-left: 0; margin-right: 0; }
+    .igd-tabs.nav-tabs .nav-link { gap: 4px; padding-left: 0.35rem; padding-right: 0.35rem; }
+    .igd-tabs.nav-tabs .nav-link > i { display: none; }
+}
+@media (max-width: 359.98px) {
+    .igd-tabs.nav-tabs .nav-link { font-size: 0.75rem; padding-left: 0.2rem; padding-right: 0.2rem; }
 }
 
 @media (pointer: coarse) {
     .igd-tabs .nav-link, .igd-kembali { min-height: 44px; }
     .igd-link-pasien { min-height: 44px; display: inline-flex; align-items: center; }
-    .igd-filter .form-control, .igd-btn-utama { min-height: 44px; }
+    .igd-filter .form-control, .igd-btn-utama, .igd-cepat { min-height: 44px; }
 }
 
 /* Tab Permintaan: kartu lab/radiologi/resep (pola kartu isian resume ranap, design.md bagian 5 dan 12) */

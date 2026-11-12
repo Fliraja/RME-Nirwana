@@ -7,7 +7,6 @@ use App\Models\MasterAturanPakai;
 use App\Models\PermintaanLab;
 use App\Models\PermintaanRadiologi;
 use App\Models\RegPeriksa;
-use App\Models\ResepObat;
 use App\Services\Ranap\RanapDashboardService;
 use App\Services\Ranap\RanapPenunjangService;
 use App\Services\Ranap\RanapSoapService;
@@ -17,6 +16,7 @@ use App\Services\Ranap\ResumeRanapReferensi;
 use App\Services\Ranap\ResumeRanapService;
 use App\Services\Ralan\LaboratoriumService;
 use App\Services\Ralan\RadiologiService;
+use App\Services\Resep\ResepService;
 use App\Http\Requests\Ranap\StoreSoapRanapRequest;
 use App\Http\Requests\Ranap\StoreVitalRanapRequest;
 use App\Http\Requests\Ranap\StoreResumeRanapRequest;
@@ -38,7 +38,8 @@ class RanapController extends Controller
         private RanapResumeService $resumeService,
         private LaboratoriumService $labService,
         private RadiologiService $radiologiService,
-        private ResepController $resepController
+        private ResepController $resepController,
+        private ResepService $resepService,
     ) {}
 
     /**
@@ -227,7 +228,7 @@ class RanapController extends Controller
     {
         $no_rawat = str_replace('-', '/', $no_rawat);
 
-        $resep = $this->resepHariIni($no_rawat);
+        $daftarResep = $this->resepService->resepKunjungan($no_rawat);
 
         $masterAturan = MasterAturanPakai::all();
         $masterMetode = DB::table('metode_racik')->get();
@@ -236,7 +237,7 @@ class RanapController extends Controller
         // Riwayat obat yang telah diberikan/disuntikkan di bangsal
         $riwayatPemberian = $this->penunjangService->getRiwayatPemberianObat($no_rawat);
 
-        return view('ranap.tabs.resep', compact('resep', 'pasien', 'masterAturan', 'masterMetode', 'riwayatPemberian'));
+        return view('ranap.tabs.resep', compact('daftarResep', 'pasien', 'masterAturan', 'masterMetode', 'riwayatPemberian'));
     }
 
     /**
@@ -251,7 +252,7 @@ class RanapController extends Controller
             ->where('no_rawat', $no_rawat)
             ->first();
 
-        $riwayatOrder = $this->orderHariIni(PermintaanLab::class, $no_rawat);
+        $riwayatOrder = $this->orderKunjungan(PermintaanLab::class, $no_rawat);
 
         // Hasil tes laboratorium resmi
         $hasilLab = $this->penunjangService->getHasilLab($no_rawat);
@@ -271,7 +272,7 @@ class RanapController extends Controller
             ->where('no_rawat', $no_rawat)
             ->first();
 
-        $riwayatOrder = $this->orderHariIni(PermintaanRadiologi::class, $no_rawat);
+        $riwayatOrder = $this->orderKunjungan(PermintaanRadiologi::class, $no_rawat);
 
         // Gambar dan Hasil Ekspertise
         $hasilRadiologi = $this->penunjangService->getHasilRadiologi($no_rawat);
@@ -405,30 +406,23 @@ class RanapController extends Controller
             'ttv'       => view('ranap.tabs.partials.ttv_table', [
                 'riwayatTtv' => $this->vitalService->getRiwayatTtv($no_rawat), 'currentUserNip' => $currentUserNip,
             ]),
-            'resep'     => view('ranap.tabs.partials.resep_table', ['resep' => $this->resepHariIni($no_rawat)]),
-            'lab'       => view('ranap.tabs.partials.lab_table', ['riwayatOrder' => $this->orderHariIni(PermintaanLab::class, $no_rawat)]),
-            'radiologi' => view('ranap.tabs.partials.radiologi_table', ['riwayatOrder' => $this->orderHariIni(PermintaanRadiologi::class, $no_rawat)]),
+            'resep'     => view('ranap.tabs.partials.resep_table', ['daftarResep' => $this->resepService->resepKunjungan($no_rawat)]),
+            'lab'       => view('ranap.tabs.partials.lab_table', ['riwayatOrder' => $this->orderKunjungan(PermintaanLab::class, $no_rawat)]),
+            'radiologi' => view('ranap.tabs.partials.radiologi_table', ['riwayatOrder' => $this->orderKunjungan(PermintaanRadiologi::class, $no_rawat)]),
         };
     }
 
-    private function resepHariIni(string $no_rawat): ?ResepObat
-    {
-        return ResepObat::with([
-                'resepDokter.dataBarang',
-                'resepRacikan.detailRacikan.dataBarang',
-                'resepRacikan.metodeRacik'
-            ])
-            ->where('no_rawat', $no_rawat)
-            ->where('tgl_peresepan', date('Y-m-d'))
-            ->first();
-    }
-
-    /** @param class-string<PermintaanLab|PermintaanRadiologi> $model */
-    private function orderHariIni(string $model, string $no_rawat)
+    /**
+     * Semua permintaan kunjungan, terbaru di atas: rawat inap berhari-hari, jadi "hari ini" menyembunyikan
+     * permintaan kemarin yang belum diproses.
+     *
+     * @param class-string<PermintaanLab|PermintaanRadiologi> $model
+     */
+    private function orderKunjungan(string $model, string $no_rawat)
     {
         return $model::with(['pemeriksaan.jenisPerawatan'])
             ->where('no_rawat', $no_rawat)
-            ->where('tgl_permintaan', date('Y-m-d'))
+            ->orderByDesc('tgl_permintaan')->orderByDesc('jam_permintaan')
             ->get();
     }
 }

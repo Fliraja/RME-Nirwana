@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use App\Exceptions\OrderIgdTerkunci;
 use App\Exceptions\ResepTerkunci;
 use App\Services\Igd\IgdOrderService;
-use App\Services\Igd\IgdPasienService;
 use App\Services\Ralan\LaboratoriumService;
 use App\Services\Ralan\RadiologiService;
 use App\Services\Resep\ResepService;
+use App\Support\AturanPermintaanPenunjang;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
@@ -17,7 +17,6 @@ class IgdOrderController extends Controller
 {
     public function __construct(
         private IgdOrderService $order,
-        private IgdPasienService $pasien,
         private LaboratoriumService $lab,
         private RadiologiService $radiologi,
         private ResepService $resep,
@@ -33,8 +32,7 @@ class IgdOrderController extends Controller
             abort($e->status, $e->getMessage());
         }
 
-        $ranap = $this->pasien->masukRanap($noRawat);
-        $lab = $this->order->daftarLab($noRawat);
+        $lab =$this->order->daftarLab($noRawat);
         $radiologi = $this->order->daftarRadiologi($noRawat);
         $resep = $this->order->daftarResep($noRawat);
 
@@ -46,17 +44,17 @@ class IgdOrderController extends Controller
             'jumlah'         => $lab->count() + $radiologi->count() + $resep->count(),
             'aturanPakai'    => DB::table('master_aturan_pakai')->orderBy('aturan')->pluck('aturan'),
             'metodeRacik'    => DB::table('metode_racik')->orderBy('kd_racik')->get(),
-            'pesanTerkunci'  => $ranap ? $this->order->pesanTerkunci($ranap->format('H.i')) : null,
+            'pesanTerkunci'  => $this->order->pesanTerkunci($noRawat),
             'usulanDiagnosa' => $this->order->usulanDiagnosaKlinis($noRawat),
         ]);
     }
 
     public function simpanLab(Request $request)
     {
-        $data = $request->validate($this->aturanPermintaan() + [
-            'detail_lab'   => 'nullable|array',
-            'detail_lab.*' => 'array',
-        ]);
+        $data = $request->validate(
+            $this->aturanPermintaan('jns_perawatan_lab') + AturanPermintaanPenunjang::subItemLab(),
+            AturanPermintaanPenunjang::PESAN,
+        );
 
         return $this->jalankan($data['no_rawat'], fn () => $this->lab->simpanPermintaan($this->bersihkan($data)));
     }
@@ -74,7 +72,7 @@ class IgdOrderController extends Controller
 
     public function simpanRadiologi(Request $request)
     {
-        $data = $request->validate($this->aturanPermintaan());
+        $data = $request->validate($this->aturanPermintaan('jns_perawatan_radiologi'), AturanPermintaanPenunjang::PESAN);
 
         return $this->jalankan($data['no_rawat'], fn () => $this->radiologi->simpanPermintaan($this->bersihkan($data)));
     }
@@ -155,12 +153,12 @@ class IgdOrderController extends Controller
         });
     }
 
-    private function aturanPermintaan(): array
+    private function aturanPermintaan(string $tabelJenis): array
     {
         return [
             'no_rawat'           => 'required|string',
             'kd_jenis_prw'       => 'required|array|min:1',
-            'kd_jenis_prw.*'     => 'string',
+            'kd_jenis_prw.*'     => AturanPermintaanPenunjang::kode($tabelJenis),
             'diagnosa_klinis'    => 'nullable|string|max:80',
             'informasi_tambahan' => 'nullable|string|max:60',
         ];

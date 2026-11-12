@@ -1,3 +1,5 @@
+{{-- Pasien sudah rawat inap: tombol hapus tidak dirender, server juga menolak (409). --}}
+@php $pesanKunci = $pesanKunci ?? null; @endphp
 <div class="table-responsive">
     <table class="table table-bordered table-striped table-hover small">
         <thead class="bg-light">
@@ -26,7 +28,7 @@
                     <td class="align-middle">
                         <div class="d-flex justify-content-between align-items-center">
                             <span>{{ $item->jenisPerawatan->nm_perawatan }}</span>
-                            @if($item->stts_bayar == 'Belum')
+                            @if(!$row->sudahDiproses() && !$pesanKunci)
                                 <a href="javascript:void(0)" class="text-danger p-1" 
                                    onclick="hapusRadiologi('{{ $row->noorder }}', '{{ $item->kd_jenis_prw }}')" 
                                    title="Hapus Pemeriksaan ini">
@@ -43,7 +45,9 @@
                         </td>
                         
                         <td rowspan="{{ $row->pemeriksaan->count() }}" class="text-center align-middle">
-                            @if($item->stts_bayar == 'Belum')
+                            @if(!$row->sudahDiproses() && $pesanKunci)
+                                <span class="text-muted small">-</span>
+                            @elseif(!$row->sudahDiproses())
                                 <button class="btn btn-danger btn-sm" onclick="hapusRadiologi('{{ $row->noorder }}')" title="Batalkan Seluruh Order">
                                     <i class="fa fa-trash"></i>
                                 </button>
@@ -58,7 +62,7 @@
                 <tr>
                     <td colspan="5" class="text-center py-4 text-muted">
                         <i class="fas fa-info-circle fa-2x mb-2"></i><br>
-                        Belum ada riwayat permintaan radiologi hari ini.
+                        Belum ada permintaan radiologi untuk kunjungan ini.
                     </td>
                 </tr>
             @endforelse

@@ -25,4 +25,24 @@ class PermintaanLab extends Model
     {
         return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat');
     }
+
+    /**
+     * Sama dengan aturan LaboratoriumService::hapus: sampel diambil (Khanza hanya mengisi tgl_sampel)
+     * atau hasil sudah ditagih. Setelah itu permintaan tidak bisa dibatalkan.
+     */
+    public function sudahDiproses(): bool
+    {
+        return ($this->tgl_sampel && $this->tgl_sampel !== '0000-00-00')
+            || $this->pemeriksaan->contains('stts_bayar', 'Sudah');
+    }
+
+    /** Teks status yang sama dengan kartu permintaan IGD. */
+    public function statusTeks(): string
+    {
+        if ($this->tgl_hasil && $this->tgl_hasil !== '0000-00-00') {
+            return 'hasil keluar';
+        }
+
+        return $this->sudahDiproses() ? 'sampel diambil' : 'menunggu sampel';
+    }
 }

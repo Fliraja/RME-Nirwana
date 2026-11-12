@@ -216,7 +216,8 @@
             '<span class="stok-badge stok-' + escape(data.tingkat) + '"><i class="fas ' + ikon + '" aria-hidden="true"></i> ' + escape(data.label) + '</span></div>';
     }
 
-    function pilihanObat(el, onPilih) {
+    /* onKosong: pilihan dihapus (Backspace / ganti obat), supaya obat lama tidak ikut terkirim dari kotak yang kosong. */
+    function pilihanObat(el, onPilih, onKosong) {
         if (!el || !window.TomSelect) {
             return null;
         }
@@ -229,7 +230,8 @@
                 fetch(cfg.routes.cariObat + '?' + new URLSearchParams({ search: q }).toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
                     .then(function (r) { return r.json(); }).then(cb).catch(function () { cb(); });
             },
-            onItemAdd: function (nilai) { onPilih && onPilih(this.options[nilai] || { id: nilai, text: nilai }); }
+            onItemAdd: function (nilai) { onPilih && onPilih(this.options[nilai] || { id: nilai, text: nilai }); },
+            onItemRemove: function () { onKosong && onKosong(); }
         });
     }
 
@@ -242,6 +244,9 @@
             dipilih = opsi;
             cekStok();
             form.querySelector('#igd-jumlah-obat').focus();
+        }, function () {
+            dipilih = null;
+            cekStok();
         });
         var dipilih = null;
         var daftar = [];
@@ -356,7 +361,7 @@
         function hitung(li) {
             var d = bacaDosis(li.querySelector('[data-dosis]').value);
             var j = parseInt(inJml.value, 10) || 0;
-            li.querySelector('[data-hasil]').textContent = d && j ? '= ' + angkaId(d.p1 / d.p2 * j) + ' ' + (li.satuan || '') : '';
+            li.querySelector('[data-hasil]').textContent = d && j && li.kode ? '= ' + angkaId(d.p1 / d.p2 * j) + ' ' + (li.satuan || '') : '';
         }
 
         function tambahBahan() {
@@ -371,9 +376,26 @@
                 '<button type="button" class="btn btn-sm igd-btn-hapus" data-buang-bahan aria-label="Hapus bahan ' + urut + '"><i class="fas fa-xmark" aria-hidden="true"></i></button>';
             ul.appendChild(li);
             li.ts = pilihanObat(li.querySelector('select'), function (opsi) {
+                // Bahan yang sama dua kali ditolak Khanza; arahkan dokter ke baris yang sudah ada.
+                var lama = Array.prototype.find.call(ul.querySelectorAll('.igd-bahan'), function (x) {
+                    return x !== li && x.kode === opsi.id;
+                });
+                if (lama) {
+                    li.kode = null;
+                    li.satuan = '';
+                    setTimeout(function () { li.ts.clear(true); });
+                    toast('warning', opsi.text + ' sudah ada di daftar bahan. Ubah dosisnya di baris itu.');
+                    lama.querySelector('[data-dosis]').focus();
+                    hitung(li);
+                    return;
+                }
                 li.kode = opsi.id;
                 li.satuan = opsi.satuan || '';
                 li.querySelector('[data-dosis]').focus();
+                hitung(li);
+            }, function () {
+                li.kode = null;
+                li.satuan = '';
                 hitung(li);
             });
             li.querySelector('[data-dosis]').addEventListener('input', function () { hitung(li); });

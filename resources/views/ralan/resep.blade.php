@@ -1,5 +1,8 @@
 <div class="row ralan-resep">
     <div class="col-md-12">
+        @if($pesanKunci)
+        @include('ralan.partials.kunci_ranap')
+        @else
         <ul class="nav nav-tabs nav-pills mb-3 bg-light p-2 rounded" id="pills-tab-resep" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active btn-sm" id="pills-umum-tab" data-bs-toggle="pill" data-bs-target="#resep-umum" type="button" role="tab">
@@ -165,6 +168,8 @@
                 </div>
             </div>
         </div>
+
+        @endif
 
         <hr class="my-4">
 

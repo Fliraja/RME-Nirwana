@@ -944,7 +944,8 @@ function initLabHandlers() {
                     html += '<div class="fw-bold small text-primary mb-1">' + item.text + '</div>';
                     templates.forEach(function(t) {
                         html += '<div class="form-check form-check-sm mb-1">' +
-                            '<input class="form-check-input" type="checkbox" name="id_template[' + item.id + '][]" value="' + t.id_template + '" id="tpl_' + t.id_template + '" checked>' +
+                            // LaboratoriumService membaca detail_lab[kd][]; nama lain membuat sub-item tidak tersimpan.
+                            '<input class="form-check-input" type="checkbox" name="detail_lab[' + item.id + '][]" value="' + t.id_template + '" id="tpl_' + t.id_template + '" checked>' +
                             '<label class="form-check-label small" for="tpl_' + t.id_template + '">' + t.Pemeriksaan + '</label>' +
                             '</div>';
                     });
@@ -952,6 +953,12 @@ function initLabHandlers() {
                     $('#list-template-checkbox').append(html);
                 }
             });
+        },
+        onItemRemove: function(kd) {
+            $('#list-template-checkbox .item-template-group').filter(function() { return $(this).data('kd') == kd; }).remove();
+            if (!$('#list-template-checkbox .item-template-group').length) {
+                $('#detail-pemeriksaan-placeholder').removeClass('d-none');
+            }
         }
     });
 

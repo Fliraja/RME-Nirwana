@@ -1,3 +1,5 @@
+{{-- Pasien sudah rawat inap: tombol hapus tidak dirender, server juga menolak (409). --}}
+@php $pesanKunci = $pesanKunci ?? null; @endphp
 <div class="table-responsive">
     <table class="table table-bordered table-striped table-hover small">
         <thead class="bg-light">
@@ -26,7 +28,7 @@
                     <td class="align-middle">
                         <div class="d-flex justify-content-between align-items-center">
                             <span>{{ $item->jenisPerawatan->nm_perawatan }}</span>
-                            @if($item->stts_bayar == 'Belum')
+                            @if(!$row->sudahDiproses() && !$pesanKunci)
                                 <a href="javascript:void(0)" class="text-danger p-1" 
                                    onclick="hapusLab('{{ $row->noorder }}', '{{ $item->kd_jenis_prw }}')" 
                                    title="Hapus Pemeriksaan ini">
@@ -51,7 +53,7 @@
                                 @foreach($details as $d)
                                     <li class="d-flex justify-content-between border-bottom py-1">
                                         <span>- {{ $d->Pemeriksaan }}</span>
-                                        @if($item->stts_bayar == 'Belum')
+                                        @if(!$row->sudahDiproses() && !$pesanKunci)
                                             <a href="javascript:void(0)" class="text-warning" 
                                                onclick="hapusLab('{{ $row->noorder }}', '{{ $item->kd_jenis_prw }}', '{{ $d->id_template }}')"
                                                title="Hapus item ini">
@@ -68,7 +70,9 @@
 
                     @if($index === 0)
                         <td rowspan="{{ $row->pemeriksaan->count() }}" class="text-center align-middle">
-                            @if($item->stts_bayar == 'Belum')
+                            @if(!$row->sudahDiproses() && $pesanKunci)
+                                <span class="text-muted small">-</span>
+                            @elseif(!$row->sudahDiproses())
                                 <button class="btn btn-danger btn-sm" onclick="hapusLab('{{ $row->noorder }}')" title="Batalkan Seluruh Order">
                                     <i class="fa fa-trash"></i>
                                 </button>
@@ -80,7 +84,7 @@
                 </tr>
                 @endforeach
             @empty
-                <tr><td colspan="5" class="text-center py-4 text-muted">Belum ada riwayat Permintaan lab.</td></tr>
+                <tr><td colspan="5" class="text-center py-4 text-muted">Belum ada permintaan laboratorium untuk kunjungan ini.</td></tr>
             @endforelse
         </tbody>
     </table>

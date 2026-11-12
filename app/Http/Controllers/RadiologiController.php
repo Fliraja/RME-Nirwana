@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Ralan\StorePermintaanRadiologiRequest;
 use App\Models\PermintaanRadiologi;
+use App\Services\Kunjungan\RawatInap;
 use App\Services\Ralan\RadiologiService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class RadiologiController extends Controller
 {
-    public function __construct(private RadiologiService $service) {}
+    public function __construct(private RadiologiService $service, private RawatInap $rawatInap) {}
 
     public function getRadiologiPasien($no_rawat)
     {
@@ -23,10 +24,10 @@ class RadiologiController extends Controller
 
         $riwayat = PermintaanRadiologi::with(['pemeriksaan.jenisPerawatan'])
             ->where('no_rawat', $no_rawat)
-            ->where('tgl_permintaan', date('Y-m-d'))
+            ->orderByDesc('tgl_permintaan')->orderByDesc('jam_permintaan')
             ->get();
 
-        return view('ralan.radiologi', compact('pasien', 'riwayat'));
+        return view('ralan.radiologi', compact('pasien', 'riwayat') + ['pesanKunci' => $this->rawatInap->pesanKunci($no_rawat)]);
     }
 
     public function getRadiologiTable($no_rawat)
@@ -35,10 +36,10 @@ class RadiologiController extends Controller
 
         $riwayat = PermintaanRadiologi::with(['pemeriksaan.jenisPerawatan'])
             ->where('no_rawat', $no_rawat)
-            ->where('tgl_permintaan', date('Y-m-d'))
+            ->orderByDesc('tgl_permintaan')->orderByDesc('jam_permintaan')
             ->get();
 
-        return view('ralan.radiologi_table', compact('riwayat'));
+        return view('ralan.radiologi_table', compact('riwayat') + ['pesanKunci' => $this->rawatInap->pesanKunci($no_rawat)]);
     }
 
     public function getPemeriksaanRadiologi(Request $request)

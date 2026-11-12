@@ -177,11 +177,11 @@
             </div>
         </div>
 
-        {{-- BAGIAN 2: DAFTAR RESEP HARI INI DARI DOKTER --}}
+        {{-- BAGIAN 2: SEMUA RESEP DOKTER KUNJUNGAN INI (resep terbuka bisa lintas hari) --}}
         <div class="ralan-card mb-4">
             <div class="ralan-card-head">
                 <span class="fw-bold text-dark">
-                    <i class="fas fa-clipboard-list me-1 text-primary"></i> Antrean Resep Hari Ini (Validasi Apotek)
+                    <i class="fas fa-clipboard-list me-1 text-primary"></i> Resep Dokter Kunjungan Ini
                 </span>
                 <button type="button" class="btn btn-sm btn-outline-primary" onclick="reloadRanapTable('resep')">
                     <i class="fas fa-sync-alt me-1"></i> Refresh

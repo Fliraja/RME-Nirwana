@@ -2,6 +2,7 @@
 
 namespace App\Services\Igd;
 
+use App\Services\Kunjungan\RawatInap;
 use App\Support\Alergi;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -9,8 +10,13 @@ use Illuminate\Support\Facades\DB;
 
 class IgdPasienService
 {
-    /** Jam sebelum ini dianggap masih jaga malam, sehingga pasien kemarin ikut tampil. */
-    private const BATAS_JAGA_MALAM = 7;
+    public function __construct(private RawatInap $rawatInap) {}
+
+    /**
+     * Sebelum jam ini pasien kemarin ikut tampil. Bukan jam pergantian jaga (07.00): dokter jaga malam
+     * masih melengkapi asesmen sampai sekitar 08.00 (prod Jan-Okt 2026, 35 dari 50 asesmen terlambat).
+     */
+    private const BATAS_JAGA_MALAM = 9;
 
     /** @return array{0: Carbon, 1: Carbon} */
     public function rentangBawaan(Carbon $sekarang): array
@@ -72,7 +78,7 @@ class IgdPasienService
 
         $asesmen = DB::table('penilaian_medis_igd')->where('no_rawat', $noRawat)->first(['alergi']);
         $datang = Carbon::parse($reg->tgl_registrasi . ' ' . $reg->jam_reg);
-        $ranap = $this->masukRanap($noRawat);
+        $ranap = $this->rawatInap->masukKamar($noRawat);
         $akhir = $ranap ?? Carbon::now();
 
         return [
@@ -81,23 +87,9 @@ class IgdPasienService
             'alergi'           => $asesmen && Alergi::ada($asesmen->alergi) ? trim($asesmen->alergi) : null,
             'ada_asesmen'      => (bool) $asesmen,
             'lama_menit'       => max(0, (int) $datang->diffInMinutes($akhir, false)),
+            'rawat_inap'       => $ranap !== null || $reg->status_lanjut === 'Ranap',
             'rawat_inap_sejak' => $ranap,
         ];
     }
 
-    /** Waktu pasien mulai rawat inap, atau null bila masih di IGD/rawat jalan. */
-    public function masukRanap(string $noRawat): ?Carbon
-    {
-        $kamar = DB::table('kamar_inap')->where('no_rawat', $noRawat)
-            ->orderBy('tgl_masuk')->orderBy('jam_masuk')->first(['tgl_masuk', 'jam_masuk']);
-        if ($kamar) {
-            return Carbon::parse($kamar->tgl_masuk . ' ' . $kamar->jam_masuk);
-        }
-
-        $reg = DB::table('reg_periksa')->where('no_rawat', $noRawat)->first(['status_lanjut', 'tgl_registrasi', 'jam_reg']);
-
-        return $reg && $reg->status_lanjut === 'Ranap'
-            ? Carbon::parse($reg->tgl_registrasi . ' ' . $reg->jam_reg)
-            : null;
-    }
 }

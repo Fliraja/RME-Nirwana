@@ -18,6 +18,12 @@
                 <label class="visually-hidden" for="igd-cari">Cari pasien</label>
                 <input type="search" id="igd-cari" name="cari" value="{{ $cari }}" maxlength="60"
                        class="form-control form-control-sm igd-cari" placeholder="Nama, no. RM, atau no. rawat">
+                {{-- Pindah rentang sekali klik; "Kemarin" untuk melengkapi asesmen jaga malam setelah daftar bawaan pindah ke hari ini. --}}
+                <div class="igd-cepat-grup" role="group" aria-label="Rentang cepat">
+                    @foreach($cepat as $label => $tgl)
+                        <a href="{{ route('igd.index', array_filter(['dari' => $tgl, 'sampai' => $tgl, 'cari' => $cari], fn ($v) => $v !== '')) }}" class="igd-cepat"@if($dari === $tgl && $sampai === $tgl) aria-current="true"@endif>{{ $label }}</a>
+                    @endforeach
+                </div>
                 <label class="igd-filter-label" for="igd-dari">Dari</label>
                 <input type="date" id="igd-dari" name="dari" value="{{ $dari }}" class="form-control form-control-sm">
                 <label class="igd-filter-label" for="igd-sampai">s.d.</label>
