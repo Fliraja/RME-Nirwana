@@ -101,18 +101,6 @@
 .igd-form-isi { padding: 0.8rem 1rem; }
 .igd-label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--gray-500); margin-bottom: 2px; }
 .igd-form-aksi { display: flex; justify-content: flex-end; gap: 8px; margin-top: 0.7rem; flex-wrap: wrap; }
-.igd-template { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
-.igd-template-grup { border: 1px solid #e2e8f0; border-radius: var(--radius-sm); background: #fff; margin: 0; padding: 0.5rem 0.75rem 0.6rem; min-width: 0; }
-.igd-template-judul { float: left; width: 100%; font-size: 0.82rem; font-weight: 600; color: #166534; margin-bottom: 4px; }
-.igd-template-hitung { font-weight: 400; color: var(--gray-500); margin-left: 6px; }
-.igd-template-kosong .igd-template-hitung { color: #be123c; font-weight: 600; }
-.igd-template-aksi { clear: both; display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
-.igd-template-aksi .btn { min-height: 32px; font-size: 0.78rem; padding: 2px 10px; }
-/* Paling banyak --baris baris ke bawah, sisanya mengalir ke kolom berikutnya; kolom yang tidak muat bergulir di dalam kotak ini saja. */
-.igd-template-daftar { display: grid; grid-auto-flow: column; grid-template-rows: repeat(var(--baris, 8), auto); grid-auto-columns: minmax(170px, max-content); gap: 2px 20px; overflow-x: auto; padding-bottom: 2px; }
-.igd-template-grup .form-check { padding-left: 1.75rem; margin: 0; min-height: 28px; display: flex; align-items: center; }
-.igd-template-grup .form-check-input { margin-left: -1.75rem; margin-top: 0; }
-.igd-template-grup .form-check-label { font-size: 0.82rem; padding-left: 6px; cursor: pointer; }
 
 .igd-order { padding: 0.55rem 0; border-bottom: 1px solid #f1f5f9; }
 .igd-order:last-child { border-bottom: 0; }
@@ -133,8 +121,7 @@
 .igd-tabs.nav-tabs .nav-link.active .igd-tab-jumlah { background: #dcfce7; color: #166534; }
 
 @media (pointer: coarse) {
-    .igd-btn-garis, .igd-btn-hapus, .igd-form-aksi .btn, .igd-template-aksi .btn { min-height: 44px; }
-    .igd-template-grup .form-check { min-height: 40px; }
+    .igd-btn-garis, .igd-btn-hapus, .igd-form-aksi .btn { min-height: 44px; }
 }
 
 /* Kartu resep: daftar tunggu dan racikan */

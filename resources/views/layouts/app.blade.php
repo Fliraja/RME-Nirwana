@@ -15,10 +15,11 @@
     <link rel="stylesheet" href="{{ asset('vendor/tom-select-2.3.1/tom-select.bootstrap5.min.css') }}">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin.css') }}?v={{ filemtime(public_path('css/admin.css')) }}">
 
     <script src="{{ asset('js/admin.js') }}"></script>
     <script src="{{ asset('js/batas-isian.js') }}?v={{ filemtime(public_path('js/batas-isian.js')) }}"></script>
+    <script src="{{ asset('js/lab-subitem.js') }}?v={{ filemtime(public_path('js/lab-subitem.js')) }}"></script>
     
     @stack('styles')
 </head>
