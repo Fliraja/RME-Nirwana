@@ -36,8 +36,8 @@
                                     <input type="number" name="jumlah" class="form-control form-control-sm" value="1" min="1">
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="small fw-semibold text-muted">Aturan Pakai</label>
-                                    <select name="aturan_pakai" class="select2-aturan">
+                                    <label class="small fw-semibold text-muted" for="ranap-aturan-obat">Aturan Pakai</label>
+                                    <select name="aturan_pakai" id="ranap-aturan-obat" class="select2-aturan">
                                         <option value=""></option>
                                         @foreach($masterAturan as $atp)
                                             <option value="{{ $atp->aturan }}">{{ $atp->aturan }}</option>
@@ -45,7 +45,7 @@
                                     </select>
                                 </div>
                                 <div class="col-md-1 d-grid">
-                                    <button type="button" id="btnTambahObat" class="btn btn-success btn-sm" title="Tambah ke staging">
+                                    <button type="button" id="btnTambahObat" class="btn btn-success btn-sm" title="Tambah ke daftar" aria-label="Tambah obat ke daftar">
                                         <i class="fas fa-plus"></i>
                                     </button>
                                 </div>
@@ -104,15 +104,13 @@
                                     <input type="number" name="jml_dr" class="form-control form-control-sm" value="10" min="1">
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="small fw-bold">Aturan Pakai <span class="text-danger">*</span></label>
-                                    <select name="aturan_racik" class="select2-aturan-racik form-select form-select-sm">
+                                    <label class="small fw-bold" for="ranap-aturan-racik">Aturan Pakai <span class="text-danger">*</span></label>
+                                    <select name="aturan_racik" id="ranap-aturan-racik" class="form-control form-control-sm select2-aturan-racik">
                                         <option value=""></option>
                                         @foreach($masterAturan as $atp)
                                             <option value="{{ $atp->aturan }}">{{ $atp->aturan }}</option>
                                         @endforeach
-                                        <option value="lainnya">Lainnya...</option>
                                     </select>
-                                    <input type="text" name="aturan_racik_lainnya" class="form-control form-control-sm mt-1 d-none" placeholder="Tulis aturan pakai custom...">
                                 </div>
                                 <div class="col-12">
                                     <label class="small fw-bold">Keterangan Tambahan</label>

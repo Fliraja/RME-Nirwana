@@ -670,10 +670,11 @@ function resetFormRacikanRanap() {
     $tab.find('input[name="nama_racik"], input[name="keterangan"]').val('');
     $tab.find('select[name="kd_racik"]').prop('selectedIndex', 0);
     $tab.find('input[name="jml_dr"]').val(10);
-    // change -> handler aturan_racik ikut menyembunyikan & mengosongkan input "lainnya".
-    $tab.find('select[name="aturan_racik"]').val('').trigger('change');
+    clearRemoteSelect('#ranap-aturan-racik');
     kosongkanStaging('#staging-bahan-racik');
 }
+
+function escRanap(s) { return $('<div>').text(s == null ? '' : String(s)).html(); }
 
 function initResepHandlers() {
     // Hapus baris staging obat dan bahan racikan.
@@ -695,6 +696,10 @@ function initResepHandlers() {
         placeholder: 'Ketik nama bahan obat...'
     });
 
+    // Aturan pakai: pilih dari master atau ketik baru (public/js/aturan-pakai.js, sama dengan ralan).
+    var tsAturan = AturanPakai.pasang(document.getElementById('ranap-aturan-obat'));
+    var tsAturanRacik = AturanPakai.pasang(document.getElementById('ranap-aturan-racik'));
+
     $('#btnTambahObat').off('click').on('click', function() {
         if (!tsObat || !tsObat.getValue()) {
             tampilkanError('Pilih obat terlebih dahulu.');
@@ -703,26 +708,27 @@ function initResepHandlers() {
         var kode = tsObat.getValue();
         var nama = tsObat.options[kode] ? tsObat.options[kode].text : kode;
         var jumlah = $('#formResepObat input[name="jumlah"]').val();
-        var aturan = $('#formResepObat select[name="aturan_pakai"]').val();
+        var aturan = tsAturan ? tsAturan.getValue() : $('#ranap-aturan-obat').val();
 
         if (!jumlah || jumlah <= 0) {
             tampilkanError('Jumlah obat minimal 1.');
             return;
         }
         if (!aturan) {
-            tampilkanError('Pilih aturan pakai obat.');
+            tampilkanError('Pilih atau ketik aturan pakai obat.');
             return;
         }
 
         $('#staging-obat .staging-empty').remove();
         var row = '<tr>' +
-            '<td><span class="fw-semibold">' + nama + '</span><input type="hidden" class="stg-kode" value="' + kode + '"></td>' +
-            '<td><input type="number" class="form-control form-control-sm stg-jml" value="' + jumlah + '" min="1"></td>' +
-            '<td><input type="text" class="form-control form-control-sm stg-aturan" value="' + aturan + '"></td>' +
-            '<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger border-0 btn-remove-row"><i class="fas fa-times"></i></button></td>' +
+            '<td><span class="fw-semibold">' + escRanap(nama) + '</span><input type="hidden" class="stg-kode" value="' + escRanap(kode) + '"></td>' +
+            '<td><input type="number" class="form-control form-control-sm stg-jml" value="' + escRanap(jumlah) + '" min="1" aria-label="Jumlah ' + escRanap(nama) + '"></td>' +
+            '<td><input type="text" class="form-control form-control-sm stg-aturan" value="' + escRanap(aturan) + '" maxlength="' + AturanPakai.MAKS + '" aria-label="Aturan pakai ' + escRanap(nama) + '"></td>' +
+            '<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger border-0 btn-remove-row" aria-label="Hapus ' + escRanap(nama) + ' dari daftar"><i class="fas fa-times"></i></button></td>' +
             '</tr>';
         $('#staging-obat').append(row);
         tsObat.clear();
+        tsAturan && tsAturan.clear();
         $('#formResepObat input[name="jumlah"]').val(1);
     });
 
@@ -765,14 +771,6 @@ function initResepHandlers() {
         });
     });
 
-    $('select[name="aturan_racik"]').on('change', function() {
-        if ($(this).val() === 'lainnya') {
-            $('input[name="aturan_racik_lainnya"]').removeClass('d-none').focus();
-        } else {
-            $('input[name="aturan_racik_lainnya"]').addClass('d-none').val('');
-        }
-    });
-
     $('#btnTambahBahanRacik').off('click').on('click', function() {
         if (!tsBahanRacik || !tsBahanRacik.getValue()) {
             tampilkanError('Pilih bahan obat racikan.');
@@ -787,10 +785,10 @@ function initResepHandlers() {
 
         $('#staging-bahan-racik .staging-empty').remove();
         var row = '<tr>' +
-            '<td><span class="fw-semibold">' + nama + '</span><input type="hidden" class="racik-stg-kode" value="' + kode + '"></td>' +
-            '<td class="text-center">' + p1 + '/' + p2 + '<input type="hidden" class="racik-stg-p1" value="' + p1 + '"><input type="hidden" class="racik-stg-p2" value="' + p2 + '"></td>' +
-            '<td><input type="text" class="form-control form-control-sm racik-stg-kandungan" value="' + kandungan + '"></td>' +
-            '<td><input type="number" class="form-control form-control-sm racik-stg-jml" value="' + jml + '" step="any"></td>' +
+            '<td><span class="fw-semibold">' + escRanap(nama) + '</span><input type="hidden" class="racik-stg-kode" value="' + escRanap(kode) + '"></td>' +
+            '<td class="text-center">' + escRanap(p1) + '/' + escRanap(p2) + '<input type="hidden" class="racik-stg-p1" value="' + escRanap(p1) + '"><input type="hidden" class="racik-stg-p2" value="' + escRanap(p2) + '"></td>' +
+            '<td><input type="text" class="form-control form-control-sm racik-stg-kandungan" value="' + escRanap(kandungan) + '"></td>' +
+            '<td><input type="number" class="form-control form-control-sm racik-stg-jml" value="' + escRanap(jml) + '" step="any"></td>' +
             '<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger border-0 btn-remove-row"><i class="fas fa-times"></i></button></td>' +
             '</tr>';
         $('#staging-bahan-racik').append(row);
@@ -803,8 +801,7 @@ function initResepHandlers() {
         var namaRacik = $('input[name="nama_racik"]').val();
         var kdRacik = $('select[name="kd_racik"]').val();
         var jmlDr = $('input[name="jml_dr"]').val();
-        var aturanRacik = $('select[name="aturan_racik"]').val();
-        var aturanLainnya = $('input[name="aturan_racik_lainnya"]').val();
+        var aturanRacik = tsAturanRacik ? tsAturanRacik.getValue() : $('#ranap-aturan-racik').val();
         var keterangan = $('input[name="keterangan"]').val();
 
         if (!namaRacik) {
@@ -845,7 +842,6 @@ function initResepHandlers() {
                 kd_racik: kdRacik,
                 jml_dr: jmlDr,
                 aturan_racik: aturanRacik,
-                aturan_racik_lainnya: aturanLainnya,
                 keterangan: keterangan,
                 detail_obat: detailBahan
             },

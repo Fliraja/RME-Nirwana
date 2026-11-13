@@ -212,7 +212,7 @@ class RanapController extends Controller
 
         $daftarResep = $this->resepService->resepKunjungan($no_rawat);
 
-        $masterAturan = MasterAturanPakai::all();
+        $masterAturan = MasterAturanPakai::orderBy('aturan')->get();
         $masterMetode = DB::table('metode_racik')->get();
         $pasien = RegPeriksa::where('no_rawat', $no_rawat)->first();
 
