@@ -125,6 +125,9 @@
                                                 RM: <strong>{{ $p->no_rkm_medis }}</strong> &nbsp;|&nbsp; 
                                                 {{ $p->jk == 'L' ? 'Laki-Laki' : 'Perempuan' }}, {{ $p->umur }}
                                             </small>
+                                            @if($dokterIgd && !$p->saya_dpjp)
+                                                <span class="resume-status igd-status-ranap d-inline-block text-nowrap mt-1">dari IGD Anda</span>
+                                            @endif
                                             {{-- Pasien masih dirawat: "belum dibuat" adalah keadaan normal, jadi hanya draf/selesai yang ditandai. --}}
                                             @if($p->status_resume !== 'belum')
                                                 @include('ranap.partials.badge_resume', ['status' => $p->status_resume])
@@ -215,6 +218,9 @@
                                                 {{ $p->nm_pasien }}
                                             </a>
                                             <small class="d-block text-muted">{{ $p->jk == 'L' ? 'Laki-Laki' : 'Perempuan' }}, {{ $p->umur }}</small>
+                                            @if($dokterIgd && !$p->saya_dpjp)
+                                                <span class="resume-status igd-status-ranap d-inline-block text-nowrap mt-1">dari IGD Anda</span>
+                                            @endif
                                             @include('ranap.partials.badge_resume', ['status' => $p->status_resume])
                                         </td>
                                         <td>{{ $p->no_rkm_medis }}</td>

@@ -24,6 +24,7 @@ use App\Http\Requests\Ranap\StoreResumeRanapRequest;
 use App\Http\Requests\Ralan\StorePermintaanLabRequest;
 use App\Http\Requests\Ralan\StorePermintaanRadiologiRequest;
 use App\Support\Alergi;
+use App\Support\DokterIgd;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -61,9 +62,10 @@ class RanapController extends Controller
         $tanggalKeluar = $request->input('tanggal_keluar') ?? date('Y-m-d');
         $search = $request->input('search');
 
-        $stats = $this->dashboardService->getStatistik($kd_dokter);
-        $pasienAktif = $this->dashboardService->getPasienAktif($kd_dokter, $search);
-        $pasienPulang = $this->dashboardService->getPasienPulang($tanggalKeluar, $kd_dokter, $search);
+        $dokterIgd = DokterIgd::adalah($kd_dokter);
+        $stats = $this->dashboardService->getStatistik($kd_dokter, $dokterIgd);
+        $pasienAktif = $this->dashboardService->getPasienAktif($kd_dokter, $search, $dokterIgd);
+        $pasienPulang = $this->dashboardService->getPasienPulang($tanggalKeluar, $kd_dokter, $search, $dokterIgd);
 
         $data = [
             'stats'         => $stats,
@@ -74,6 +76,7 @@ class RanapController extends Controller
             'nama_dokter'   => $isAdmin ? session('nama_lengkap') : (Auth::user()->dokter_data->nm_dokter ?? 'Dokter'),
             'role'          => session('role'),
             'isAdmin'       => $isAdmin,
+            'dokterIgd'     => $dokterIgd,
         ];
 
         return view('ranap.index', $data);
