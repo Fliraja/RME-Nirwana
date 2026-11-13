@@ -1122,6 +1122,11 @@ a:hover {
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
 }
 
+/* Bawaan tema: abu 50% (sekitar 2,7:1). "Pakai aturan baru" dan pesan kosong harus terbaca. */
+.ts-dropdown .create,
+.ts-dropdown .no-results { color: #334155; }
+.ts-dropdown .create strong { color: #0d7a4a; }
+
 /* ===== Ralan — flat & clean UI ===== */
 .ralan-tabs.nav-tabs {
     border-bottom: 1px solid #e5e7eb;

@@ -37,8 +37,8 @@
                                     <input type="number" name="jumlah" class="form-control form-control-sm" value="1" min="1">
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="small fw-semibold text-muted">Aturan Pakai</label>
-                                    <select name="aturan_pakai" class="select2-aturan">
+                                    <label class="small fw-semibold text-muted" for="ralan-aturan-obat">Aturan Pakai</label>
+                                    <select name="aturan_pakai" id="ralan-aturan-obat" class="select2-aturan">
                                         <option value=""></option>
                                         @foreach($masterAturan as $atp)
                                             <option value="{{ $atp->aturan }}">{{ $atp->aturan }}</option>
@@ -104,21 +104,13 @@
                                     <input type="number" name="jml_dr" id="jml_dr" class="form-control form-control-sm" value="10" min="1">
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="small fw-bold">Aturan Pakai <span class="text-danger">*</span></label>
-                                    <select name="aturan_racik" class="form-control form-control-sm select2-aturan-racik" style="width:100%">
+                                    <label class="small fw-bold" for="ralan-aturan-racik">Aturan Pakai <span class="text-danger">*</span></label>
+                                    <select name="aturan_racik" id="ralan-aturan-racik" class="form-control form-control-sm select2-aturan-racik" style="width:100%">
                                         <option value=""></option>
                                         @foreach($masterAturan as $atp)
                                             <option value="{{ $atp->aturan }}">{{ $atp->aturan }}</option>
                                         @endforeach
-                                        <option value="lainnya">--- Aturan Lainnya (Ketik Manual) ---</option>
                                     </select>
-                                </div>
-                            </div>
-                            
-                            <div class="row mt-2 d-none" id="aturanManualRacik">
-                                <div class="col-md-12">
-                                    <label class="small fw-bold">Aturan Pakai Manual</label>
-                                    <input type="text" name="aturan_racik_lainnya" class="form-control form-control-sm" placeholder="Contoh: 3x1 sesudah makan">
                                 </div>
                             </div>
                         </div>

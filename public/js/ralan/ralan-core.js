@@ -384,22 +384,8 @@ function initSelect2() {
         minLen: 3,
         placeholder: 'Ketik Nama Obat / Kode Obat...'
     });
-    initAturanSelect('.select2-aturan');
-    initAturanSelect('.select2-aturan-racik');
-}
-
-/* Aturan pakai: pilih dari master, atau ketik baru (create). */
-function initAturanSelect(selector) {
-    var el = document.querySelector(selector);
-    if (!el) return null;
-    if (el.tomselect) el.tomselect.destroy();
-    return new TomSelect(el, {
-        create: true,
-        createOnBlur: true,
-        maxItems: 1,
-        placeholder: 'Pilih / ketik Aturan Pakai...',
-        persist: false
-    });
+    AturanPakai.pasang(document.querySelector('.select2-aturan'));
+    AturanPakai.pasang(document.querySelector('.select2-aturan-racik'));
 }
 
 function initSelect2Lab() {
@@ -710,8 +696,6 @@ function resetFormRacikan() {
     form.find('select[name="kd_racik"]').prop('selectedIndex', 0);
     form.find('input[name="jml_dr"]').val('10');
     clearRemoteSelect('.select2-aturan-racik');
-    $('#aturanManualRacik').addClass('d-none');
-    form.find('input[name="aturan_racik_lainnya"]').val('');
 
     $('#tableKomposisi tbody').html(
         '<tr class="text-center text-muted">' +
@@ -949,28 +933,6 @@ $(document).ready(function() {
         });
     });
 
-    $(document).on('change', '.select2-aturan', function() {
-
-        if ($(this).val() == 'lainnya') {
-            $('#aturanManualUmum').removeClass('d-none');
-            $('#aturanManualUmum input').focus();
-        } else {
-            $('#aturanManualUmum').addClass('d-none');
-            $('#aturanManualUmum input').val('');
-        }
-    });
-
-    $(document).on('change', '.select2-aturan-racik', function() {
-
-        if ($(this).val() == 'lainnya') {
-            $('#aturanManualRacik').removeClass('d-none');
-            $('#aturanManualRacik input').focus();
-        } else {
-            $('#aturanManualRacik').addClass('d-none');
-            $('#aturanManualRacik input').val('');
-        }
-    });
-
     $(document).on('click', '#btnTambahBarisObat', function() {
 
         if ($('#tableKomposisi tbody tr td[colspan="6"]').length > 0) {
@@ -1037,8 +999,7 @@ $(document).ready(function() {
         var form = $('#formResepRacikan');
         var namaRacik = form.find('input[name="nama_racik"]').val();
         var jmlDr = form.find('input[name="jml_dr"]').val();
-        var aturanSelect = form.find('select[name="aturan_racik"]').val();
-        var aturanManual = form.find('input[name="aturan_racik_lainnya"]').val();
+        var aturanRacik = form.find('select[name="aturan_racik"]').val();
 
         if (!namaRacik) {
             tampilkanError("Nama racikan harus diisi");
@@ -1050,7 +1011,6 @@ $(document).ready(function() {
             return false;
         }
 
-        var aturanRacik = aturanSelect === 'lainnya' ? aturanManual : aturanSelect;
         if (!aturanRacik) {
             tampilkanError("Aturan pakai harus diisi");
             return false;
