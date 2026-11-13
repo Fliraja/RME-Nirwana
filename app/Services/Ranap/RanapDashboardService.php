@@ -16,7 +16,7 @@ class RanapDashboardService
     /**
      * Ambil daftar pasien rawat inap yang masih aktif (belum pulang)
      */
-    public function getPasienAktif(?string $kdDokter = null, ?string $search = null)
+    public function getPasienAktif(?string $kdDokter = null, ?string $search = null, bool $dokterIgd = false)
     {
         $query = DB::table('kamar_inap')
             ->join('reg_periksa', 'kamar_inap.no_rawat', '=', 'reg_periksa.no_rawat')
@@ -43,7 +43,8 @@ class RanapDashboardService
             ->selectSub($this->namaDpjp(), 'dpjp');
 
         $this->statusResume($query);
-        $this->filterDpjp($query, $kdDokter);
+        $this->filterDokter($query, $kdDokter, $dokterIgd);
+        $this->tandaDpjp($query, $kdDokter);
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -63,7 +64,7 @@ class RanapDashboardService
     /**
      * Ambil riwayat pasien ranap yang pulang berdasarkan tanggal
      */
-    public function getPasienPulang(string $tanggal, ?string $kdDokter = null, ?string $search = null)
+    public function getPasienPulang(string $tanggal, ?string $kdDokter = null, ?string $search = null, bool $dokterIgd = false)
     {
         $query = DB::table('kamar_inap')
             ->join('reg_periksa', 'kamar_inap.no_rawat', '=', 'reg_periksa.no_rawat')
@@ -96,7 +97,8 @@ class RanapDashboardService
             ->selectSub($this->namaDpjp(), 'dpjp');
 
         $this->statusResume($query);
-        $this->filterDpjp($query, $kdDokter);
+        $this->filterDokter($query, $kdDokter, $dokterIgd);
+        $this->tandaDpjp($query, $kdDokter);
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -113,7 +115,7 @@ class RanapDashboardService
     /**
      * Hitung statistik rawat inap untuk dashboard cards
      */
-    public function getStatistik(?string $kdDokter = null): array
+    public function getStatistik(?string $kdDokter = null, bool $dokterIgd = false): array
     {
         $today = Carbon::today()->toDateString();
 
@@ -140,7 +142,7 @@ class RanapDashboardService
             ->whereNotIn('kamar_inap.stts_pulang', ['-', self::PINDAH_KAMAR]);
 
         foreach ([$queryAktif, $queryMasukHariIni, $queryPulangHariIni] as $q) {
-            $this->filterDpjp($q, $kdDokter);
+            $this->filterDokter($q, $kdDokter, $dokterIgd);
         }
 
         return [
@@ -179,16 +181,40 @@ class RanapDashboardService
             ->selectRaw("CASE WHEN rr.status IS NOT NULL THEN rr.status WHEN rp.no_rawat IS NOT NULL THEN 'draf' ELSE 'belum' END AS status_resume");
     }
 
-    private function filterDpjp(Builder $query, ?string $kdDokter): void
+    /**
+     * Pasien DPJP dokter ini. Dokter IGD juga melihat pasien ranap yang ia daftarkan dari IGD:
+     * ia boleh menulis resume ranapnya, tetapi hampir tidak pernah menjadi DPJP
+     * (prod Okt 2026: DPJP DU 2 dari 397, CPPT ranap oleh DU 2 dari 2.033).
+     */
+    private function filterDokter(Builder $query, ?string $kdDokter, bool $dokterIgd): void
     {
         if (!$kdDokter) {
             return;
         }
 
-        $query->whereExists(function ($q) use ($kdDokter) {
-            $q->from('dpjp_ranap')
-              ->whereColumn('dpjp_ranap.no_rawat', 'kamar_inap.no_rawat')
-              ->where('dpjp_ranap.kd_dokter', $kdDokter);
+        $query->where(function ($w) use ($kdDokter, $dokterIgd) {
+            $w->whereExists(function ($q) use ($kdDokter) {
+                $q->from('dpjp_ranap')
+                  ->whereColumn('dpjp_ranap.no_rawat', 'kamar_inap.no_rawat')
+                  ->where('dpjp_ranap.kd_dokter', $kdDokter);
+            });
+            if ($dokterIgd) {
+                $w->orWhereExists(function ($q) use ($kdDokter) {
+                    $q->from('reg_periksa as rg')
+                      ->whereColumn('rg.no_rawat', 'kamar_inap.no_rawat')
+                      ->where('rg.kd_dokter', $kdDokter)
+                      ->where('rg.kd_poli', config('rme.igd.kd_poli'));
+                });
+            }
         });
+    }
+
+    /** saya_dpjp = 0 berarti pasien tampil karena didaftarkan dokter ini dari IGD. */
+    private function tandaDpjp(Builder $query, ?string $kdDokter): void
+    {
+        $query->selectRaw(
+            'EXISTS(SELECT 1 FROM dpjp_ranap sd WHERE sd.no_rawat = kamar_inap.no_rawat AND sd.kd_dokter = ?) AS saya_dpjp',
+            [(string) $kdDokter]
+        );
     }
 }
