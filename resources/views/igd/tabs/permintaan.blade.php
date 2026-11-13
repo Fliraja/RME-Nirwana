@@ -22,7 +22,7 @@
                 <div class="igd-form-isi">
                     <label class="igd-label" for="igd-select-lab">Pemeriksaan</label>
                     <select id="igd-select-lab" multiple placeholder="Ketik nama pemeriksaan lab..."></select>
-                    <div class="igd-template" aria-live="polite"></div>
+                    <div class="lab-subitem mt-2" aria-live="polite"></div>
                     <div class="row g-2 mt-1">
                         <div class="col-md-7">
                             <label class="igd-label" for="igd-dx-lab">Diagnosa klinis</label>

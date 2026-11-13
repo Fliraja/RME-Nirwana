@@ -25,14 +25,7 @@
         </div>
 
         <div class="col-md-6">
-            <div id="container-template-lab" class="card shadow-none border p-3" style="min-height: 200px; background-color: #f9f9f9;">
-                <h6 class="fw-bold border-bottom pb-2"><i class="fas fa-microscope"></i> Detail Item Pemeriksaan</h6>
-                <div id="detail-pemeriksaan-placeholder" class="text-center text-muted mt-4">
-                    <i class="fas fa-arrow-left fa-3x mb-3" style="opacity: 0.3;"></i>
-                    <p>Pilih jenis pemeriksaan di samping untuk melihat detail item (jika ada).</p>
-                </div>
-                <div id="list-template-checkbox"></div>
-            </div>
+            @include('partials.lab_subitem_wadah')
         </div>
     </div>
 

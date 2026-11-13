@@ -420,22 +420,6 @@ function initSelect2Radiologi() {
     });
 }
 
-function updateCheckboxCounter(groupElement) {
-    let total = groupElement.find('.form-check-input').length;
-    let checked = groupElement.find('.form-check-input:checked').length;
-    let counter = groupElement.find('.badge-count');
-
-    counter.html(`<i class="fas fa-check-circle"></i> ${checked} / ${total} dipilih`);
-
-    if (checked === 0) {
-        counter.removeClass('bg-success bg-warning').addClass('bg-secondary');
-    } else if (checked === total) {
-        counter.removeClass('bg-secondary bg-warning').addClass('bg-success');
-    } else {
-        counter.removeClass('bg-secondary bg-success').addClass('bg-warning');
-    }
-}
-
 function hapusObat(no_resep, kode_brng) {
 
     if (typeof Swal !== 'undefined') {
@@ -1117,101 +1101,21 @@ $(document).ready(function() {
         });
     });
 
+    /* Sub-item paket lab mengikuti pilihan pemeriksaan (public/js/lab-subitem.js). */
     $(document).on('change', '#select-lab', function() {
-
-        let selectedValues = $(this).val();
-        let container = $('#list-template-checkbox');
-        let placeholder = $('#detail-pemeriksaan-placeholder');
-
-        if (!selectedValues || selectedValues.length === 0) {
-            container.empty();
-            placeholder.show();
-            return;
-        }
-
-        placeholder.hide();
-
-        container.find('.group-template').each(function() {
-            let kd = $(this).data('kd');
-            if (!selectedValues.includes(kd)) {
-                $(this).remove();
-            }
+        var el = this;
+        var dipilih = $(el).val() || [];
+        var wadah = document.getElementById('list-template-checkbox');
+        $(wadah).find('.lab-subitem-grup').each(function() {
+            if (dipilih.indexOf(this.dataset.kd) === -1) this.remove();
         });
-
-        selectedValues.forEach(function(kd) {
-            if (container.find(`.group-template[data-kd="${kd}"]`).length === 0) {
-                $.get(ralanUrl(`/ralan/get-templates-lab/${kd}`), function(data) {
-                    if (data.length > 0) {
-                        let html = `<div class="group-template mb-3" data-kd="${kd}">
-                            <div class="group-header">
-                                <div class="group-title">
-                                    <i class="fas fa-vial"></i> ${kd}
-                                </div>
-                                <div class="badge-count bg-secondary">
-                                    <i class="fas fa-check-circle"></i> 0 / ${data.length} dipilih
-                                </div>
-                            </div>
-                            <div class="checkbox-controls">
-                                <button type="button" class="btn btn-check-all btn-check-control btn-pilih-semua" data-kd="${kd}">
-                                    <i class="fas fa-check-double"></i> Pilih Semua
-                                </button>
-                                <button type="button" class="btn btn-uncheck-all btn-check-control btn-batalkan-semua" data-kd="${kd}">
-                                    <i class="fas fa-times"></i> Batalkan Semua
-                                </button>
-                            </div>
-                            <div class="checkbox-list">`;
-
-                        data.forEach(function(item) {
-                            html += `
-                                <div class="form-check small">
-                                    <input class="form-check-input" type="checkbox"
-                                        name="detail_lab[${kd}][]"
-                                        value="${item.id_template}"
-                                        id="chk_${item.id_template}"
-                                        data-kd="${kd}">
-                                    <label class="form-check-label" for="chk_${item.id_template}">
-                                        ${item.Pemeriksaan}
-                                    </label>
-                                </div>`;
-                        });
-
-                        html += `</div>`;
-                        container.append(html);
-                    }
-                });
-            }
+        dipilih.forEach(function(kd) {
+            var opsi = el.tomselect && el.tomselect.options[kd];
+            LabSubItem.muat(wadah, ralanUrl('/ralan/get-templates-lab'), kd, opsi ? opsi.text : kd, function(k) {
+                return ($(el).val() || []).indexOf(k) !== -1;
+            });
         });
-    });
-
-    $(document).on('change', '.group-template .form-check-input', function() {
-        let groupElement = $(this).closest('.group-template');
-        updateCheckboxCounter(groupElement);
-    });
-
-    $(document).on('click', '.btn-pilih-semua', function() {
-        let kd = $(this).data('kd');
-        let groupElement = $(this).closest('.group-template');
-
-        groupElement.find(`.form-check-input[data-kd="${kd}"]`).prop('checked', true);
-        updateCheckboxCounter(groupElement);
-
-        $(this).html('<i class="fas fa-check"></i> Terpilih!');
-        setTimeout(() => {
-            $(this).html('<i class="fas fa-check-double"></i> Pilih Semua');
-        }, 1000);
-    });
-
-    $(document).on('click', '.btn-batalkan-semua', function() {
-        let kd = $(this).data('kd');
-        let groupElement = $(this).closest('.group-template');
-
-        groupElement.find(`.form-check-input[data-kd="${kd}"]`).prop('checked', false);
-        updateCheckboxCounter(groupElement);
-
-        $(this).html('<i class="fas fa-check"></i> Dibatalkan!');
-        setTimeout(() => {
-            $(this).html('<i class="fas fa-times"></i> Batalkan Semua');
-        }, 1000);
+        $('#detail-pemeriksaan-placeholder').toggle(dipilih.length === 0);
     });
 
     $(document).on('click', '#btnSimpanLab', function(e) {
@@ -1219,6 +1123,7 @@ $(document).ready(function() {
 
         let btn = $(this);
         let formContainer = $('#formPermintaanLab');
+        let wadahSub = document.getElementById('list-template-checkbox');
 
         let data = {
             _token: $('meta[name="csrf-token"]').attr('content') || window.RALAN.csrf,
@@ -1226,23 +1131,16 @@ $(document).ready(function() {
             kd_jenis_prw: $('#select-lab').val(),
             diagnosa_klinis: formContainer.find('textarea[name="diagnosa_klinis"]').val(),
             informasi_tambahan: formContainer.find('textarea[name="informasi_tambahan"]').val(),
-            detail_lab: {}
+            detail_lab: LabSubItem.kumpulkan(wadahSub)
         };
-
-
-        formContainer.find('input[type="checkbox"]:checked').each(function() {
-            let name = $(this).attr('name');
-            let match = name.match(/\[(.*?)\]/);
-            if (match) {
-                let kd = match[1];
-                if (!data.detail_lab[kd]) data.detail_lab[kd] = [];
-                data.detail_lab[kd].push($(this).val());
-            }
-        });
-
 
         if (!data.kd_jenis_prw || data.kd_jenis_prw.length === 0) {
             tampilkanError("Pilih minimal satu pemeriksaan lab.");
+            return;
+        }
+        let paketKosong = LabSubItem.paketKosong(wadahSub);
+        if (paketKosong) {
+            tampilkanError(LabSubItem.pesanKosong(paketKosong));
             return;
         }
 

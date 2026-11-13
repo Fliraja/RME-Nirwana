@@ -4,7 +4,7 @@
 @section('page-title', 'IGD')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/igd.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/igd.css') }}?v={{ filemtime(public_path('css/igd.css')) }}">
 @endpush
 
 @section('content')
@@ -72,7 +72,7 @@
             },
         };
     </script>
-    <script src="{{ asset('js/igd/igd-order.js') }}"></script>
+    <script src="{{ asset('js/igd/igd-order.js') }}?v={{ filemtime(public_path('js/igd/igd-order.js')) }}"></script>
     <script src="{{ asset('js/igd/igd-asesmen.js') }}"></script>
     <script src="{{ asset('js/igd/igd-core.js') }}"></script>
 @endpush

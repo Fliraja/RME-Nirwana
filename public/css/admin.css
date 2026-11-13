@@ -1299,68 +1299,28 @@ a:hover {
     width: 62px;
 }
 
-/* Lab template checkbox groups — flat */
-.checkbox-controls {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid #eef0f2;
-}
+/* Sub-item paket lab di form permintaan IGD, ralan, dan ranap; dirender public/js/lab-subitem.js. */
+.lab-subitem { display: flex; flex-direction: column; gap: 10px; }
+.lab-subitem-petunjuk { margin: 0; padding: 0.75rem; font-size: 0.82rem; color: var(--gray-500); background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: var(--radius-sm); }
+.lab-subitem-grup { border: 1px solid #e2e8f0; border-radius: var(--radius-sm); background: #fff; margin: 0; padding: 0.5rem 0.75rem 0.6rem; min-width: 0; }
+.lab-subitem-judul { float: left; width: 100%; font-size: 0.82rem; font-weight: 600; color: #166534; margin-bottom: 4px; }
+.lab-subitem-hitung { font-weight: 400; color: var(--gray-500); margin-left: 6px; }
+.lab-subitem-kosong .lab-subitem-hitung { color: #be123c; font-weight: 600; }
+.lab-subitem-aksi { clear: both; display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+.lab-subitem-aksi .btn { background: #fff; color: #334155; border: 1px solid #cbd5e1; min-height: 32px; font-size: 0.78rem; padding: 2px 10px; }
+.lab-subitem-aksi .btn:hover { border-color: #0d7a4a; color: #0d7a4a; }
+.lab-subitem-aksi .btn:focus-visible { outline: 2px solid #0d7a4a; outline-offset: 2px; }
+/* Paling banyak --baris baris ke bawah, sisanya mengalir ke kolom berikutnya; kolom yang tidak muat bergulir di dalam kotak ini saja. */
+.lab-subitem-daftar { display: grid; grid-auto-flow: column; grid-template-rows: repeat(var(--baris, 8), auto); grid-auto-columns: minmax(170px, max-content); gap: 2px 20px; overflow-x: auto; padding-bottom: 2px; }
+.lab-subitem-grup .form-check { padding: 0 0 0 1.75rem; margin: 0; min-height: 28px; display: flex; align-items: center; }
+.lab-subitem-grup .form-check-input { margin-left: -1.75rem; margin-top: 0; }
+.lab-subitem-grup .form-check-label { font-size: 0.82rem; padding-left: 6px; }
+.lab-subitem-grup .form-check-input:checked { background-color: #0d7a4a; border-color: #0d7a4a; }
+.lab-subitem-grup .form-check-input:focus-visible { outline: 2px solid #0d7a4a; outline-offset: 2px; box-shadow: none; }
 
-.checkbox-controls .btn-check-control {
-    font-size: 0.78rem;
-    padding: 0.2rem 0.6rem;
-    border-radius: 0.35rem;
-    border: 1px solid #d7dbe0;
-    background: #fff;
-    color: #495057;
-    transition: background-color 0.15s;
-}
-
-.checkbox-controls .btn-check-all:hover {
-    background: #e8f5ee;
-    color: #198754;
-    border-color: #a9d9be;
-}
-
-.checkbox-controls .btn-uncheck-all:hover {
-    background: #fbeaec;
-    color: #dc3545;
-    border-color: #efb6bd;
-}
-
-.checkbox-controls .badge-count {
-    background: #f1f3f5;
-    color: #6b7280;
-    padding: 0.2rem 0.5rem;
-    border-radius: 0.35rem;
-    font-size: 0.72rem;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.group-template {
-    border: 1px solid #e9ecef;
-    border-radius: 0.5rem;
-    padding: 0.85rem;
-    margin-bottom: 0.85rem;
-}
-
-.group-template .group-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.6rem;
-    padding-bottom: 0.4rem;
-    border-bottom: 1px solid #eef0f2;
-}
-
-.group-template .group-title {
-    font-weight: 600;
-    color: #374151;
-    font-size: 0.85rem;
+@media (pointer: coarse) {
+    .lab-subitem-aksi .btn { min-height: 44px; }
+    .lab-subitem-grup .form-check { min-height: 40px; }
 }
 
 .form-check {

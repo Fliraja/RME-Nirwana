@@ -944,27 +944,16 @@ function initLabHandlers() {
         placeholder: 'Pilih pemeriksaan laboratorium ranap...',
         multiple: true,
         withNoRawat: true,
+        // Sub-item paket lab: public/js/lab-subitem.js (sama dengan ralan dan IGD).
         onItemAdd: function(item) {
             $('#detail-pemeriksaan-placeholder').addClass('d-none');
-            $.get(ranapUrl('/ralan/get-templates-lab/' + item.id), function(templates) {
-                if (templates && templates.length > 0) {
-                    var html = '<div class="mb-3 border-bottom pb-2 item-template-group" data-kd="' + item.id + '">';
-                    html += '<div class="fw-bold small text-primary mb-1">' + item.text + '</div>';
-                    templates.forEach(function(t) {
-                        html += '<div class="form-check form-check-sm mb-1">' +
-                            // LaboratoriumService membaca detail_lab[kd][]; nama lain membuat sub-item tidak tersimpan.
-                            '<input class="form-check-input" type="checkbox" name="detail_lab[' + item.id + '][]" value="' + t.id_template + '" id="tpl_' + t.id_template + '" checked>' +
-                            '<label class="form-check-label small" for="tpl_' + t.id_template + '">' + t.Pemeriksaan + '</label>' +
-                            '</div>';
-                    });
-                    html += '</div>';
-                    $('#list-template-checkbox').append(html);
-                }
+            LabSubItem.muat(document.getElementById('list-template-checkbox'), ranapUrl('/ralan/get-templates-lab'), item.id, item.text, function(kd) {
+                return !!tsLab && tsLab.items.indexOf(kd) !== -1;
             });
         },
         onItemRemove: function(kd) {
-            $('#list-template-checkbox .item-template-group').filter(function() { return $(this).data('kd') == kd; }).remove();
-            if (!$('#list-template-checkbox .item-template-group').length) {
+            LabSubItem.hapus(document.getElementById('list-template-checkbox'), kd);
+            if (!tsLab || !tsLab.items.length) {
                 $('#detail-pemeriksaan-placeholder').removeClass('d-none');
             }
         }
@@ -974,6 +963,11 @@ function initLabHandlers() {
         var kdList = tsLab ? tsLab.getValue() : [];
         if (!kdList || kdList.length === 0) {
             tampilkanError('Pilih minimal 1 jenis pemeriksaan laboratorium.');
+            return;
+        }
+        var paketKosong = LabSubItem.paketKosong(document.getElementById('list-template-checkbox'));
+        if (paketKosong) {
+            tampilkanError(LabSubItem.pesanKosong(paketKosong));
             return;
         }
 
