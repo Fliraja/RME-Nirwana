@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Sidebar script loaded');
     
     const collapseTriggers = document.querySelectorAll('[data-toggle="collapse"]');
     
@@ -11,7 +10,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const target = document.getElementById(targetId);
             const parentItem = this.closest('.nav-item');
             
-            console.log('Toggling submenu:', targetId);
             
             this.classList.toggle('collapsed');
             const isExpanded = this.getAttribute('aria-expanded') === 'true';
@@ -82,7 +80,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 parentItem.classList.add('has-submenu-open');
             }
             
-            console.log('Auto-expanded submenu:', submenu.id);
         }
     });
     
@@ -97,7 +94,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (href && (href.endsWith('/ralan') || href.includes('ralan.index'))) {
                     menu.classList.add('active');
-                    console.log('Rawat Jalan menu set to active');
                 }
             });
         }
@@ -109,7 +105,6 @@ document.addEventListener('DOMContentLoaded', function() {
     window.fetch = function(...args) {
         return originalFetch.apply(this, args).then(response => {
             if (args[0] && args[0].includes('/ralan/')) {
-                console.log('Fetch completed for ralan, maintaining active menu');
                 setTimeout(setActiveMenuRalan, 100);
             }
             return response;
@@ -120,7 +115,6 @@ document.addEventListener('DOMContentLoaded', function() {
     XMLHttpRequest.prototype.open = function(method, url) {
         this.addEventListener('load', function() {
             if (url && url.includes('/ralan/')) {
-                console.log('XHR completed for ralan, maintaining active menu');
                 setTimeout(setActiveMenuRalan, 100);
             }
         });
@@ -151,7 +145,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         parent.classList.remove('has-submenu-open');
                     });
                     
-                    console.log('Sidebar collapsed - closing all submenus');
                 }
             }, 100);
         });
@@ -172,5 +165,4 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    console.log('Sidebar script initialized successfully');
 });

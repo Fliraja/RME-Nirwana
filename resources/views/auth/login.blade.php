@@ -382,6 +382,13 @@
                     <p>Silakan masuk ke Sistem Rekam Medis Elektronik</p>
                 </div>
                 
+                @if (session('error') && !$errors->any())
+                <div class="alert alert-info" role="status">
+                    <i class="bi bi-info-circle me-2"></i>
+                    {{ session('error') }}
+                </div>
+                @endif
+
                 @if ($errors->any())
                 <div class="alert alert-danger">
                     <i class="bi bi-exclamation-circle me-2"></i>

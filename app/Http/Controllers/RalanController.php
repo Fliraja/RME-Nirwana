@@ -99,6 +99,10 @@ class RalanController extends Controller
 
     public function storeSOAP(StoreSoapRequest $request, SoapService $service, ResumeRalanService $resume)
     {
+        if ($tolak = $this->bukanPemeriksa($request->no_rawat, 'SOAP')) {
+            return $tolak;
+        }
+
         try {
             $service->simpan($request->all());
         } catch (\Exception $e) {
@@ -143,6 +147,10 @@ class RalanController extends Controller
 
     public function storeVital(StoreVitalSignRequest $request, VitalSignService $service, ResumeRalanService $resume)
     {
+        if ($tolak = $this->bukanPemeriksa($request->no_rawat, 'Vital sign')) {
+            return $tolak;
+        }
+
         try {
             $service->simpan($request->all());
         } catch (\Exception $e) {
@@ -154,6 +162,24 @@ class RalanController extends Controller
             'message' => 'Data Vital Sign berhasil disimpan',
             'resume'  => $this->susunResume($resume, $request->no_rawat),
         ]);
+    }
+
+    /**
+     * pemeriksaan_ralan satu baris per kunjungan dan nip-nya ikut ditimpa, jadi hanya dokter
+     * pendaftar yang menulis (prod Okt 2026: 3.388 baris, semuanya oleh dokter pendaftar).
+     */
+    private function bukanPemeriksa(string $noRawat, string $bagian)
+    {
+        $reg = RegPeriksa::with('dokter')->where('no_rawat', $noRawat)->first();
+        if (!$reg) {
+            return response()->json(['status' => 'error', 'message' => 'Kunjungan tidak ditemukan.'], 404);
+        }
+        if ($reg->kd_dokter !== Auth::user()->decrypted_id) {
+            $nama = $reg->dokter->nm_dokter ?? $reg->kd_dokter;
+            return response()->json(['status' => 'error', 'message' => "{$bagian} kunjungan ini hanya bisa ditulis dokter pemeriksanya ({$nama})."], 403);
+        }
+
+        return null;
     }
 
     /** SOAP/TTV tidak boleh gagal karena resume. */
