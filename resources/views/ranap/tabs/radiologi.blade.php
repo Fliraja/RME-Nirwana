@@ -53,45 +53,10 @@
         </div>
     </div>
 
-    {{-- BAGIAN 3: HASIL RADIOLOGI (GALERI GAMBAR & EKSPERTISE BACAAN) --}}
+    {{-- BAGIAN 3: HASIL EKSPERTISE RADIOLOGI --}}
     <div class="row g-3">
-        {{-- Galeri Foto Hasil Rontgen/Scan --}}
-        <div class="col-lg-6">
-            <div class="ralan-card h-100">
-                <div class="ralan-card-head">
-                    <span class="fw-bold text-dark">
-                        <i class="fas fa-images me-2 text-primary"></i>Galeri Foto Radiologi (Hasil Rontgen / Scan)
-                    </span>
-                    <span class="badge bg-light text-muted border">{{ count($hasilRadiologi['gambar']) }} Gambar</span>
-                </div>
-                <div class="ralan-card-body">
-                    @if(empty($hasilRadiologi['gambar']) || count($hasilRadiologi['gambar']) == 0)
-                        <div class="text-center p-4 text-muted">
-                            <i class="fas fa-image fa-3x mb-2 d-block text-secondary" style="opacity: 0.3;"></i>
-                            Belum ada file gambar hasil radiologi yang diunggah.
-                        </div>
-                    @else
-                        <div class="row g-2">
-                            @foreach($hasilRadiologi['gambar'] as $img)
-                                <div class="col-sm-6 col-md-4">
-                                    <div class="card border p-1 text-center shadow-none">
-                                        <a href="{{ config('app.simrs_url') }}/radiologi/{{ $img->lokasi_gambar }}" target="_blank" title="Klik untuk membuka ukuran penuh">
-                                            <img src="{{ config('app.simrs_url') }}/radiologi/{{ $img->lokasi_gambar }}" class="img-fluid rounded" style="height: 120px; width: 100%; object-fit: cover;">
-                                        </a>
-                                        <small class="d-block text-muted mt-1" style="font-size: 0.72rem;">
-                                            {{ \Carbon\Carbon::parse($img->tgl_periksa)->translatedFormat('d/m/Y') }} {{ $img->jam }}
-                                        </small>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
-            </div>
-        </div>
-
         {{-- Laporan Hasil Ekspertise Dokter Spesialis Radiologi --}}
-        <div class="col-lg-6">
+        <div class="col-12">
             <div class="ralan-card h-100">
                 <div class="ralan-card-head">
                     <span class="fw-bold text-dark">

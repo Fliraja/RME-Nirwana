@@ -132,7 +132,6 @@ function loadSoap(forceReload = false) {
 
     loadingTabs.soap = true;
     var url = ralanUrl('/ralan/soap/' + currentSafeNoRawat);
-    console.log('[RALAN] Fetching SOAP:', url);
     $.get(url, function(data) {
         $('#content-soap').html(data);
         loadedTabs.soap = true;
@@ -157,7 +156,6 @@ function loadVital(forceReload = false) {
 
     loadingTabs.vital = true;
     var url = ralanUrl('/ralan/get-vital-pasien/' + currentSafeNoRawat);
-    console.log('[RALAN] Fetching Vital:', url);
     $.get(url, function(data) {
         $('#content-vital-sign').html(data);
         loadedTabs.vital = true;
@@ -182,7 +180,6 @@ function loadResep(forceReload = false) {
 
     loadingTabs.resep = true;
     var url = ralanUrl('/ralan/get-resep-pasien/' + currentSafeNoRawat);
-    console.log('[RALAN] Fetching Resep:', url);
     $.ajax({
         url: url,
         method: 'GET',
@@ -214,7 +211,6 @@ function loadFormLab(forceReload = false) {
 
     loadingTabs.lab = true;
     var url = ralanUrl('/ralan/get-lab-pasien/' + currentSafeNoRawat);
-    console.log('[RALAN] Fetching Lab:', url);
     $.ajax({
         url: url,
         method: 'GET',
@@ -246,7 +242,6 @@ function loadFormRadiologi(forceReload = false) {
 
     loadingTabs.radiologi = true;
     var url = ralanUrl('/ralan/get-radiologi-pasien/' + currentSafeNoRawat);
-    console.log('[RALAN] Fetching Radiologi:', url);
     $.ajax({
         url: url,
         method: 'GET',
@@ -442,7 +437,6 @@ function updateCheckboxCounter(groupElement) {
 }
 
 function hapusObat(no_resep, kode_brng) {
-    console.log('Hapus obat called:', no_resep, kode_brng);
 
     if (typeof Swal !== 'undefined') {
         Swal.fire({
@@ -490,7 +484,6 @@ function prosesHapusObat(no_resep, kode_brng) {
             _method: 'DELETE'
         },
         success: function(response) {
-            console.log('Delete response:', response);
 
             var isSuccess = false;
             if (response.status === 'success' ||
@@ -542,7 +535,6 @@ function prosesHapusObat(no_resep, kode_brng) {
 }
 
 function hapusRacikan(no_resep, no_racik) {
-    console.log('Hapus Racikan called:', no_resep, no_racik);
 
     if (typeof Swal !== 'undefined') {
         Swal.fire({
@@ -590,7 +582,6 @@ function prosesHapusRacikan(no_resep, no_racik) {
             _method: 'DELETE'
         },
         success: function(response) {
-            console.log('Delete response:', response);
 
             var isSuccess = false;
             if (response.status === 'success' ||
@@ -759,7 +750,6 @@ function hitungJmlBaris(tr) {
 }
 
 function hapusBaris(rowId) {
-    console.log('Hapus baris:', rowId);
     $('#row_' + rowId).remove();
 
     if ($('#tableKomposisi tbody tr').length === 0) {
@@ -799,10 +789,6 @@ $('a[href="#resume"]').on('shown.bs.tab', function () {
 });
 
 $(document).ready(function() {
-    console.log('=== RESEP MODULE LOADED ===');
-    console.log('Current no_rawat:', currentNoRawat);
-    console.log('SweetAlert2:', typeof Swal !== 'undefined');
-    console.log('SweetAlert1:', typeof swal !== 'undefined');
 
     $(document).on('submit', '#formSoap', function(e) {
         e.preventDefault();
@@ -980,7 +966,6 @@ $(document).ready(function() {
     });
 
     $(document).on('change', '.select2-aturan', function() {
-        console.log('Aturan pakai umum changed:', $(this).val());
 
         if ($(this).val() == 'lainnya') {
             $('#aturanManualUmum').removeClass('d-none');
@@ -992,7 +977,6 @@ $(document).ready(function() {
     });
 
     $(document).on('change', '.select2-aturan-racik', function() {
-        console.log('Aturan pakai racikan changed:', $(this).val());
 
         if ($(this).val() == 'lainnya') {
             $('#aturanManualRacik').removeClass('d-none');
@@ -1004,14 +988,12 @@ $(document).ready(function() {
     });
 
     $(document).on('click', '#btnTambahBarisObat', function() {
-        console.log('=== TAMBAH BARIS OBAT RACIKAN ===');
 
         if ($('#tableKomposisi tbody tr td[colspan="6"]').length > 0) {
             $('#tableKomposisi tbody').html('');
         }
 
         rowCount++;
-        console.log('Row count:', rowCount);
 
         let row = `
             <tr id="row_${rowCount}">
@@ -1067,7 +1049,6 @@ $(document).ready(function() {
 
     $(document).on('click', '#btnSimpanRacikan', function(e) {
         e.preventDefault();
-        console.log('=== SIMPAN RACIKAN ===');
 
         var form = $('#formResepRacikan');
         var namaRacik = form.find('input[name="nama_racik"]').val();
@@ -1108,7 +1089,6 @@ $(document).ready(function() {
             method: "POST",
             data: formData,
             success: function(response) {
-                console.log('Success:', response);
                 btn.prop('disabled', false).html(originalText);
 
                 if(response.status === 'success' || response.status === 'success-racik') {
@@ -1138,7 +1118,6 @@ $(document).ready(function() {
     });
 
     $(document).on('change', '#select-lab', function() {
-        console.log('Select lab changed:', $(this).val());
 
         let selectedValues = $(this).val();
         let container = $('#list-template-checkbox');
@@ -1237,7 +1216,6 @@ $(document).ready(function() {
 
     $(document).on('click', '#btnSimpanLab', function(e) {
         e.preventDefault();
-        console.log('=== SIMPAN LAB CLICKED ===');
 
         let btn = $(this);
         let formContainer = $('#formPermintaanLab');
@@ -1251,7 +1229,6 @@ $(document).ready(function() {
             detail_lab: {}
         };
 
-        console.log('Data before checkbox mapping:', data);
 
         formContainer.find('input[type="checkbox"]:checked').each(function() {
             let name = $(this).attr('name');
@@ -1263,7 +1240,6 @@ $(document).ready(function() {
             }
         });
 
-        console.log('Data after checkbox mapping:', data);
 
         if (!data.kd_jenis_prw || data.kd_jenis_prw.length === 0) {
             tampilkanError("Pilih minimal satu pemeriksaan lab.");
@@ -1278,8 +1254,6 @@ $(document).ready(function() {
             method: "POST",
             data: data,
             success: function(res) {
-                console.log('=== LAB SAVE SUCCESS ===');
-                console.log('Response:', res);
 
                 btn.prop('disabled', false).html(originalText);
 
@@ -1316,7 +1290,6 @@ $(document).ready(function() {
 
     $(document).on('click', '#btnSimpanRad', function(e) {
         e.preventDefault();
-        console.log('=== SIMPAN RADIOLOGI CLICKED ===');
 
         let btn = $(this);
         let formContainer = $('#formPermintaanRad'); // ID div utama radiologi
@@ -1342,7 +1315,6 @@ $(document).ready(function() {
             method: "POST",
             data: data,
             success: function(res) {
-                console.log('=== RADIOLOGI SAVE SUCCESS ===');
                 btn.prop('disabled', false).html(originalText);
 
                 tampilkanSukses(res.message || 'Permintaan radiologi berhasil disimpan');
@@ -1496,7 +1468,6 @@ $(document).ready(function() {
         }
     });
 
-    console.log('=== ALL EVENT HANDLERS REGISTERED ===');
 });
 
 

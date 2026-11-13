@@ -60,16 +60,11 @@ class RanapPenunjangService
     }
 
     /**
-     * Ambil foto dan hasil ekspertise radiologi
+     * Ambil hasil ekspertise radiologi. Gambar tidak dimuat: gambar_radiologi kosong di prod
+     * dan app.simrs_url tidak diatur, jadi tautan gambarnya tidak pernah bisa dibuka.
      */
     public function getHasilRadiologi(string $noRawat): array
     {
-        $gambar = DB::table('gambar_radiologi')
-            ->where('no_rawat', $noRawat)
-            ->orderBy('tgl_periksa', 'desc')
-            ->orderBy('jam', 'desc')
-            ->get();
-
         $expertise = DB::table('hasil_radiologi')
             ->where('no_rawat', $noRawat)
             ->orderBy('tgl_periksa', 'desc')
@@ -77,7 +72,6 @@ class RanapPenunjangService
             ->get();
 
         return [
-            'gambar'    => $gambar,
             'expertise' => $expertise,
         ];
     }
