@@ -1,414 +1,149 @@
+@php
+    // Formulir RS "RESUME MEDIS" (rawat inap). Data dari RanapResumeService::getPdfData().
+    $r = $resume;
+    $pasien = $reg->pasien;
+    $isi = fn ($v) => trim((string) $v);
+    $tglJam = fn ($tgl, $jam) => \Carbon\Carbon::parse($tgl)->format('d/m/Y') . ' ' . substr((string) $jam, 0, 5);
+
+    $sudahKeluar = $kamarAkhir && $kamarAkhir->stts_pulang !== '-' && $kamarAkhir->tgl_keluar && $kamarAkhir->tgl_keluar !== '0000-00-00';
+    $masuk = $kamarMasuk ? str_replace(':', '.', $tglJam($kamarMasuk->tgl_masuk, $kamarMasuk->jam_masuk)) : '-';
+    $keluar = $sudahKeluar ? str_replace(':', '.', $tglJam($kamarAkhir->tgl_keluar, $kamarAkhir->jam_keluar)) . ($lamaRawat > 0 ? " ({$lamaRawat} hari)" : '') : '-';
+    $umur = trim(($reg->umurdaftar ?? '') . ' ' . ($reg->sttsumur ?? ''));
+    $kamar = $kamarAkhir ? trim($kamarAkhir->kd_kamar . ' ' . ($kamarAkhir->kamar->bangsal->nm_bangsal ?? '') . ($kamarAkhir->kamar->kelas ?? '' ? ' (' . $kamarAkhir->kamar->kelas . ')' : '')) : '-';
+
+    $riwayat = array_filter([
+        $isi($r->keluhan_utama) !== '' ? 'Keluhan utama: ' . $isi($r->keluhan_utama) : '',
+        $isi($r->alasan) !== '' ? 'Alasan dirawat: ' . $isi($r->alasan) : '',
+        $isi($r->jalannya_penyakit),
+    ], 'strlen');
+    $penunjang = array_filter([
+        $isi($r->hasil_laborat),
+        $isi($r->pemeriksaan_penunjang),
+        $isi($r->lab_belum) !== '' ? 'Hasil yang belum keluar: ' . $isi($r->lab_belum) : '',
+    ], 'strlen');
+    $prosedur = array_filter([$r->prosedur_utama, $r->prosedur_sekunder, $r->prosedur_sekunder2, $r->prosedur_sekunder3], fn ($v) => trim((string) $v) !== '');
+    $terapi = array_filter([
+        implode(', ', $prosedur),
+        $isi($r->tindakan_dan_operasi),
+        $isi($r->obat_di_rs) !== '' ? 'Terapi selama dirawat: ' . $isi($r->obat_di_rs) : '',
+    ], 'strlen');
+    $adaKontrol = !empty($r->kontrol) && $r->kontrol !== '0000-00-00 00:00:00';
+    $instruksi = array_filter([
+        $adaKontrol ? 'Kontrol: ' . \Carbon\Carbon::parse($r->kontrol)->format('d/m/Y H.i') : '',
+        $isi($r->obat_pulang) !== '' ? 'Obat pulang: ' . $isi($r->obat_pulang) : '',
+        $isi($r->edukasi),
+        $isi($r->diet) !== '' ? 'Diet: ' . $isi($r->diet) : '',
+    ], 'strlen');
+    $sekunder = [$r->diagnosa_sekunder, $r->diagnosa_sekunder2, $r->diagnosa_sekunder3, $r->diagnosa_sekunder4];
+    $kotak = fn ($ya) => '<span class="cek">' . ($ya ? '&#9745;' : '&#9744;') . '</span>';
+@endphp
 <!DOCTYPE html>
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>Resume Medis Pasien Rawat Inap - {{ $reg->no_rawat ?? '' }}</title>
+    <title>Resume Medis Rawat Inap - {{ $reg->no_rawat }}</title>
     <style>
-        @page {
-            margin: 1cm 1.2cm 1cm 1.2cm;
-        }
-        body {
-            font-family: 'Helvetica', Arial, sans-serif;
-            font-size: 8pt;
-            line-height: 1.35;
-            color: #222;
-            margin: 0;
-            padding: 0;
-        }
-
-        /* Kop Surat */
-        .kop-table {
-            width: 100%;
-            border-bottom: 2px solid #000;
-            padding-bottom: 6px;
-            margin-bottom: 10px;
-        }
-        .kop-table td {
-            border: none;
-            padding: 0;
-            vertical-align: middle;
-        }
-        .kop-logo {
-            width: 130px;
-        }
-        .kop-logo img {
-            width: 130px;
-            height: auto;
-        }
-        .kop-text {
-            text-align: right;
-        }
-        .kop-text h1 {
-            margin: 0;
-            font-size: 13pt;
-            font-weight: bold;
-            color: #0d47a1;
-            letter-spacing: 0.5px;
-        }
-        .kop-text p {
-            margin: 1px 0;
-            font-size: 7.5pt;
-            color: #333;
-        }
-
-        .label-draf { border: 1px solid #92400e; color: #92400e; text-align: center; font-weight: bold; padding: 4px; margin-bottom: 8px; }
-        .sub-label { font-weight: bold; }
-        .doc-title {
-            text-align: center;
-            font-size: 11pt;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin: 8px 0 12px 0;
-            padding-bottom: 4px;
-            border-bottom: 1px solid #777;
-        }
-
-        /* Tabel Identitas */
-        .info-table {
-            width: 100%;
-            margin-bottom: 10px;
-            border-collapse: collapse;
-        }
-        .info-table td {
-            border: none;
-            padding: 2.5px 4px;
-            font-size: 8pt;
-            vertical-align: top;
-        }
-        .info-label {
-            font-weight: bold;
-            color: #444;
-            width: 18%;
-        }
-        .info-sep {
-            width: 2%;
-            text-align: center;
-        }
-        .info-val {
-            width: 30%;
-        }
-
-        /* Bagian Konten Medis */
-        .content-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 10px;
-        }
-        .content-table th, .content-table td {
-            border: 1px solid #666;
-            padding: 5px 6px;
-            font-size: 8pt;
-            vertical-align: top;
-        }
-        .section-header {
-            background-color: #f0f4f8;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 8pt;
-            color: #0d47a1;
-            border: 1px solid #666;
-            padding: 4px 6px;
-        }
-
-        .badge-code {
-            font-weight: bold;
-            background-color: #eee;
-            padding: 1px 4px;
-            border: 1px solid #ccc;
-            font-size: 7.5pt;
-        }
-
-        /* Tanda Tangan */
-        .ttd-table {
-            width: 100%;
-            margin-top: 15px;
-            border-collapse: collapse;
-        }
-        .ttd-table td {
-            border: none;
-            padding: 2px;
-            vertical-align: top;
-        }
-        .text-center {
-            text-align: center;
-        }
-        .text-end {
-            text-align: right;
-        }
-        .fw-bold {
-            font-weight: bold;
-        }
-
-        .footer-note {
-            margin-top: 20px;
-            font-size: 6.5pt;
-            color: #777;
-            border-top: 1px dashed #ccc;
-            padding-top: 4px;
-        }
+        @page { margin: 1cm 1.2cm; }
+        body { font-family: Helvetica, Arial, sans-serif; font-size: 8.5pt; line-height: 1.35; color: #000; }
+        .label-draf { border: 1px solid #92400e; color: #92400e; text-align: center; font-weight: bold; padding: 3px; margin-bottom: 6px; }
+        table.blok { width: 100%; border-collapse: collapse; }
+        table.blok > tr > td, table.blok > tbody > tr > td { border: 0.8px solid #000; padding: 4px 6px; vertical-align: top; }
+        .judul { text-align: center; font-weight: bold; font-size: 11pt; padding: 5px; }
+        .lbl { font-size: 8pt; }
+        .teks { white-space: pre-line; }
+        /* Kotak centang: Helvetica dompdf tidak punya glyph ini, DejaVu Sans punya. */
+        .cek { font-family: 'DejaVu Sans', sans-serif; font-size: 9pt; }
+        table.rm { border-collapse: collapse; margin-top: 3px; }
+        table.rm td { border: 0.8px solid #000; width: 0.55cm; height: 0.5cm; text-align: center; vertical-align: middle; padding: 0; font-weight: bold; }
+        .tambahan { font-size: 7.5pt; color: #333; }
+        .alergi { color: #be123c; font-weight: bold; }
+        .tinggi-1 { height: 1.3cm; }
+        .tinggi-2 { height: 1.9cm; }
+        table.dx, table.kondisi { width: 100%; border-collapse: collapse; }
+        table.dx td, table.kondisi td { border: 0; padding: 1px 0; vertical-align: top; }
+        table.dx .kode { width: 4.2cm; }
+        table.kondisi td { padding: 2px 0; }
+        .ttd { text-align: center; }
+        .ttd-ruang { height: 1.6cm; }
+        .catatan { margin-top: 6px; font-size: 6.5pt; color: #555; }
     </style>
 </head>
 <body>
-    {{-- Kop Surat RSU Nirwana --}}
-    <table class="kop-table">
-        <tr>
-            <td class="kop-logo">
-                <img src="{{ public_path('img/RSU22Nirwana1.png') }}" alt="Logo RSU Nirwana">
-            </td>
-            <td class="kop-text">
-                <h1>RUMAH SAKIT UMUM NIRWANA</h1>
-                <p>JL. PANGLIMA BATUR TIMUR NO.42 BANJARBARU KALIMANTAN SELATAN</p>
-                <p>Telp: 0511-674 9272 / 0851 0124 0608 | Email: rsu.nirwana@gmail.com</p>
-            </td>
-        </tr>
-    </table>
+    @include('pdf.kop')
 
-    <div class="doc-title">RINGKASAN PULANG PASIEN RAWAT INAP (DISCHARGE SUMMARY)</div>
     @unless($selesai)
         <div class="label-draf">DRAF, BELUM DITANDAI SELESAI</div>
     @endunless
 
-    {{-- Identitas Pasien & Data Rawat --}}
-    @php
-        $tglMasuk = $kamarMasuk ? \Carbon\Carbon::parse($kamarMasuk->tgl_masuk)->format('d/m/Y') . ' ' . $kamarMasuk->jam_masuk : '-';
-        $sudahKeluar = $kamarAkhir && $kamarAkhir->stts_pulang !== '-' && $kamarAkhir->tgl_keluar && $kamarAkhir->tgl_keluar != '0000-00-00';
-        $tglKeluar = $sudahKeluar
-            ? \Carbon\Carbon::parse($kamarAkhir->tgl_keluar)->format('d/m/Y') . ' ' . $kamarAkhir->jam_keluar
-            : '-';
-        $lamaRawat = $lamaRawat > 0 ? $lamaRawat . ' Hari' : '-';
-        $namaDokterDpjp = $dpjp->nm_dokter ?? '-';
-        $teks = fn ($nilai) => nl2br(e(trim((string) $nilai) !== '' ? $nilai : '-'));
-    @endphp
-
-    <table class="info-table">
+    <table class="blok">
+        <tr><td colspan="3" class="judul">RESUME MEDIS</td></tr>
         <tr>
-            <td class="info-label">No. Rekam Medis</td>
-            <td class="info-sep">:</td>
-            <td class="info-val"><strong>{{ $reg->no_rkm_medis ?? '-' }}</strong></td>
-            <td class="info-label">Kamar / Bangsal</td>
-            <td class="info-sep">:</td>
-            <td class="info-val">{{ $kamarAkhir->kd_kamar ?? '-' }} ({{ $kamarAkhir->kamar->bangsal->nm_bangsal ?? '-' }})</td>
-        </tr>
-        <tr>
-            <td class="info-label">Nama Pasien</td>
-            <td class="info-sep">:</td>
-            <td class="info-val"><strong>{{ $reg->pasien->nm_pasien ?? '-' }}</strong></td>
-            <td class="info-label">Kelas Perawatan</td>
-            <td class="info-sep">:</td>
-            <td class="info-val">{{ $kamarAkhir->kamar->kelas ?? '-' }}</td>
-        </tr>
-        <tr>
-            <td class="info-label">No. Rawat</td>
-            <td class="info-sep">:</td>
-            <td class="info-val">{{ $reg->no_rawat ?? '-' }}</td>
-            <td class="info-label">Tanggal Masuk</td>
-            <td class="info-sep">:</td>
-            <td class="info-val">{{ $tglMasuk }}</td>
-        </tr>
-        <tr>
-            <td class="info-label">Jenis Kelamin / Umur</td>
-            <td class="info-sep">:</td>
-            <td class="info-val">{{ ($reg->pasien->jk ?? '') === 'P' ? 'Perempuan' : 'Laki-Laki' }} / {{ $reg->umurdaftar ?? '-' }} {{ $reg->sttsumur ?? '' }}</td>
-            <td class="info-label">Tanggal Keluar</td>
-            <td class="info-sep">:</td>
-            <td class="info-val">{{ $tglKeluar }} ({{ $lamaRawat }})</td>
-        </tr>
-        <tr>
-            <td class="info-label">Penjamin (Cara Bayar)</td>
-            <td class="info-sep">:</td>
-            <td class="info-val">{{ $reg->penjab->png_jawab ?? '-' }}</td>
-            <td class="info-label">Dokter DPJP</td>
-            <td class="info-sep">:</td>
-            <td class="info-val"><strong>{{ $namaDokterDpjp }}</strong></td>
-        </tr>
-        @if(!empty($alergiPasien))
-        <tr>
-            <td class="info-label" style="color: #c62828;">Riwayat Alergi</td>
-            <td class="info-sep">:</td>
-            <td colspan="4" style="color: #c62828; font-weight: bold;">{{ $alergiPasien }}</td>
-        </tr>
-        @endif
-    </table>
-
-    {{-- Konten Ringkasan Medis --}}
-    <table class="content-table">
-        <tr>
-            <td colspan="2" class="section-header">1. Keluhan Utama, Alasan Dirawat & Perjalanan Penyakit</td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                <div><span class="sub-label">Keluhan utama:</span> {!! $teks($resume->keluhan_utama) !!}</div>
-                @if(trim((string) $resume->alasan) !== '')
-                    <div><span class="sub-label">Alasan dirawat:</span> {{ $resume->alasan }}</div>
-                @endif
-                <div style="margin-top: 3px;"><span class="sub-label">Perjalanan penyakit:</span><br>{!! $teks($resume->jalannya_penyakit) !!}</div>
+            <td style="width: 38%;"><span class="lbl">NAMA :</span><br><strong>{{ $pasien->nm_pasien ?? '-' }}</strong></td>
+            <td style="width: 24%;"><span class="lbl">JENIS KELAMIN</span><br>
+                {!! $kotak(($pasien->jk ?? '') === 'L') !!} LAKI-LAKI<br>{!! $kotak(($pasien->jk ?? '') === 'P') !!} PEREMPUAN</td>
+            <td><span class="lbl">NO. RM</span>
+                <table class="rm"><tr>@foreach(str_split((string) $reg->no_rkm_medis) as $c)<td>{{ $c }}</td>@endforeach</tr></table>
             </td>
         </tr>
-
         <tr>
-            <td colspan="2" class="section-header">2. Pemeriksaan Fisik</td>
+            <td><span class="lbl">UMUR :</span> {{ $umur !== '' ? $umur : '-' }}</td>
+            <td><span class="lbl">TANGGAL MASUK</span><br>{{ $masuk }}</td>
+            <td><span class="lbl">TANGGAL KELUAR</span><br>{{ $keluar }}</td>
         </tr>
-        <tr>
-            <td colspan="2">
-                {!! nl2br(e($resume->pemeriksaan_fisik ?: '-')) !!}
-            </td>
-        </tr>
-
-        <tr>
-            <td colspan="2" class="section-header">3. Pemeriksaan Penunjang Penting (Laboratorium & Radiologi)</td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                <div><span class="sub-label">Laboratorium:</span><br>{!! $teks($resume->hasil_laborat) !!}</div>
-                <div style="margin-top: 3px;"><span class="sub-label">Radiologi dan penunjang lain:</span><br>{!! $teks($resume->pemeriksaan_penunjang) !!}</div>
-            </td>
-        </tr>
-
-        <tr>
-            <td colspan="2" class="section-header">4. Diagnosa Akhir</td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                @php
-                    $diagPdf = array_values(array_filter([
-                        $resume->diagnosa_utama,
-                        $resume->diagnosa_sekunder,
-                        $resume->diagnosa_sekunder2,
-                        $resume->diagnosa_sekunder3,
-                        $resume->diagnosa_sekunder4,
-                    ], 'strlen'));
-
-                    $semuaKodeDiag = array_values(array_filter(array_unique(array_merge(
-                        [$resume->kd_diagnosa_utama, $resume->kd_diagnosa_sekunder, $resume->kd_diagnosa_sekunder2, $resume->kd_diagnosa_sekunder3, $resume->kd_diagnosa_sekunder4],
-                        $kodeDiagnosa ?? []
-                    ))));
-                @endphp
-                @forelse($diagPdf as $i => $d)
-                    <div style="margin-bottom: 2px;"><strong>{{ $i === 0 ? 'Utama' : 'Sekunder ' . $i }}:</strong> {{ $d }}</div>
-                @empty
-                    <div>-</div>
-                @endforelse
-
-                @if(!empty($semuaKodeDiag))
-                    <div style="font-size: 7.5pt; color: #444; margin-top: 4px; padding-top: 3px; border-top: 1px dashed #ccc;">
-                        <strong>Kode ICD-10 (casemix):</strong> {{ implode(', ', $semuaKodeDiag) }}
-                    </div>
-                @endif
-            </td>
-        </tr>
-
-        <tr>
-            <td colspan="2" class="section-header">5. Prosedur & Tindakan</td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                @php
-                    $prosPdf = array_values(array_filter([
-                        $resume->prosedur_utama,
-                        $resume->prosedur_sekunder,
-                        $resume->prosedur_sekunder2,
-                        $resume->prosedur_sekunder3,
-                    ], 'strlen'));
-
-                    $semuaKodePros = array_values(array_filter(array_unique(array_merge(
-                        [$resume->kd_prosedur_utama, $resume->kd_prosedur_sekunder, $resume->kd_prosedur_sekunder2, $resume->kd_prosedur_sekunder3],
-                        $kodeProsedur ?? []
-                    ))));
-                @endphp
-                @forelse($prosPdf as $i => $p)
-                    <div style="margin-bottom: 2px;"><strong>{{ $i === 0 ? 'Utama' : 'Sekunder ' . $i }}:</strong> {{ $p }}</div>
-                @empty
-                    <div>-</div>
-                @endforelse
-
-                @if(!empty($semuaKodePros))
-                    <div style="font-size: 7.5pt; color: #444; margin-top: 4px; padding-top: 3px; border-top: 1px dashed #ccc;">
-                        <strong>Kode ICD-9-CM (casemix):</strong> {{ implode(', ', $semuaKodePros) }}
-                    </div>
-                @endif
-            </td>
-        </tr>
-
-        <tr>
-            <td colspan="2" class="section-header">6. Tindakan, Terapi & Operasi Selama di Rumah Sakit</td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                <div><span class="sub-label">Tindakan / operasi:</span><br>{!! $teks($resume->tindakan_dan_operasi) !!}</div>
-                <div style="margin-top: 3px;"><span class="sub-label">Terapi / obat selama dirawat:</span><br>{!! $teks($resume->obat_di_rs) !!}</div>
-            </td>
-        </tr>
-
-        <tr>
-            <td colspan="2" class="section-header">7. Kondisi Saat Pulang & Keadaan Keluar</td>
-        </tr>
-        <tr>
-            <td style="font-weight: bold; background-color: #fafafa;">Kondisi / Cara Keluar</td>
-            <td>
-                <strong>{{ trim((string) $resume->keadaan) !== '' ? $resume->keadaan : 'Belum dipilih' }}</strong>
-                @if(!empty($resume->cara_keluar) && $resume->cara_keluar != '-')
-                    &nbsp;|&nbsp; Cara Keluar: {{ $resume->cara_keluar }}
-                @endif
-                @if(!empty($resume->ket_keluar))
-                    ({{ $resume->ket_keluar }})
-                @endif
-            </td>
-        </tr>
-
-        <tr>
-            <td colspan="2" class="section-header">8. Terapi Obat Pulang</td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                {!! nl2br(e($resume->obat_pulang ?: '-')) !!}
-            </td>
-        </tr>
-
-        <tr>
-            <td colspan="2" class="section-header">9. Instruksi Tindak Lanjut, Edukasi & Jadwal Kontrol</td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                @if(!empty($resume->kontrol) && $resume->kontrol != '0000-00-00 00:00:00')
-                    <div style="margin-bottom: 4px;">
-                        <strong>Jadwal Kontrol Ulang:</strong> 
-                        {{ \Carbon\Carbon::parse($resume->kontrol)->translatedFormat('l, d F Y') }}
-                        (Jam: {{ \Carbon\Carbon::parse($resume->kontrol)->format('H:i') }})
-                    </div>
-                @endif
-                <div>{!! $teks($resume->edukasi) !!}</div>
-                @if(trim((string) $resume->diet) !== '')
-                    <div style="margin-top: 3px;"><span class="sub-label">Diet:</span> {!! $teks($resume->diet) !!}</div>
-                @endif
-                @if(trim((string) $resume->lab_belum) !== '')
-                    <div style="margin-top: 3px;"><span class="sub-label">Hasil lab yang belum keluar:</span> {!! $teks($resume->lab_belum) !!}</div>
-                @endif
-            </td>
-        </tr>
-    </table>
-
-    {{-- Tanda tangan hanya untuk resume yang sudah ditandai selesai, oleh dokter yang menandainya. --}}
-    @if($selesai && $penanda)
-    <table class="ttd-table">
-        <tr>
-            <td style="width: 60%;"></td>
-            <td style="width: 40%; text-align: center;">
+        <tr><td colspan="3" class="tambahan">
+            Kamar: {{ $kamar }} &nbsp;&middot;&nbsp; DPJP: {{ $dpjp->nm_dokter ?? '-' }}
+            @if(!empty($alergiPasien))
+                &nbsp;&middot;&nbsp; <span class="alergi">Alergi: {{ $alergiPasien }}</span>
+            @endif
+        </td></tr>
+        <tr><td colspan="3" class="tinggi-2"><span class="lbl">RIWAYAT PENYAKIT</span><div class="teks">{{ implode("\n", $riwayat) }}</div></td></tr>
+        <tr><td colspan="3" class="tinggi-1"><span class="lbl">PEMERIKSAAN FISIK</span><div class="teks">{{ $isi($r->pemeriksaan_fisik) }}</div></td></tr>
+        <tr><td colspan="3" class="tinggi-1"><span class="lbl">PEMERIKSAAN PENUNJANG (LABORATORIUM, KONSULTASI, DSB)</span><div class="teks">{{ implode("\n", $penunjang) }}</div></td></tr>
+        <tr><td colspan="3">
+            <table class="dx">
+                <tr><td class="lbl">DIAGNOSA PRIMER</td><td class="kode lbl">KODE ICD : {{ $kodeDiagnosa[0] ?? '' }}</td></tr>
+                <tr><td>{{ $isi($r->diagnosa_utama) }}</td><td></td></tr>
+                <tr><td class="lbl" style="padding-top: 5px;">DIAGNOSA SEKUNDER</td><td></td></tr>
+                @foreach($sekunder as $i => $dx)
+                    <tr><td>{{ $i + 1 }}. {{ $isi($dx) }}</td><td class="kode lbl">KODE ICD : {{ $kodeDiagnosa[$i + 1] ?? '' }}</td></tr>
+                @endforeach
+            </table>
+        </td></tr>
+        <tr><td colspan="3" class="tinggi-2"><span class="lbl">TINDAKAN / TERAPI YANG DIBERIKAN</span><div class="teks">{{ implode("\n", $terapi) }}</div>
+            @if(!empty($kodeProsedur))
+                <div class="lbl">KODE ICD 9 : {{ implode(', ', $kodeProsedur) }}</div>
+            @endif
+        </td></tr>
+        <tr><td colspan="3">
+            <span class="lbl">KONDISI PASIEN WAKTU PULANG</span>
+            <table class="kondisi">
+                <tr>
+                    <td style="width: 30%;">{!! $kotak($kondisi === 'membaik') !!} SEMBUH/MEMBAIK</td>
+                    <td style="width: 40%;">{!! $kotak($kondisi === 'aps') !!} PULANG ATAS PERMINTAAN SENDIRI</td>
+                    <td>{!! $kotak(str_starts_with((string) $kondisi, 'meninggal')) !!} MENINGGAL DUNIA</td>
+                </tr>
+                <tr>
+                    <td colspan="2">{!! $kotak($kondisi === 'dirujuk') !!} DIRUJUK KE {{ $kondisi === 'dirujuk' ? $isi($r->ket_keluar) : '' }}</td>
+                    <td>&nbsp;&nbsp;&nbsp;{!! $kotak($kondisi === 'meninggal_kurang_48') !!} &lt; 48 jam &nbsp; {!! $kotak($kondisi === 'meninggal_lebih_48') !!} <span class="cek">&ge;</span> 48 jam</td>
+                </tr>
+            </table>
+        </td></tr>
+        <tr><td colspan="3" class="tinggi-1"><span class="lbl">INSTRUKSI FOLLOW-UP/TINDAK LANJUT</span><div class="teks">{{ implode("\n", $instruksi) }}</div></td></tr>
+        <tr><td colspan="3" class="ttd" style="padding-left: 55%;">
+            {{-- Nama hanya untuk resume Selesai, oleh dokter yang menandainya. Tanpa SIP: no_ijn_praktek banyak kosong. --}}
+            @if($selesai && $penanda)
                 <div>Banjarbaru, {{ $selesaiPada->translatedFormat('d F Y') }}</div>
-                <div style="margin-top: 3px; font-weight: bold;">Dokter yang menandai resume selesai</div>
-                <div style="margin-top: 45px; font-weight: bold; text-decoration: underline;">
-                    {{ $penanda->nm_dokter }}
-                </div>
-                <div style="font-size: 7.5pt; color: #555;">
-                    {{ !empty($penanda->no_ijn_praktek) ? 'SIP: ' . $penanda->no_ijn_praktek : 'Kode Dokter: ' . $penanda->kd_dokter }}
-                </div>
-            </td>
-        </tr>
+            @endif
+            <div class="lbl">DOKTER YANG MERAWAT,</div>
+            <div class="ttd-ruang"></div>
+            @if($selesai && $penanda)
+                <div class="ttd-nama">( <strong>{{ $penanda->nm_dokter }}</strong> )</div>
+            @else
+                <div>( ...................................... )</div>
+            @endif
+        </td></tr>
     </table>
-    @endif
 
-    <div class="footer-note">
-        * Dokumen Rekam Medis Elektronik ini dicetak secara otomatis melalui Sistem RME RSU Nirwana.
-    </div>
+    <div class="catatan">Dicetak dari RME RSU Nirwana, {{ now()->format('d/m/Y H.i') }}.</div>
 </body>
 </html>

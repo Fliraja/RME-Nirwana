@@ -12,47 +12,6 @@
             padding: 0;
         }
         
-        /* Kop Surat Styling */
-        .letterhead {
-            border-bottom: 3px solid #000;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            position: relative;
-        }
-        .letterhead-content {
-            display: table;
-            width: 100%;
-        }
-        .letterhead-logo {
-            display: table-cell;
-            width: 80px;
-            vertical-align: middle;
-            padding-right: 15px;
-        }
-        .letterhead-logo img {
-            width: 150px;
-            height: auto;
-        }
-        .letterhead-text {
-            display: table-cell;
-            vertical-align: middle;
-            text-align: right;
-        }
-        .letterhead-text h1 {
-            margin: 0;
-            font-size: 14pt;
-            font-weight: bold;
-            color: #000;
-        }
-        .letterhead-text p {
-            margin: 2px 0;
-            font-size: 8pt;
-        }
-        .letterhead-line {
-            border-bottom: 1px solid #000;
-            margin-top: 5px;
-        }
-        
         .document-date {
             text-align: right;
             margin-bottom: 10px;
@@ -111,20 +70,7 @@
     </style>
 </head>
 <body>
-    <div class="letterhead">
-        <div class="letterhead-content">
-            <div class="letterhead-logo">
-                <img src="{{ public_path('img/RSU22Nirwana1.png') }}" alt="Logo RSU Nirwana">
-            </div>
-            <div class="letterhead-text">
-                <h1>RUMAH SAKIT UMUM NIRWANA</h1>
-                <p>JL. PANGLIMA BATUR TIMUR NO.42 BANJARBARU KALIMANTAN SELATAN</p>
-                <p>TELP 0511-674 9272 / 0851 0124 0608</p>
-                <p>EMAIL : rsu.nirwana@gmail.com</p>
-            </div>
-        </div>
-        <div class="letterhead-line"></div>
-    </div>
+    @include('pdf.kop')
     
     <div class="document-date">
         Banjarbaru, {{ date('d F Y') }}

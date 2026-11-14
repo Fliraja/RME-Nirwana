@@ -310,7 +310,8 @@ class RanapController extends Controller
             return back()->with('error', 'Resume medis untuk pasien ini belum dibuat / disimpan.');
         }
 
-        $pdf = Pdf::loadView('ranap.pdf.resume_pdf', $data)
+        // Subset font: kotak centang memakai DejaVu Sans; tanpa subset seluruh font (~400 KB) ikut tertanam.
+        $pdf = Pdf::setOption(['enable_font_subsetting' => true])->loadView('ranap.pdf.resume_pdf', $data)
             ->setPaper('a4', 'portrait');
 
         return $pdf->stream('Resume_Medis_' . str_replace('/', '_', $no_rawat) . '.pdf');
