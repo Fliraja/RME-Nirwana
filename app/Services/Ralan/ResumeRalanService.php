@@ -14,6 +14,7 @@ class ResumeRalanService
     public function __construct(
         private ResumeRalanBuilder $builder,
         private TindakLanjutResolver $resolver,
+        private RincianBiayaRalan $biaya,
     ) {}
 
     public function susunOtomatis(string $noRawat): string
@@ -121,18 +122,52 @@ class ResumeRalanService
         }
 
         $meta = RmeResumeRalan::find($noRawat);
-        $reg = RegPeriksa::with(['pasien', 'penjab', 'poliklinik', 'dokter'])->where('no_rawat', $noRawat)->first();
+        $reg = RegPeriksa::with(['pasien', 'poliklinik', 'dokter'])->where('no_rawat', $noRawat)->first();
+        $r = $resume;
+
+        // Kode dari casemix (diagnosa_pasien/prosedur_pasien), biasanya diisi setelah pasien pulang; kosong = kolom kosong.
+        $kodeDx = DB::table('diagnosa_pasien')->where('no_rawat', $noRawat)->where('status', 'Ralan')
+            ->orderBy('prioritas')->pluck('kd_penyakit')->all();
+        $kodePr = DB::table('prosedur_pasien')->where('no_rawat', $noRawat)->where('status', 'Ralan')
+            ->orderBy('prioritas')->pluck('kode')->all();
+
+        $tl = $this->resolver->tentukan($noRawat, $meta);
+        $prosedur = array_filter([$r->prosedur_utama, $r->prosedur_sekunder, $r->prosedur_sekunder2, $r->prosedur_sekunder3], 'strlen');
+        // Tindak lanjut "pulang" biasa tidak ditulis; kontrol, rujuk, APS, rawat inap, meninggal ditaruh di akhir terapi.
+        $terapi = array_filter([implode("\n", $prosedur), trim((string) $r->obat_pulang), $tl['nilai'] === 'pulang' ? '' : $tl['label']], 'strlen');
 
         return [
             'reg'           => $reg,
             'resume'        => $resume,
             'diverifikasi'  => $tab['status'] === 'diverifikasi',
-            'tindakLanjut'  => $this->resolver->tentukan($noRawat, $meta)['label'],
-            'kodeDiagnosa'  => DB::table('diagnosa_pasien')->where('no_rawat', $noRawat)->where('status', 'Ralan')
-                ->orderBy('prioritas')->pluck('kd_penyakit')->all(),
-            'kodeProsedur'  => DB::table('prosedur_pasien')->where('no_rawat', $noRawat)->where('status', 'Ralan')
-                ->orderBy('prioritas')->pluck('kode')->all(),
+            'umur'          => trim($reg->umurdaftar . ' ' . (['Th' => 'thn', 'Bl' => 'bln', 'Hr' => 'hr'][$reg->sttsumur] ?? $reg->sttsumur)),
+            'anamnesa'      => trim(implode("\n", array_filter([trim((string) $r->keluhan_utama), trim((string) $r->jalannya_penyakit)], 'strlen'))),
+            'penunjang'     => trim(implode("\n", array_filter([trim((string) $r->hasil_laborat), trim((string) $r->pemeriksaan_penunjang)], 'strlen'))),
+            'ttv'           => $this->ttvTerakhir($noRawat),
+            'dxSekunder'    => array_values(array_filter([$r->diagnosa_sekunder, $r->diagnosa_sekunder2, $r->diagnosa_sekunder3, $r->diagnosa_sekunder4], 'strlen')),
+            'kodePrimer'    => $kodeDx[0] ?? '',
+            'kodeSekunder'  => implode(', ', array_slice($kodeDx, 1)),
+            'kodeProsedur'  => implode(', ', $kodePr),
+            'terapi'        => implode("\n", $terapi),
+            'biaya'         => $this->biaya->untuk($noRawat),
             'dokterTtd'     => $tab['status'] === 'diverifikasi' ? Dokter::find($meta->diverifikasi_oleh) : null,
+        ];
+    }
+
+    /** Tensi/nadi/SpO2 pemeriksaan terakhir yang mengisi salah satunya; isian kosong menjadi "-". */
+    private function ttvTerakhir(string $noRawat): array
+    {
+        $kosong = fn ($v) => in_array(trim((string) $v), ['', '-'], true);
+        $baris = DB::table('pemeriksaan_ralan')->where('no_rawat', $noRawat)
+            ->orderByDesc('tgl_perawatan')->orderByDesc('jam_rawat')->get(['tensi', 'nadi', 'spo2'])
+            ->first(fn ($p) => !$kosong($p->tensi) || !$kosong($p->nadi) || !$kosong($p->spo2));
+
+        $nilai = fn ($v, $satuan) => $baris && !$kosong($v) ? trim($v) . $satuan : '-';
+
+        return [
+            'tensi' => $nilai($baris->tensi ?? null, ' mmHg'),
+            'nadi'  => $nilai($baris->nadi ?? null, ' x/mnt'),
+            'spo2'  => $nilai($baris->spo2 ?? null, '%'),
         ];
     }
 

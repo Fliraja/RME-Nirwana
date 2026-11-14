@@ -42,8 +42,28 @@ class RanapResumeService
             'selesai'      => $meta?->status === 'selesai',
             'penanda'      => $meta?->status === 'selesai' ? $meta->penanda : null,
             'selesaiPada'  => $meta?->selesai_pada,
+            // Kode casemix menurut prioritas: [0] primer, [1..4] sekunder. Biasanya kosong sampai pasien pulang.
             'kodeDiagnosa' => DB::table('diagnosa_pasien')->where('no_rawat', $noRawat)->where('status', 'Ranap')->orderBy('prioritas')->pluck('kd_penyakit')->all(),
             'kodeProsedur' => DB::table('prosedur_pasien')->where('no_rawat', $noRawat)->where('status', 'Ranap')->orderBy('prioritas')->pluck('kode')->all(),
+            'kondisi'      => self::kondisi($resume),
         ];
+    }
+
+    /**
+     * Kotak "kondisi pasien waktu pulang" di formulir dari kolom Khanza yang ditulis
+     * ResumeRanapService::kondisi(). Null bila dokter belum memilih (tidak ada kotak dicentang).
+     */
+    public static function kondisi(ResumePasienRanap $r): ?string
+    {
+        $cara = trim((string) $r->cara_keluar);
+        $keadaan = trim((string) $r->keadaan);
+
+        return match (true) {
+            $keadaan === 'Meninggal'                         => str_contains((string) $r->ket_keadaan, '<') ? 'meninggal_kurang_48' : 'meninggal_lebih_48',
+            str_starts_with($cara, 'Pulang Atas Permintaan') => 'aps',
+            $cara === 'Pindah RS'                            => 'dirujuk',
+            in_array($keadaan, ['Sembuh', 'Membaik'], true)  => 'membaik',
+            default                                          => null,
+        };
     }
 }

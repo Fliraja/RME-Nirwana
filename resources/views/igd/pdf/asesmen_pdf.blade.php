@@ -26,10 +26,6 @@
     <style>
         @page { margin: 0.8cm 1cm; }
         body { font-family: Helvetica, Arial, sans-serif; font-size: 8pt; line-height: 1.3; color: #222; }
-        .kop { width: 100%; border-bottom: 2px solid #000; padding-bottom: 4px; margin-bottom: 6px; }
-        .kop img { height: 40px; }
-        .kop h1 { font-size: 12pt; margin: 0; color: #0d7a4a; }
-        .kop p { margin: 0; font-size: 7pt; }
         .judul { text-align: center; font-weight: bold; font-size: 10pt; margin: 4px 0 6px; }
         table { border-collapse: collapse; }
         table.info { width: 100%; margin-bottom: 6px; }
@@ -52,16 +48,7 @@
     </style>
 </head>
 <body>
-    <table class="kop">
-        <tr>
-            <td style="width: 60px;"><img src="{{ public_path('img/RSU22Nirwana1.png') }}" alt="Logo RSU Nirwana"></td>
-            <td style="text-align: right;">
-                <h1>RUMAH SAKIT UMUM NIRWANA</h1>
-                <p>JL. PANGLIMA BATUR TIMUR NO.42 BANJARBARU KALIMANTAN SELATAN</p>
-                <p>Telp: 0511-674 9272 / 0851 0124 0608 | Email: rsu.nirwana@gmail.com</p>
-            </td>
-        </tr>
-    </table>
+    @include('pdf.kop')
 
     <div class="judul">PENILAIAN AWAL MEDIS GAWAT DARURAT (IGD)</div>
 
