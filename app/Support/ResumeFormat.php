@@ -25,6 +25,37 @@ final class ResumeFormat
         return implode(', ', $bagian);
     }
 
+    /**
+     * Untuk cetakan: dari baris TTV buatan ttv() di dalam $teks, buang bagian yang sama persis dengan kotak TTV
+     * ($kotak, contoh ['TD' => '120/80', 'N' => '88', 'SpO2' => '']). Nilai yang berbeda (diubah dokter) dan TTV lain
+     * tetap; baris yang habis dibuang. Baris lain tidak disentuh.
+     *
+     * @param array<string,string> $kotak
+     */
+    public static function buangTtvGanda(string $teks, array $kotak): string
+    {
+        // Bentuk persis keluaran ttv(): "TD 120/80" (nilai satu kata) atau "Kes. Compos Mentis".
+        $pola = '/^(?:(?:' . implode('|', array_map('preg_quote', array_keys(self::TTV))) . ') \S+|Kes\. \S.*)$/';
+        $baris = [];
+        foreach (preg_split('/\R/', $teks) as $b) {
+            $bagian = explode(', ', trim($b));
+            $bagianTtv = array_filter($bagian, fn ($x) => preg_match($pola, $x));
+            if ($bagian === [''] || count($bagianTtv) !== count($bagian)) {
+                $baris[] = $b;
+                continue;
+            }
+            $sisa = array_filter($bagian, function ($x) use ($kotak) {
+                [$label, $nilai] = explode(' ', $x, 2);
+                return !isset($kotak[$label]) || trim($kotak[$label]) === '' || trim($kotak[$label]) !== trim($nilai);
+            });
+            if ($sisa !== []) {
+                $baris[] = implode(', ', $sisa);
+            }
+        }
+
+        return trim(implode("\n", $baris));
+    }
+
     public static function flagLab(string $nilai, string $rujukan): string
     {
         $v = self::angka($nilai);

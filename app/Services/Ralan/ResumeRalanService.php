@@ -5,6 +5,7 @@ namespace App\Services\Ralan;
 use App\Models\Dokter;
 use App\Models\RegPeriksa;
 use App\Models\RmeResumeRalan;
+use App\Support\ResumeFormat;
 use App\Support\TindakLanjutResolver;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
@@ -131,8 +132,13 @@ class ResumeRalanService
         $kodePr = DB::table('prosedur_pasien')->where('no_rawat', $noRawat)->where('status', 'Ralan')
             ->orderBy('prioritas')->pluck('kode')->all();
 
+        $ttv = $this->ttvTerakhir($noRawat);
+        $anamnesa = trim(implode("\n", array_filter([trim((string) $r->keluhan_utama), trim((string) $r->jalannya_penyakit)], 'strlen')));
+        // TD/N/SpO2 yang sama dengan kotak TTV tidak dicetak dua kali; teks resume tersimpan tidak diubah.
+        $anamnesa = ResumeFormat::buangTtvGanda($anamnesa, ['TD' => $ttv['mentah']['tensi'], 'N' => $ttv['mentah']['nadi'], 'SpO2' => $ttv['mentah']['spo2']]);
+
         $tl = $this->resolver->tentukan($noRawat, $meta);
-        $prosedur = array_filter([$r->prosedur_utama, $r->prosedur_sekunder, $r->prosedur_sekunder2, $r->prosedur_sekunder3], 'strlen');
+        $prosedur =array_filter([$r->prosedur_utama, $r->prosedur_sekunder, $r->prosedur_sekunder2, $r->prosedur_sekunder3], 'strlen');
         // Tindak lanjut "pulang" biasa tidak ditulis; kontrol, rujuk, APS, rawat inap, meninggal ditaruh di akhir terapi.
         $terapi = array_filter([implode("\n", $prosedur), trim((string) $r->obat_pulang), $tl['nilai'] === 'pulang' ? '' : $tl['label']], 'strlen');
 
@@ -141,9 +147,9 @@ class ResumeRalanService
             'resume'        => $resume,
             'diverifikasi'  => $tab['status'] === 'diverifikasi',
             'umur'          => trim($reg->umurdaftar . ' ' . (['Th' => 'thn', 'Bl' => 'bln', 'Hr' => 'hr'][$reg->sttsumur] ?? $reg->sttsumur)),
-            'anamnesa'      => trim(implode("\n", array_filter([trim((string) $r->keluhan_utama), trim((string) $r->jalannya_penyakit)], 'strlen'))),
+            'anamnesa'      => $anamnesa,
             'penunjang'     => trim(implode("\n", array_filter([trim((string) $r->hasil_laborat), trim((string) $r->pemeriksaan_penunjang)], 'strlen'))),
-            'ttv'           => $this->ttvTerakhir($noRawat),
+            'ttv'           => $ttv,
             'dxSekunder'    => array_values(array_filter([$r->diagnosa_sekunder, $r->diagnosa_sekunder2, $r->diagnosa_sekunder3, $r->diagnosa_sekunder4], 'strlen')),
             'kodePrimer'    => $kodeDx[0] ?? '',
             'kodeSekunder'  => implode(', ', array_slice($kodeDx, 1)),
@@ -154,7 +160,7 @@ class ResumeRalanService
         ];
     }
 
-    /** Tensi/nadi/SpO2 pemeriksaan terakhir yang mengisi salah satunya; isian kosong menjadi "-". */
+    /** Tensi/nadi/SpO2 pemeriksaan terakhir yang mengisi salah satunya; isian kosong menjadi "-", 'mentah' tanpa satuan ('' bila kosong). */
     private function ttvTerakhir(string $noRawat): array
     {
         $kosong = fn ($v) => in_array(trim((string) $v), ['', '-'], true);
@@ -162,12 +168,17 @@ class ResumeRalanService
             ->orderByDesc('tgl_perawatan')->orderByDesc('jam_rawat')->get(['tensi', 'nadi', 'spo2'])
             ->first(fn ($p) => !$kosong($p->tensi) || !$kosong($p->nadi) || !$kosong($p->spo2));
 
-        $nilai = fn ($v, $satuan) => $baris && !$kosong($v) ? trim($v) . $satuan : '-';
+        $mentah = [];
+        foreach (['tensi', 'nadi', 'spo2'] as $kolom) {
+            $mentah[$kolom] = $baris && !$kosong($baris->{$kolom}) ? trim($baris->{$kolom}) : '';
+        }
+        $nilai = fn ($kolom, $satuan) => $mentah[$kolom] !== '' ? $mentah[$kolom] . $satuan : '-';
 
         return [
-            'tensi' => $nilai($baris->tensi ?? null, ' mmHg'),
-            'nadi'  => $nilai($baris->nadi ?? null, ' x/mnt'),
-            'spo2'  => $nilai($baris->spo2 ?? null, '%'),
+            'tensi'  => $nilai('tensi', ' mmHg'),
+            'nadi'   => $nilai('nadi', ' x/mnt'),
+            'spo2'   => $nilai('spo2', '%'),
+            'mentah' => $mentah,
         ];
     }
 
