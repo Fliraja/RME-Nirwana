@@ -19,6 +19,7 @@
 
     <script src="{{ asset('js/admin.js') }}"></script>
     <script src="{{ asset('js/batas-isian.js') }}?v={{ filemtime(public_path('js/batas-isian.js')) }}"></script>
+    <script src="{{ asset('js/teks-pilihan.js') }}?v={{ filemtime(public_path('js/teks-pilihan.js')) }}"></script>
     <script src="{{ asset('js/lab-subitem.js') }}?v={{ filemtime(public_path('js/lab-subitem.js')) }}"></script>
     <script src="{{ asset('js/aturan-pakai.js') }}?v={{ filemtime(public_path('js/aturan-pakai.js')) }}"></script>
     

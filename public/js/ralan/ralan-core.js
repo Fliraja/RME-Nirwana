@@ -60,7 +60,7 @@ function initRemoteSelect(selector, opts) {
         labelField: 'text',
         searchField: 'text',
         sortField: [{ field: 'urut', direction: 'asc' }, { field: '$score' }],
-        render: { option: renderOpsiBarang },
+        render: { option: renderOpsiBarang, no_results: TeksPilihan.tidakDitemukan(opts.daftar || 'daftar') },
         maxItems: opts.multiple ? null : 1,
         maxOptions: 50,
         loadThrottle: 200,
@@ -382,6 +382,7 @@ function initSelect2() {
         url: window.RALAN.routes.searchObat,
         multiple: false,
         minLen: 3,
+        daftar: 'daftar obat',
         placeholder: 'Ketik Nama Obat / Kode Obat...'
     });
     AturanPakai.pasang(document.querySelector('.select2-aturan'));
@@ -393,6 +394,7 @@ function initSelect2Lab() {
         url: window.RALAN.routes.searchLab,
         multiple: true,
         withNoRawat: true,
+        daftar: 'daftar pemeriksaan lab',
         placeholder: 'Cari Pemeriksaan Lab...'
     });
 }
@@ -402,6 +404,7 @@ function initSelect2Radiologi() {
         url: window.RALAN.routes.searchRadiologi,
         multiple: true,
         withNoRawat: true,
+        daftar: 'daftar pemeriksaan radiologi',
         placeholder: 'Cari Pemeriksaan Radiologi...'
     });
 }
@@ -973,6 +976,7 @@ $(document).ready(function() {
                 url: window.RALAN.routes.searchObat,
                 multiple: false,
                 minLen: 3,
+                daftar: 'daftar obat',
                 placeholder: 'Ketik Nama Obat...'
             });
             hitungJmlBaris($('#row_' + rc));

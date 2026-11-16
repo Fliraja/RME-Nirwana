@@ -57,7 +57,7 @@ function initRemoteSelect(selector, opts) {
         labelField: 'text',
         searchField: 'text',
         sortField: [{ field: 'urut', direction: 'asc' }, { field: '$score' }],
-        render: { option: renderOpsiBarang },
+        render: { option: renderOpsiBarang, no_results: TeksPilihan.tidakDitemukan(opts.daftar || 'daftar') },
         maxItems: opts.multiple ? (opts.maxItems || null) : 1,
         maxOptions: 50,
         loadThrottle: 200,
@@ -688,11 +688,13 @@ function initResepHandlers() {
 
     var tsObat = initRemoteSelect('#formResepObat .kd_obat_ajax', {
         url: ranapUrl('/ralan/search-obat'),
+        daftar: 'daftar obat',
         placeholder: 'Ketik nama obat / kode...'
     });
 
     var tsBahanRacik = initRemoteSelect('#racik_kode_brng', {
         url: ranapUrl('/ralan/search-obat'),
+        daftar: 'daftar obat',
         placeholder: 'Ketik nama bahan obat...'
     });
 
@@ -937,6 +939,7 @@ function loadLab(forceReload = false) {
 function initLabHandlers() {
     var tsLab = initRemoteSelect('#select-lab', {
         url: ranapUrl('/ralan/search-pemeriksaan-lab'),
+        daftar: 'daftar pemeriksaan lab',
         placeholder: 'Pilih pemeriksaan laboratorium ranap...',
         multiple: true,
         withNoRawat: true,
@@ -1045,6 +1048,7 @@ function loadRadiologi(forceReload = false) {
 function initRadiologiHandlers() {
     var tsRad = initRemoteSelect('#select-radiologi', {
         url: ranapUrl('/ralan/search-pemeriksaan-radiologi'),
+        daftar: 'daftar pemeriksaan radiologi',
         placeholder: 'Pilih tindakan radiologi ranap...',
         multiple: true,
         withNoRawat: true
