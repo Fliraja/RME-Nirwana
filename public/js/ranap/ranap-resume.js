@@ -277,8 +277,7 @@ function initResumeHandlers() {
                         text: res.message + ' Isian di layar Anda belum tersimpan.',
                         showCancelButton: true,
                         confirmButtonText: 'Muat ulang resume',
-                        cancelButtonText: 'Tetap di sini',
-                        confirmButtonColor: '#0d7a4a'
+                        cancelButtonText: 'Tetap di sini'
                     }).then(function(hasil) {
                         if (hasil.isConfirmed) loadResume(true);
                     });

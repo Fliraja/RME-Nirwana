@@ -107,7 +107,7 @@
         function muatUlang() {
             var lanjut = window.Swal
                 ? Swal.fire({ title: 'Muat ulang asesmen?', text: 'Isian di layar ini yang belum tersimpan akan hilang. Salin dulu bagian yang ingin dipertahankan.',
-                    icon: 'warning', showCancelButton: true, confirmButtonText: 'Muat ulang', cancelButtonText: 'Batal', confirmButtonColor: '#0d7a4a' })
+                    icon: 'warning', showCancelButton: true, confirmButtonText: 'Muat ulang', cancelButtonText: 'Batal' })
                     .then(function (r) { return r.isConfirmed; })
                 : Promise.resolve(confirm('Muat ulang asesmen? Isian yang belum tersimpan hilang.'));
             lanjut.then(function (ya) { ya && window.IgdTab.muatUlang('tab-asesmen'); });

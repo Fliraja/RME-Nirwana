@@ -33,7 +33,7 @@
         });
     }
 
-    function pilihanJarak(el, url, denganTemplate) {
+    function pilihanJarak(el, url, daftar, denganTemplate) {
         if (!el || !window.TomSelect) {
             return null;
         }
@@ -44,6 +44,7 @@
             maxOptions: 50,
             loadThrottle: 300,
             plugins: ['remove_button'],
+            render: { no_results: TeksPilihan.tidakDitemukan(daftar) },
             shouldLoad: function (q) { return q.length >= 2; },
             load: function (q, cb) {
                 var p = new URLSearchParams({ search: q, no_rawat: cfg.noRawat });
@@ -108,11 +109,10 @@
         var jenis = tombol.dataset.hapusOrder;
         var noorder = tombol.dataset.noorder;
         var lanjut = window.Swal
-            ? Swal.fire({
+            ? SwalHapus.fire({
                 title: 'Batalkan permintaan ' + (jenis === 'lab' ? 'lab' : 'radiologi') + '?',
                 text: 'Permintaan ' + noorder + ' akan dihapus dari daftar penunjang.',
-                icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, batalkan', cancelButtonText: 'Tidak',
-                confirmButtonColor: '#be123c'
+                confirmButtonText: 'Ya, batalkan', cancelButtonText: 'Tidak'
             }).then(function (r) { return r.isConfirmed; })
             : Promise.resolve(confirm('Batalkan permintaan ' + noorder + '?'));
 
@@ -155,7 +155,7 @@
         return new TomSelect(el, {
             valueField: 'id', labelField: 'text', searchField: 'text', maxItems: 1, maxOptions: 50, loadThrottle: 300,
             sortField: [{ field: 'urut', direction: 'asc' }, { field: '$score' }],
-            render: { option: renderOpsiBarang },
+            render: { option: renderOpsiBarang, no_results: TeksPilihan.tidakDitemukan('daftar obat') },
             shouldLoad: function (q) { return q.length >= 3; },
             load: function (q, cb) {
                 fetch(cfg.routes.cariObat + '?' + new URLSearchParams({ search: q }).toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
@@ -379,8 +379,7 @@
     function hapusResep(tombol) {
         var jenis = tombol.dataset.hapusResep;
         var lanjut = window.Swal
-            ? Swal.fire({ title: jenis === 'racikan' ? 'Hapus racikan dari resep?' : 'Hapus item dari resep?', icon: 'warning',
-                showCancelButton: true, confirmButtonText: 'Ya, hapus', cancelButtonText: 'Tidak', confirmButtonColor: '#be123c' })
+            ? SwalHapus.fire({ title: jenis === 'racikan' ? 'Hapus racikan dari resep?' : 'Hapus item dari resep?', confirmButtonText: 'Ya, hapus', cancelButtonText: 'Tidak' })
                 .then(function (r) { return r.isConfirmed; })
             : Promise.resolve(confirm('Hapus dari resep?'));
         lanjut.then(function (ya) {
@@ -412,7 +411,7 @@
 
         var formLab = akar.querySelector('#igd-form-lab');
         if (formLab) {
-            var tsLab = pilihanJarak(formLab.querySelector('select'), cfg.routes.cariLab, function (nilai) {
+            var tsLab = pilihanJarak(formLab.querySelector('select'), cfg.routes.cariLab, 'daftar pemeriksaan lab', function (nilai) {
                 var ts = this;
                 var opsi = ts.options[nilai];
                 LabSubItem.muat(formLab.querySelector('.lab-subitem'), cfg.routes.templateLab, nilai, opsi ? opsi.text : nilai,
@@ -422,7 +421,7 @@
         }
         var formRad = akar.querySelector('#igd-form-radiologi');
         if (formRad) {
-            pasangForm(formRad, pilihanJarak(formRad.querySelector('select'), cfg.routes.cariRadiologi));
+            pasangForm(formRad, pilihanJarak(formRad.querySelector('select'), cfg.routes.cariRadiologi, 'daftar pemeriksaan radiologi'));
         }
 
         var formResep = akar.querySelector('#igd-form-resep');
