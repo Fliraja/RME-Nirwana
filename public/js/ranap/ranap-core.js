@@ -413,15 +413,10 @@ function resetFormSoap() {
 }
 
 function hapusSoap(tgl, jam) {
-    Swal.fire({
+    SwalHapus.fire({
         title: 'Hapus Catatan SOAP?',
         text: 'Catatan SOAP pada ' + tgl + ' ' + jam + ' akan dihapus permanen.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Ya, Hapus!',
-        cancelButtonText: 'Batal'
+        confirmButtonText: 'Ya, Hapus!'
     }).then((result) => {
         if (result.isConfirmed) {
             $.ajax({
@@ -604,15 +599,10 @@ function resetFormTtv() {
 }
 
 function hapusTtv(tgl, jam) {
-    Swal.fire({
+    SwalHapus.fire({
         title: 'Hapus Data TTV & SBAR?',
         text: 'Data observasi vital sign ini akan dihapus permanen.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Ya, Hapus!',
-        cancelButtonText: 'Batal'
+        confirmButtonText: 'Ya, Hapus!'
     }).then((result) => {
         if (result.isConfirmed) {
             $.ajax({
@@ -863,12 +853,9 @@ function initResepHandlers() {
     $(document).off('click', '.btn-hapus-resep-obat').on('click', '.btn-hapus-resep-obat', function() {
         var noResep = $(this).data('noresep');
         var kodeBrng = $(this).data('kode');
-        Swal.fire({
+        SwalHapus.fire({
             title: 'Hapus Item Obat?',
             text: 'Obat ini akan dihapus dari resep antrean farmasi.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
             confirmButtonText: 'Ya, Hapus!'
         }).then((result) => {
             if (result.isConfirmed) {
@@ -888,12 +875,9 @@ function initResepHandlers() {
     $(document).off('click', '.btn-hapus-racikan').on('click', '.btn-hapus-racikan', function() {
         var noResep = $(this).data('noresep');
         var noRacik = $(this).data('noracik');
-        Swal.fire({
+        SwalHapus.fire({
             title: 'Hapus Racikan?',
             text: 'Seluruh resep racikan ini akan dihapus.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
             confirmButtonText: 'Ya, Hapus!'
         }).then((result) => {
             if (result.isConfirmed) {
@@ -997,12 +981,9 @@ function initLabHandlers() {
 
     $(document).off('click', '.btn-hapus-lab').on('click', '.btn-hapus-lab', function() {
         var noorder = $(this).data('noorder');
-        Swal.fire({
+        SwalHapus.fire({
             title: 'Batalkan Permintaan Lab?',
             text: 'Order ' + noorder + ' akan dibatalkan.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
             confirmButtonText: 'Ya, Batalkan!'
         }).then((result) => {
             if (result.isConfirmed) {
@@ -1093,12 +1074,9 @@ function initRadiologiHandlers() {
 
     $(document).off('click', '.btn-hapus-radiologi').on('click', '.btn-hapus-radiologi', function() {
         var noorder = $(this).data('noorder');
-        Swal.fire({
+        SwalHapus.fire({
             title: 'Batalkan Permintaan Radiologi?',
             text: 'Order ' + noorder + ' akan dibatalkan.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
             confirmButtonText: 'Ya, Batalkan!'
         }).then((result) => {
             if (result.isConfirmed) {

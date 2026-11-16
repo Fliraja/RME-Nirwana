@@ -3,6 +3,7 @@
 <script src="{{ asset('vendor/bootstrap-5.3.3/js/bootstrap.bundle.min.js') }}"></script>
 
 <script src="{{ asset('vendor/sweetalert2-11.26.25/sweetalert2.all.min.js') }}"></script>
+<script src="{{ asset('js/swal-bawaan.js') }}?v={{ filemtime(public_path('js/swal-bawaan.js')) }}"></script>
 
 <script src="{{ asset('vendor/tom-select-2.3.1/tom-select.complete.min.js') }}"></script>
 
@@ -76,7 +77,6 @@
                 title: 'Gagal!',
                 text: "{{ session('error-soap') }}",
                 icon: 'error',
-                confirmButtonColor: '#d33',
             });
         @endif
 
@@ -104,7 +104,6 @@
                 title: 'Gagal!',
                 text: "{{ session('error-vital') }}",
                 icon: 'error',
-                confirmButtonColor: '#d33',
             });
         @endif
     }); 

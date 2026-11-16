@@ -109,11 +109,10 @@
         var jenis = tombol.dataset.hapusOrder;
         var noorder = tombol.dataset.noorder;
         var lanjut = window.Swal
-            ? Swal.fire({
+            ? SwalHapus.fire({
                 title: 'Batalkan permintaan ' + (jenis === 'lab' ? 'lab' : 'radiologi') + '?',
                 text: 'Permintaan ' + noorder + ' akan dihapus dari daftar penunjang.',
-                icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, batalkan', cancelButtonText: 'Tidak',
-                confirmButtonColor: '#be123c'
+                confirmButtonText: 'Ya, batalkan', cancelButtonText: 'Tidak'
             }).then(function (r) { return r.isConfirmed; })
             : Promise.resolve(confirm('Batalkan permintaan ' + noorder + '?'));
 
@@ -380,8 +379,7 @@
     function hapusResep(tombol) {
         var jenis = tombol.dataset.hapusResep;
         var lanjut = window.Swal
-            ? Swal.fire({ title: jenis === 'racikan' ? 'Hapus racikan dari resep?' : 'Hapus item dari resep?', icon: 'warning',
-                showCancelButton: true, confirmButtonText: 'Ya, hapus', cancelButtonText: 'Tidak', confirmButtonColor: '#be123c' })
+            ? SwalHapus.fire({ title: jenis === 'racikan' ? 'Hapus racikan dari resep?' : 'Hapus item dari resep?', confirmButtonText: 'Ya, hapus', cancelButtonText: 'Tidak' })
                 .then(function (r) { return r.isConfirmed; })
             : Promise.resolve(confirm('Hapus dari resep?'));
         lanjut.then(function (ya) {

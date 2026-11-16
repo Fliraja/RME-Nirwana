@@ -412,32 +412,12 @@ function initSelect2Radiologi() {
 function hapusObat(no_resep, kode_brng) {
 
     if (typeof Swal !== 'undefined') {
-        Swal.fire({
+        SwalHapus.fire({
             title: 'Hapus obat ini?',
             text: "Data akan dihapus secara permanen",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Ya, Hapus!',
-            cancelButtonText: 'Batal'
+            confirmButtonText: 'Ya, Hapus!'
         }).then((result) => {
             if (result.isConfirmed) {
-                prosesHapusObat(no_resep, kode_brng);
-            }
-        });
-    } else if (typeof swal !== 'undefined') {
-        swal({
-            title: "Hapus obat ini?",
-            text: "Data akan dihapus secara permanen",
-            type: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#DD6B55",
-            confirmButtonText: "Ya, Hapus!",
-            cancelButtonText: "Batal",
-            closeOnConfirm: false
-        }, function(isConfirm) {
-            if (isConfirm) {
                 prosesHapusObat(no_resep, kode_brng);
             }
         });
@@ -510,32 +490,12 @@ function prosesHapusObat(no_resep, kode_brng) {
 function hapusRacikan(no_resep, no_racik) {
 
     if (typeof Swal !== 'undefined') {
-        Swal.fire({
+        SwalHapus.fire({
             title: 'Hapus Racikan ini?',
             text: "Data akan dihapus secara permanen",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Ya, Hapus!',
-            cancelButtonText: 'Batal'
+            confirmButtonText: 'Ya, Hapus!'
         }).then((result) => {
             if (result.isConfirmed) {
-                prosesHapusRacikan(no_resep, no_racik);
-            }
-        });
-    } else if (typeof swal !== 'undefined') {
-        swal({
-            title: "Hapus Racikan ini?",
-            text: "Data akan dihapus secara permanen",
-            type: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#DD6B55",
-            confirmButtonText: "Ya, Hapus!",
-            cancelButtonText: "Batal",
-            closeOnConfirm: false
-        }, function(isConfirm) {
-            if (isConfirm) {
                 prosesHapusRacikan(no_resep, no_racik);
             }
         });
@@ -620,14 +580,10 @@ function hapusLab(noorder, kd_jenis_prw = null, id_template = null) {
         url += `/${kd_jenis_prw}/${id_template}`;
     }
 
-    Swal.fire({
+    SwalHapus.fire({
         title: title,
         text: text,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        confirmButtonText: 'Ya, Hapus!',
-        cancelButtonText: 'Batal'
+        confirmButtonText: 'Ya, Hapus!'
     }).then((result) => {
         if (result.isConfirmed) {
             $.ajax({
@@ -657,14 +613,10 @@ function hapusRadiologi(noorder, kd_jenis_prw = null) {
         url += `/${kd_jenis_prw}`;
     }
 
-    Swal.fire({
+    SwalHapus.fire({
         title: title,
         text: text,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        confirmButtonText: 'Ya, Hapus!',
-        cancelButtonText: 'Batal'
+        confirmButtonText: 'Ya, Hapus!'
     }).then((result) => {
         if (result.isConfirmed) {
             $.ajax({
