@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LaboratoriumController;
 use App\Http\Controllers\DiagnosaProsedurController;
+use App\Http\Controllers\KfrRalanController;
 use App\Http\Controllers\ResumeRalanController;
 
 use App\Http\Controllers\RanapController;
@@ -91,6 +92,10 @@ Route::middleware(['multi.auth'])->group(function () {
     Route::get('/ralan/resume/{no_rawat}', [ResumeRalanController::class, 'show'])->name('ralan.resume');
     Route::post('/ralan/resume/verifikasi', [ResumeRalanController::class, 'verifikasi'])->name('ralan.resume.verifikasi');
     Route::get('/ralan/resume/pdf/{no_rawat}', [ResumeRalanController::class, 'pdf'])->name('ralan.resume.pdf');
+
+    //Formulir Rehab Medik (KFR), poli P003
+    Route::get('/ralan/kfr/pdf/asesmen/{no_rawat}', [KfrRalanController::class, 'asesmenPdf'])->name('ralan.kfr.pdf.asesmen');
+    Route::get('/ralan/kfr/pdf/uji-fungsi/{no_rawat}', [KfrRalanController::class, 'ujiFungsiPdf'])->name('ralan.kfr.pdf.uji');
 
     //Resep Obat
     Route::get('/ralan/get-resep-pasien/{no_rawat}', [ResepController::class, 'getResepPasien'])->name('ralan.get-resep');

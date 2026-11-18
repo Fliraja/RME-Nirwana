@@ -2,8 +2,11 @@
 
 namespace App\Services\Ralan;
 
+use App\Models\Dokter;
+use App\Models\RegPeriksa;
 use App\Models\RmeKfr;
 use App\Support\KfrFormat;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -96,7 +99,51 @@ class KfrService
         ]);
     }
 
-    /** Baris pemeriksaan_ralan terakhir; kunjungan bisa punya beberapa baris dari Khanza desktop. */
+    /**
+     * Data dua PDF KFR, null bila formulir belum pernah disimpan. Isi klinis dibaca dari SOAP saat cetak
+     * (utuh, termasuk perubahan sesudah simpan), bukan dari kolom Khanza yang sudah dipotong.
+     */
+    public function dataPdf(string $noRawat): ?array
+    {
+        if (!RmeKfr::find($noRawat)) {
+            return null;
+        }
+
+        $reg = RegPeriksa::with('pasien')->where('no_rawat', $noRawat)->first();
+        $kdDokter = DB::table(self::LAYANAN)->where('no_rawat', $noRawat)->value('kd_dokter') ?: $reg->kd_dokter;
+        $dokter = Dokter::find($kdDokter);
+        $soap = $this->soapTerakhir($noRawat);
+        $instruksi = KfrFormat::pecahInstruksi($soap->instruksi ?? '');
+        $tgl = Carbon::parse($reg->tgl_registrasi);
+
+        // Kode dari casemix; kosong sampai casemix mengode kunjungan ini.
+        $kodeDx = DB::table('diagnosa_pasien')->where('no_rawat', $noRawat)->where('status', 'Ralan')
+            ->orderBy('prioritas')->pluck('kd_penyakit')->implode(', ');
+        $kodePr = DB::table('prosedur_pasien')->where('no_rawat', $noRawat)->where('status', 'Ralan')
+            ->orderBy('prioritas')->pluck('kode')->implode(', ');
+
+        return [
+            'reg'          => $reg,
+            'umur'         => trim($reg->umurdaftar . ' ' . (['Th' => 'Tahun', 'Bl' => 'Bulan', 'Hr' => 'Hari'][$reg->sttsumur] ?? $reg->sttsumur)),
+            'tglPelayanan' => $tgl->format('d/m/Y'),
+            'tglPendek'    => $tgl->format('d/m/y'),
+            'soap'         => [
+                'anamnesa'    => trim((string) ($soap->keluhan ?? '')),
+                'pemeriksaan' => trim((string) ($soap->pemeriksaan ?? '')),
+                'diagnosis'   => trim((string) ($soap->penilaian ?? '')),
+                'tatalaksana' => trim((string) ($soap->rtl ?? '')),
+            ],
+            'frekuensi'    => $instruksi['frekuensi'],
+            'durasi'       => $instruksi['durasi'],
+            'kfr'          => $this->bacaIsian($noRawat),
+            'kodeDx'       => $kodeDx,
+            'kodePr'       => $kodePr,
+            'dokter'       => $dokter,
+            'sip'          => trim((string) ($dokter->no_ijn_praktek ?? '')),
+        ];
+    }
+
+    /** Baris pemeriksaan_ralan kunjungan ini (PK no_rawat: satu baris per kunjungan). */
     public function soapTerakhir(string $noRawat): ?object
     {
         return DB::table('pemeriksaan_ralan')->where('no_rawat', $noRawat)

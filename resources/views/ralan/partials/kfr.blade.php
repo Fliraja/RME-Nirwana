@@ -17,13 +17,16 @@
             @endif
         </div>
         <div class="kfr-aksi">
-            <span class="visually-hidden" id="kfr-cetak-ket">Simpan dulu sebelum mencetak.</span>
-            <button type="button" class="btn btn-sm btn-outline-secondary" id="kfr-cetak-asesmen" aria-disabled="true" aria-describedby="kfr-cetak-ket" title="Simpan dulu sebelum mencetak.">
-                <i class="fas fa-print me-1" aria-hidden="true"></i>Cetak asesmen
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-secondary" id="kfr-cetak-uji" aria-disabled="true" aria-describedby="kfr-cetak-ket" title="Simpan dulu sebelum mencetak.">
-                <i class="fas fa-print me-1" aria-hidden="true"></i>Cetak uji fungsi
-            </button>
+            @unless($tersimpan)
+                <span class="visually-hidden" id="kfr-cetak-ket">Simpan dulu sebelum mencetak.</span>
+            @endunless
+            @foreach(['asesmen' => ['Cetak asesmen', 'ralan.kfr.pdf.asesmen'], 'uji' => ['Cetak uji fungsi', 'ralan.kfr.pdf.uji']] as $kunci => [$teks, $rute])
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="kfr-cetak-{{ $kunci }}"
+                    data-url="{{ route($rute, str_replace('/', '-', $pasien->no_rawat)) }}"
+                    @unless($tersimpan) aria-disabled="true" aria-describedby="kfr-cetak-ket" title="Simpan dulu sebelum mencetak." @endunless>
+                    <i class="fas fa-print me-1" aria-hidden="true"></i>{{ $teks }}
+                </button>
+            @endforeach
         </div>
     </div>
 

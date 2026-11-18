@@ -35,8 +35,10 @@
     });
 
     // Tombol cetak nonaktif sebelum formulir tersimpan; aria-disabled supaya tetap terbaca pembaca layar.
-    $(document).on('click', '#kfr-kartu .kfr-aksi .btn[aria-disabled="true"]', function (e) {
+    $(document).on('click', '#kfr-kartu .kfr-aksi .btn[data-url]', function (e) {
         e.preventDefault();
+        if (this.getAttribute('aria-disabled') === 'true') return;
+        window.open(this.getAttribute('data-url'), '_blank', 'noopener');
     });
 
     window.KfrRalan = {
@@ -46,6 +48,8 @@
             $('#kfr-status').removeClass('resume-status-tunggu').addClass('resume-status-ok')
                 .text('Tersimpan ' + kfr.disimpanPada);
             $('#kfr-catatan-sumber').remove();
+            $('#kfr-kartu .kfr-aksi .btn[data-url]').removeAttr('aria-disabled aria-describedby title');
+            $('#kfr-cetak-ket').remove();
         }
     };
 })();
