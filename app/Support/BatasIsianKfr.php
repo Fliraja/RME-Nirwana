@@ -44,6 +44,15 @@ final class BatasIsianKfr
         return $aturan;
     }
 
+    /** Aplikasi tidak memuat terjemahan validasi bawaan, jadi aturan selain batas panjang diberi kalimat sendiri. */
+    public static function pesan(string $awalan = ''): array
+    {
+        return [
+            $awalan . 'suspek.in'              => 'Pilih Tidak atau Ya untuk suspek penyakit akibat kerja.',
+            $awalan . 'ket_suspek.required_if' => 'Tulis keterangan suspek penyakit akibat kerja bila memilih Ya.',
+        ];
+    }
+
     public static function label(string $awalan = ''): array
     {
         $label = [];

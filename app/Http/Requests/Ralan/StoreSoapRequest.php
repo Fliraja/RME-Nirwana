@@ -21,6 +21,11 @@ class StoreSoapRequest extends FormRequest
         ] + Batas::aturan(Batas::SOAP_RALAN) + BatasIsianKfr::aturan('kfr.');
     }
 
+    public function messages(): array
+    {
+        return BatasIsianKfr::pesan('kfr.');
+    }
+
     public function attributes(): array
     {
         return Batas::label() + BatasIsianKfr::label('kfr.');

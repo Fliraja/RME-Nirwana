@@ -85,16 +85,18 @@ class RalanController extends Controller
         return view('riwayat.kunjungan', ['riwayat' => $riwayat->halaman($no_rkm_medis), 'noRkmMedis' => $no_rkm_medis]);
     }
 
-    public function getSoapPasien($no_rawat)
+    public function getSoapPasien($no_rawat, KfrService $kfrService)
     {
-        $no_rawat = str_replace('-', '/', $no_rawat); 
+        $no_rawat = str_replace('-', '/', $no_rawat);
 
         $pasien = RegPeriksa::with(['pemeriksaanRalan'])
             ->where('no_rawat', $no_rawat)
             ->first();
 
         if ($pasien) {
-            return view('ralan.soap', compact('pasien'));
+            $kfr = $pasien->kd_poli === KfrService::POLI ? $kfrService->isianAwal($no_rawat) : null;
+
+            return view('ralan.soap', compact('pasien', 'kfr'));
         }
 
         return "<div class='alert alert-danger'>Data pendaftaran tidak ditemukan.</div>";

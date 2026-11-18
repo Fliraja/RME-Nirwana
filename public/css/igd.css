@@ -166,22 +166,7 @@
 .igd-asesmen-baris { display: flex; flex-wrap: wrap; gap: 0 16px; align-items: flex-start; }
 .igd-hubungan { flex: 1 1 220px; max-width: 320px; margin-bottom: 0.6rem; }
 
-.igd-pilih { border: 0; margin: 0 0 0.6rem; padding: 0; min-width: 0; }
-.igd-pilih > legend { float: none; width: auto; padding: 0; }
-.igd-pilih-daftar { display: flex; flex-wrap: wrap; gap: 6px; }
-/* Radio asli disembunyikan secara visual tapi tetap bisa difokus: Tab masuk grup, panah memilih, spasi memilih yang difokus. */
-.igd-pilih-opsi { position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 6px 12px;
-    border: 1px solid #cbd5e1; border-radius: var(--radius-sm); background: #fff; color: #334155; font-size: 0.85rem; cursor: pointer; margin: 0; }
-.igd-pilih-opsi input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
-.igd-pilih-opsi:hover { border-color: #0d7a4a; }
-.igd-pilih-opsi:has(input:focus-visible) { outline: 2px solid #0d7a4a; outline-offset: 2px; }
-.igd-pilih-centang { display: none; font-size: 0.75rem; }
-.igd-pilih-opsi:has(input:checked) { border-color: #15a362; background: #f0fdf4; color: #166534; font-weight: 600; }
-.igd-pilih-opsi:has(input:checked) .igd-pilih-centang { display: inline; }
-/* Organ: Abnormal kuning dan Tidak diperiksa abu supaya temuan menonjol saat dipindai; teks pilihan tetap terbaca tanpa warna. */
-.igd-pilih-opsi.opsi-abnormal:has(input:checked) { border-color: #d97706; background: #fef3c7; color: #92400e; }
-.igd-pilih-opsi.opsi-tidak:has(input:checked) { border-color: #64748b; background: #f1f5f9; color: #334155; }
-.igd-pilih-galat .igd-pilih-opsi { border-color: #be123c; }
+/* .igd-pilih (tombol pilihan berjajar) ada di admin.css, dipakai bersama IGD dan formulir KFR ralan. */
 
 .igd-vital { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px 12px; }
 .igd-vital .input-group-text { font-size: 0.75rem; color: #475569; background: #f8fafc; }
@@ -219,7 +204,7 @@
     .igd-asesmen-bilah .resume-aksi .btn { flex: 1; min-height: 44px; white-space: nowrap; padding-left: 8px; padding-right: 8px; }
 }
 @media (pointer: coarse) {
-    .igd-pilih-opsi, .igd-pilih-organ .igd-pilih-opsi { min-height: 44px; }
+    .igd-pilih-organ .igd-pilih-opsi { min-height: 44px; }
 }
 
 /* Referensi asesmen (pola .resume-ref resume ranap, design.md bagian 5 dan 6). */

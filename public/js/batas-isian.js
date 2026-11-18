@@ -103,7 +103,9 @@
     window.tampilkanGalatIsian = function (form, errors) {
         var ditandai = 0;
         Object.keys(errors || {}).forEach(function (nama) {
-            var el = form.querySelector('[name="' + nama + '"]:not([type="hidden"])');
+            // Laravel menulis isian array sebagai "kfr.target"; nama di form "kfr[target]".
+            var namaForm = nama.replace(/\.([^.]+)/g, '[$1]');
+            var el = form.querySelector('[name="' + namaForm + '"]:not([type="hidden"])');
             if (!el) return;
             hapusGalatServer(el);
             var id = (el.id || el.name) + '-galat';
