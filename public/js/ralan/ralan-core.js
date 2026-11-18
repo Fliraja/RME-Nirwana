@@ -727,6 +727,7 @@ $(document).ready(function() {
             success: function(res) {
                 btn.prop('disabled', false).html(originalText);
                 tampilkanSukses(res.message || 'Data SOAP berhasil disimpan');
+                if (res.kfr && window.KfrRalan) window.KfrRalan.tandaiTersimpan(res.kfr);
                 // SOAP & TTV berbagi satu baris pemeriksaan_ralan: kedua tabel ikut berubah.
                 reloadRalanTable('soap');
                 reloadRalanTable('vital');

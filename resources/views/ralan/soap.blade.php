@@ -31,8 +31,12 @@
         </div>
     </div>
 
-    <button type="submit" class="btn btn-primary px-4 shadow-sm mb-4">
-        <i class="fas fa-save me-2"></i> Simpan Data SOAP
+    @if($kfr)
+        @include('ralan.partials.kfr')
+    @endif
+
+    <button type="submit" class="btn btn-resume-utama px-4 mb-4">
+        <i class="fas fa-save me-2" aria-hidden="true"></i> {{ $kfr ? 'Simpan SOAP & formulir KFR' : 'Simpan Data SOAP' }}
     </button>
 </form>
 

@@ -9,11 +9,14 @@ use App\Models\PemeriksaanRalan;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\Ralan\StoreSoapRequest;
 use App\Http\Requests\Ralan\StoreVitalSignRequest;
+use App\Services\Ralan\KfrService;
 use App\Services\Ralan\ResumeRalanService;
 use App\Services\Ralan\SoapService;
 use App\Services\Ralan\VitalSignService;
 use App\Services\Kunjungan\RiwayatKunjungan;
 use App\Support\AntrolBpjsUpdater;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class RalanController extends Controller
@@ -82,38 +85,53 @@ class RalanController extends Controller
         return view('riwayat.kunjungan', ['riwayat' => $riwayat->halaman($no_rkm_medis), 'noRkmMedis' => $no_rkm_medis]);
     }
 
-    public function getSoapPasien($no_rawat)
+    public function getSoapPasien($no_rawat, KfrService $kfrService)
     {
-        $no_rawat = str_replace('-', '/', $no_rawat); 
+        $no_rawat = str_replace('-', '/', $no_rawat);
 
         $pasien = RegPeriksa::with(['pemeriksaanRalan'])
             ->where('no_rawat', $no_rawat)
             ->first();
 
         if ($pasien) {
-            return view('ralan.soap', compact('pasien'));
+            $kfr = $pasien->kd_poli === KfrService::POLI ? $kfrService->isianAwal($no_rawat) : null;
+
+            return view('ralan.soap', compact('pasien', 'kfr'));
         }
 
         return "<div class='alert alert-danger'>Data pendaftaran tidak ditemukan.</div>";
     }
 
-    public function storeSOAP(StoreSoapRequest $request, SoapService $service, ResumeRalanService $resume)
+    public function storeSOAP(StoreSoapRequest $request, SoapService $service, ResumeRalanService $resume, KfrService $kfr)
     {
         if ($tolak = $this->bukanPemeriksa($request->no_rawat, 'SOAP')) {
             return $tolak;
         }
 
+        // Formulir KFR hanya untuk kunjungan poli rehab medik; isian kfr dari poli lain diabaikan.
+        $denganKfr = $request->has('kfr') && $kfr->isKfr($request->no_rawat);
+
         try {
-            $service->simpan($request->all());
+            DB::transaction(function () use ($request, $service, $kfr, $denganKfr) {
+                $service->simpan($request->all());
+                if ($denganKfr) {
+                    $kfr->simpan($request->no_rawat, (array) $request->input('kfr'), Auth::user()->decrypted_id);
+                }
+            });
         } catch (\Exception $e) {
             return response()->json(['status' => 'error', 'message' => 'Gagal menyimpan SOAP: ' . $e->getMessage()], 500);
         }
 
-        return response()->json([
+        $respon = [
             'status'  => 'success-soap',
-            'message' => 'Data SOAP berhasil disimpan',
+            'message' => $denganKfr ? 'SOAP dan formulir KFR disimpan.' : 'Data SOAP berhasil disimpan',
             'resume'  => $this->susunResume($resume, $request->no_rawat),
-        ]);
+        ];
+        if ($denganKfr) {
+            $respon['kfr'] = ['disimpanPada' => Carbon::parse($kfr->isianAwal($request->no_rawat)['disimpanPada'])->format('d/m H.i')];
+        }
+
+        return response()->json($respon);
     }
 
     public function getVitalPasien($no_rawat)
