@@ -3,6 +3,7 @@
         <thead class="table-light">
             <tr class="small">
                 <th style="width: 130px;">Waktu</th>
+                <th style="min-width: 180px;">Keluhan</th>
                 <th>Tanda Vital</th>
                 <th>Status Fisik</th>
                 <th>Kesadaran & Alergi</th>
@@ -22,6 +23,13 @@
                             {{ \Carbon\Carbon::parse($ttv->tgl_perawatan)->translatedFormat('d/m/Y') }}
                         </span>
                         <span class="badge bg-light text-muted border">{{ $ttv->jam_rawat }}</span>
+                    </td>
+                    <td class="small">
+                        @if(!empty($ttv->keluhan_ttv))
+                            <div style="white-space: pre-line; max-width: 300px;">{{ $ttv->keluhan_ttv }}</div>
+                        @else
+                            <span class="text-muted fst-italic">-</span>
+                        @endif
                     </td>
                     <td class="small">
                         <div>Suhu: <strong>{{ $ttv->suhu_tubuh ?: '-' }} °C</strong></div>
@@ -70,7 +78,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" class="text-center p-4 text-muted small">
+                    <td colspan="8" class="text-center p-4 text-muted small">
                         Belum ada data observasi tanda vital untuk rawat inap ini.
                     </td>
                 </tr>

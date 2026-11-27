@@ -65,6 +65,11 @@ class RanapVitalSignService
                     $v->whereNotNull('catatan_sbar_ranap.sbar')
                       ->where('catatan_sbar_ranap.sbar', '!=', '')
                       ->where('catatan_sbar_ranap.sbar', '!=', '-');
+                })
+                ->orWhere(function ($v) {
+                    $v->whereNotNull('catatan_sbar_ranap.keluhan')
+                      ->where('catatan_sbar_ranap.keluhan', '!=', '')
+                      ->where('catatan_sbar_ranap.keluhan', '!=', '-');
                 });
             })
             ->select([
@@ -83,6 +88,8 @@ class RanapVitalSignService
                 'pemeriksaan_ranap.alergi',
                 'pemeriksaan_ranap.nip',
                 'catatan_sbar_ranap.sbar',
+                // Alias wajib: kolom keluhan milik SOAP ada di pemeriksaan_ranap, bukan di sini.
+                'catatan_sbar_ranap.keluhan as keluhan_ttv',
                 'pegawai.nama as nama_petugas',
             ])
             ->orderBy('pemeriksaan_ranap.tgl_perawatan', 'desc')
@@ -111,6 +118,7 @@ class RanapVitalSignService
             $kesadaran = !empty($data['kesadaran']) ? $data['kesadaran'] : 'Compos Mentis';
             $alergi = $data['alergi'] ?? '';
             $sbar = trim($data['sbar'] ?? '');
+            $keluhanTtv = trim($data['keluhan_ttv'] ?? '');
 
             if ($isEdit) {
                 $tglEdit = $data['tgl_perawatan_edit_ttv'];
@@ -144,7 +152,7 @@ class RanapVitalSignService
                         'alergi'     => $alergi,
                     ]);
 
-                if ($sbar !== '') {
+                if ($sbar !== '' || $keluhanTtv !== '') {
                     $existing = DB::table('catatan_sbar_ranap')
                         ->where('no_rawat', $noRawat)
                         ->where('tgl_perawatan', $tglEdit)
@@ -156,13 +164,14 @@ class RanapVitalSignService
                             ->where('no_rawat', $noRawat)
                             ->where('tgl_perawatan', $tglEdit)
                             ->where('jam_rawat', $jamEdit)
-                            ->update(['sbar' => $sbar]);
+                            ->update(['sbar' => $sbar, 'keluhan' => $keluhanTtv]);
                     } else {
                         DB::table('catatan_sbar_ranap')->insert([
                             'no_rawat'      => $noRawat,
                             'tgl_perawatan' => $tglEdit,
                             'jam_rawat'     => $jamEdit,
                             'sbar'          => $sbar,
+                            'keluhan'       => $keluhanTtv,
                             'nip'           => $pemilik,
                         ]);
                     }
@@ -196,12 +205,13 @@ class RanapVitalSignService
                     'nip'           => $nip,
                 ] + BarisPemeriksaanRanap::SOAP_KOSONG);
 
-                if ($sbar !== '') {
+                if ($sbar !== '' || $keluhanTtv !== '') {
                     DB::table('catatan_sbar_ranap')->insert([
                         'no_rawat'      => $noRawat,
                         'tgl_perawatan' => $tglPerawatan,
                         'jam_rawat'     => $jamRawat,
                         'sbar'          => $sbar,
+                        'keluhan'       => $keluhanTtv,
                         'nip'           => $nip,
                     ]);
                 }

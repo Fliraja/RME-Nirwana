@@ -17,6 +17,18 @@
                     <input type="hidden" name="tgl_perawatan_edit_ttv" id="tgl_perawatan_edit_ttv" value="">
                     <input type="hidden" name="jam_rawat_edit_ttv" id="jam_rawat_edit_ttv" value="">
 
+                    {{-- Keluhan (diisi perawat, disimpan di catatan_sbar_ranap.keluhan) --}}
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label class="small fw-bold" for="ttv_keluhan">
+                                    Keluhan <small class="text-muted fw-normal">(Diisi perawat, opsional, maks. {{ \App\Support\BatasIsianPemeriksaan::KELUHAN_TTV }})</small>
+                                </label>
+                                <textarea name="keluhan_ttv" id="ttv_keluhan" class="form-control form-control-sm" rows="2" maxlength="{{ \App\Support\BatasIsianPemeriksaan::KELUHAN_TTV }}" placeholder="Keluhan pasien saat pemeriksaan TTV..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="row">
                         <div class="col-md-3 col-6">
                             <div class="mb-3">
