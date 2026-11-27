@@ -15,6 +15,7 @@ class CatatanSbarRanap extends Model
         'tgl_perawatan',
         'jam_rawat',
         'sbar',
+        'keluhan',
         'nip',
     ];
 

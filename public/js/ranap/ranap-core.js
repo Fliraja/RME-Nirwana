@@ -522,6 +522,7 @@ function salinTtvKeForm(ttv, rowEl) {
     $('#ttv_kesadaran').val(ttv.kesadaran || 'Compos Mentis');
     $('#ttv_alergi').val(ttv.alergi || '');
     $('#ttv_sbar').val(ttv.sbar || '');
+    $('#ttv_keluhan').val(ttv.keluhan_ttv || '');
 
     // Tetap mode tambah baru (pencatatan TTV baru)
     $('#mode_edit_ttv').val('0');
@@ -572,6 +573,7 @@ function editTtv(ttv) {
     $('#ttv_kesadaran').val(ttv.kesadaran || 'Compos Mentis');
     $('#ttv_alergi').val(ttv.alergi || '');
     $('#ttv_sbar').val(ttv.sbar || '');
+    $('#ttv_keluhan').val(ttv.keluhan_ttv || '');
 
     $('#titleFormTtv').html('<i class="fas fa-edit me-1 text-warning"></i> Edit TTV & SBAR (' + ttv.tgl_perawatan + ' ' + ttv.jam_rawat + ')');
     $('#badgeModeTtv').removeClass('bg-light text-muted bg-primary text-white').addClass('bg-warning text-dark').text('Mode: Edit');

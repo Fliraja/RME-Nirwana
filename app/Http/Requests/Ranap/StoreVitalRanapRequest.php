@@ -21,7 +21,7 @@ class StoreVitalRanapRequest extends FormRequest
             'mode_edit_ttv'          => 'nullable|in:0,1',
             'tgl_perawatan_edit_ttv' => 'nullable|date_format:Y-m-d',
             'jam_rawat_edit_ttv'     => 'nullable|date_format:H:i:s',
-        ] + Batas::aturan(Batas::TTV + ['alergi' => Batas::ALERGI_RANAP]);
+        ] + Batas::aturan(Batas::TTV + ['alergi' => Batas::ALERGI_RANAP, 'keluhan_ttv' => Batas::KELUHAN_TTV]);
     }
 
     public function attributes(): array

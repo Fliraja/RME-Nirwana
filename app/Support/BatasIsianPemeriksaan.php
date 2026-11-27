@@ -24,6 +24,9 @@ final class BatasIsianPemeriksaan
         'tinggi' => 5, 'berat' => 5, 'spo2' => 3, 'gcs' => 10,
     ];
 
+    /** Kolom catatan_sbar_ranap.keluhan (VARCHAR 400), diisi perawat dari tab TTV. */
+    public const KELUHAN_TTV = 400;
+
     public const ALERGI_RANAP = 400;
     public const ALERGI_RALAN = 2000;
 
@@ -45,6 +48,7 @@ final class BatasIsianPemeriksaan
         'spo2'        => 'SpO2',
         'gcs'         => 'GCS',
         'alergi'      => 'Alergi',
+        'keluhan_ttv' => 'Keluhan',
     ];
 
     /** @param array<string,int> $batas */
